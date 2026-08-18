@@ -1,0 +1,30 @@
+name: convnext_tiny
+backbone: convnext_tiny.fb_in22k_ft_in1k
+seed: 42
+
+image_size: 224
+batch_size: 64
+grad_accum: 1
+num_workers: 4
+crop_scale: [0.8, 1.0]
+
+warmup_epochs: 2
+max_epochs: 30
+patience: 4
+min_delta: 0.0
+
+opt: adamw
+head_lr: 1.0e-3
+lr: 3.0e-4
+layer_decay: 0.75
+weight_decay: 0.05
+drop_path: 0.1
+max_grad_norm: 1.0
+
+pos_weight_cap: 10.0
+softmax_weight: 1.0
+bce_weight: 1.0
+
+monitor: loss
+monitor_mode: min
+log_every: 50
