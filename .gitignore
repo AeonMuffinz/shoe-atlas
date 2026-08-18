@@ -6,3 +6,19 @@ __pycache__/
 .pytest_cache/
 .ruff_cache/
 .idea/
+
+# Credential-shaped files. Never tracked, whatever they happen to be named.
+.env
+.env.*
+*.pem
+*.pfx
+*.p12
+*key*
+*.token
+*secret*
+*token*
+*credential*
+wandb.txt
+# Python sources here are never credentials. This keeps a module legitimately
+# named for a token or a key from being silently untracked.
+!*.py
