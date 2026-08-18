@@ -318,6 +318,34 @@ def validation_ranking(evaluation: engine.EvalOutputs, schema: LabelSchema) -> d
     }
 
 
+CANDIDATE: str = "candidate"
+PROBE: str = "probe"
+
+
+def probe_metadata(config: dict) -> dict[str, object]:
+    role = str(config.get("role", CANDIDATE))
+    if role != PROBE:
+        return {"role": role}
+    varies = config.get("probe_varies")
+    reference = config.get("probe_reference_run")
+    if not varies or not reference:
+        raise TrainingError(
+            "a run with role: probe must declare probe_varies and probe_reference_run, so a reader "
+            "can tell what it varies and against what without diffing configs"
+        )
+    if varies not in config:
+        raise TrainingError(f"probe_varies is {varies!r} but that key is not in the config")
+    return {
+        "role": role,
+        "probe": {
+            "varies": str(varies),
+            "value": config[varies],
+            "reference_value": config.get("probe_reference_value"),
+            "reference_run": str(reference),
+        },
+    }
+
+
 def rotate_metrics(run_dir: Path) -> Path | None:
     path = run_dir / utils.METRICS_FILENAME
     if not path.exists():
@@ -440,6 +468,7 @@ def train(config: dict, args: argparse.Namespace) -> dict:
         summary = {
             "name": name,
             "stem": stem,
+            **probe_metadata(config),
             **selector.describe(),
             "selection_scope": SELECTION_SCOPE,
             "best_value": selector.value,

@@ -1,4 +1,4 @@
-name: convnext_tiny
+name: convnext_tiny_sw15
 backbone: convnext_tiny.fb_in22k_ft_in1k
 seed: 42
 
@@ -22,10 +22,13 @@ drop_path: 0.1
 max_grad_norm: 1.0
 
 pos_weight_cap: 10.0
-softmax_weight: 1.0
+softmax_weight: 1.5
 bce_weight: 1.0
 
-role: candidate
+role: probe
+probe_varies: softmax_weight
+probe_reference_value: 1.0
+probe_reference_run: convnext_tiny_s42
 
 monitor: constrained
 monitor_mode: max
