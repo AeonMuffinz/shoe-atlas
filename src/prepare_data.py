@@ -111,7 +111,7 @@ def prepare(
     paths: DataPaths,
     out_dir: Path,
     eda_path: Path,
-    threshold: int = 50,
+    threshold: int = catalog.MIN_LABEL_POSITIVES,
     seed: int = splits.DEFAULT_SEED,
     force: bool = False,
 ) -> Artifacts:
@@ -185,7 +185,7 @@ def main() -> None:
     parser.add_argument("--data-root", type=Path, default=Path("data/extracted"))
     parser.add_argument("--out-dir", type=Path, default=Path("data/processed"))
     parser.add_argument("--eda", type=Path, default=Path("artifacts/eda.json"))
-    parser.add_argument("--threshold", type=int, default=50)
+    parser.add_argument("--threshold", type=int, default=catalog.MIN_LABEL_POSITIVES)
     parser.add_argument("--seed", type=int, default=splits.DEFAULT_SEED)
     parser.add_argument("--force", action="store_true", help="re-decode even if the memmap already exists")
     args = parser.parse_args()

@@ -2,10 +2,12 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass
+
 import numpy as np
 from sklearn.metrics import average_precision_score, f1_score
 
-from src.catalog import FAMILIES, LabelSchema, expand_family_mask
+from src.catalog import FAMILIES, MIN_LABEL_POSITIVES, LabelSchema, expand_family_mask
 
 DEFAULT_GRID: np.ndarray = np.round(np.arange(0.10, 0.9001, 0.02), 2)
 DEFAULT_THRESHOLD: float = 0.5
@@ -219,3 +221,135 @@ def _by_name(schema: LabelSchema, values: np.ndarray) -> dict[str, float | None]
 
 def _clean(value: float) -> float | None:
     return None if not np.isfinite(value) else float(value)
+
+
+@dataclass(frozen=True)
+class Calibrators:
+    temperatures: dict[str, float]
+    isotonic: dict[str, tuple[list[float], list[float]]]
+    identity: list[str]
+
+    def to_dict(self) -> dict[str, object]:
+        return {
+            "temperatures": self.temperatures,
+            "isotonic": {k: {"x": x, "y": y} for k, (x, y) in self.isotonic.items()},
+            "identity": self.identity,
+        }
+
+    @classmethod
+    def from_dict(cls, payload: dict) -> Calibrators:
+        isotonic = {k: (v["x"], v["y"]) for k, v in payload.get("isotonic", {}).items()}
+        return cls(
+            temperatures={k: float(v) for k, v in payload.get("temperatures", {}).items()},
+            isotonic=isotonic,
+            identity=list(payload.get("identity", [])),
+        )
+
+
+def temperature_nll(logits: np.ndarray, target: np.ndarray, temperature: float) -> float:
+    scaled = logits / temperature
+    scaled = scaled - scaled.max(axis=1, keepdims=True)
+    log_prob = scaled - np.log(np.exp(scaled).sum(axis=1, keepdims=True))
+    return float(-log_prob[np.arange(len(target)), target].mean())
+
+
+def fit_temperature(logits: np.ndarray, target: np.ndarray, grid: np.ndarray | None = None) -> float:
+    if len(target) == 0:
+        return 1.0
+    steps = np.geomspace(0.05, 20.0, 200) if grid is None else grid
+    losses = [temperature_nll(logits, target, float(t)) for t in steps]
+    return float(steps[int(np.argmin(losses))])
+
+
+def fit_calibrators(
+    logits: np.ndarray,
+    labels: np.ndarray,
+    family_observed: np.ndarray,
+    schema: LabelSchema,
+    min_positives: int = MIN_LABEL_POSITIVES,
+) -> Calibrators:
+    from sklearn.isotonic import IsotonicRegression
+
+    temperatures: dict[str, float] = {}
+    for family in schema.softmax_families():
+        rows = np.flatnonzero(family_observed[:, FAMILIES.index(family.name)])
+        block = logits[rows, family.start : family.end]
+        target = labels[rows, family.start : family.end].argmax(axis=1)
+        temperatures[family.name] = fit_temperature(block, target)
+
+    isotonic: dict[str, tuple[list[float], list[float]]] = {}
+    identity: list[str] = []
+    mask = cell_mask(family_observed, schema)
+    probs = sigmoid(logits)
+    for family in schema.bce_families():
+        for column in range(family.start, family.end):
+            name = schema.columns[column]
+            rows = np.flatnonzero(mask[:, column])
+            truth = labels[rows, column]
+            if rows.size == 0 or truth.sum() < min_positives:
+                identity.append(name)
+                continue
+            model = IsotonicRegression(out_of_bounds="clip", y_min=0.0, y_max=1.0)
+            model.fit(probs[rows, column], truth)
+            isotonic[name] = (
+                [float(v) for v in model.X_thresholds_],
+                [float(v) for v in model.y_thresholds_],
+            )
+    return Calibrators(temperatures=temperatures, isotonic=isotonic, identity=identity)
+
+
+def apply_calibrators(logits: np.ndarray, schema: LabelSchema, calibrators: Calibrators) -> np.ndarray:
+    out = np.zeros_like(logits, dtype=np.float64)
+    for family in schema.softmax_families():
+        temperature = calibrators.temperatures.get(family.name, 1.0)
+        out[:, family.start : family.end] = softmax(logits[:, family.start : family.end] / temperature)
+    for family in schema.bce_families():
+        for column in range(family.start, family.end):
+            raw = sigmoid(logits[:, column])
+            knots = calibrators.isotonic.get(schema.columns[column])
+            out[:, column] = raw if knots is None else np.interp(raw, knots[0], knots[1])
+    return out
+
+
+def out_of_fold_scores(
+    logits: np.ndarray,
+    labels: np.ndarray,
+    family_observed: np.ndarray,
+    schema: LabelSchema,
+    folds: int = 5,
+    seed: int = 0,
+    min_positives: int = MIN_LABEL_POSITIVES,
+) -> dict[str, float]:
+    rows = np.arange(logits.shape[0])
+    rng = np.random.default_rng(seed)
+    assignment = rng.permutation(rows) % folds
+    predicted = np.zeros_like(labels, dtype=np.int8)
+    calibrated = np.zeros_like(labels, dtype=np.float64)
+
+    for fold in range(folds):
+        fit_rows = rows[assignment != fold]
+        score_rows = rows[assignment == fold]
+        if fit_rows.size == 0 or score_rows.size == 0:
+            continue
+        calibrators = fit_calibrators(
+            logits[fit_rows], labels[fit_rows], family_observed[fit_rows], schema, min_positives
+        )
+        fit_probs = apply_calibrators(logits[fit_rows], schema, calibrators)
+        thresholds, _ = sweep_thresholds(
+            fit_probs, labels[fit_rows], cell_mask(family_observed[fit_rows], schema), schema
+        )
+        held = apply_calibrators(logits[score_rows], schema, calibrators)
+        calibrated[score_rows] = held
+        predicted[score_rows] = (held >= thresholds).astype(np.int8)
+
+    mask = cell_mask(family_observed, schema)
+    f1 = np.full(labels.shape[1], np.nan)
+    for family in schema.bce_families():
+        for column in range(family.start, family.end):
+            valid = np.flatnonzero(mask[:, column])
+            if valid.size == 0:
+                continue
+            f1[column] = float(f1_score(labels[valid, column], predicted[valid, column], zero_division=0))
+    macro_f1, _ = macro_average(f1)
+    calibration, _ = macro_average(per_label_calibration_error(calibrated, labels, mask))
+    return {"macro_f1_bce": macro_f1, "calibration_error": calibration}

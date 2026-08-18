@@ -245,7 +245,7 @@ class DataPaths:
 def run(
     paths: DataPaths,
     out_path: Path | None = None,
-    threshold: int = 50,
+    threshold: int = catalog.MIN_LABEL_POSITIVES,
     seed: int = splits.DEFAULT_SEED,
     padding_samples: int = 250,
 ) -> dict[str, object]:
@@ -322,7 +322,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Measure dataset facts and write artifacts/eda.json")
     parser.add_argument("--data-root", type=Path, default=Path("data/extracted"))
     parser.add_argument("--out", type=Path, default=Path("artifacts/eda.json"))
-    parser.add_argument("--threshold", type=int, default=50)
+    parser.add_argument("--threshold", type=int, default=catalog.MIN_LABEL_POSITIVES)
     parser.add_argument("--seed", type=int, default=splits.DEFAULT_SEED)
     parser.add_argument("--padding-samples", type=int, default=250)
     args = parser.parse_args()

@@ -26,6 +26,7 @@ FAMILIES: tuple[str, ...] = (
 SOFTMAX_FAMILIES: tuple[str, ...] = ("Category", "SubCategory", "HeelHeight")
 BCE_FAMILIES: tuple[str, ...] = tuple(f for f in FAMILIES if f not in SOFTMAX_FAMILIES)
 IMAGE_SIZE: int = 136
+MIN_LABEL_POSITIVES: int = 50
 PATH_DEPTH: int = 4
 
 
