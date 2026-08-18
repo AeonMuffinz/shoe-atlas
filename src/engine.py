@@ -66,13 +66,14 @@ def train_one_epoch(
     log_every: int = DEFAULT_LOG_EVERY,
     amp_dtype: torch.dtype = torch.bfloat16,
     use_amp: bool = True,
+    phase: str = "train",
 ) -> dict[str, float]:
     model.train()
     running = RunningMean()
     steps_per_epoch = len(loader) if hasattr(loader, "__len__") else None
     optimizer.zero_grad(set_to_none=True)
 
-    for step, batch in enumerate(logger.progress(loader, desc=f"train {epoch}", total=steps_per_epoch)):
+    for step, batch in enumerate(logger.progress(loader, desc=f"{phase} {epoch}", total=steps_per_epoch)):
         images, targets, mask = move_batch(batch, device)
         with autocast_context(device, amp_dtype, use_amp):
             predictions = model(images)
@@ -91,12 +92,14 @@ def train_one_epoch(
         if log_every > 0 and step % log_every == 0:
             snapshot = {key: float(value) for key, value in components.items()}
             snapshot["lr"] = float(optimizer.param_groups[0]["lr"])
-            logger.log(snapshot, step=epoch * (steps_per_epoch or 1) + step, phase="train")
+            logger.log(snapshot, step=epoch * (steps_per_epoch or 1) + step, phase=phase)
 
+    end_step = (epoch + 1) * (steps_per_epoch or 1)
     summary = running.result()
     summary["lr"] = float(optimizer.param_groups[0]["lr"])
     summary["epoch"] = float(epoch)
-    logger.log(summary, step=epoch, phase="train_epoch")
+    summary["global_step"] = float(end_step)
+    logger.log(summary, step=end_step, phase=f"{phase}_epoch")
     return summary
 
 
@@ -111,6 +114,7 @@ def evaluate(
     phase: str = "val",
     amp_dtype: torch.dtype = torch.bfloat16,
     use_amp: bool = True,
+    global_step: int | None = None,
 ) -> EvalOutputs:
     model.eval()
     running = RunningMean()
@@ -131,7 +135,7 @@ def evaluate(
 
     metrics = running.result()
     metrics["epoch"] = float(epoch)
-    logger.log(metrics, step=epoch, phase=phase)
+    logger.log(metrics, step=epoch if global_step is None else global_step, phase=phase)
     return EvalOutputs(
         metrics=metrics,
         logits=torch.cat(logit_chunks) if logit_chunks else torch.empty(0),

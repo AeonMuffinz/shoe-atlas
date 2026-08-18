@@ -76,7 +76,12 @@ def wandb_is_authenticated() -> bool:
 
 class WandbSink:
     def __init__(
-        self, name: str, config: Mapping[str, object], run_dir: Path, project: str = WANDB_PROJECT
+        self,
+        name: str,
+        config: Mapping[str, object],
+        run_dir: Path,
+        project: str = WANDB_PROJECT,
+        group: str | None = None,
     ) -> None:
         import wandb
 
@@ -84,7 +89,9 @@ class WandbSink:
         os.environ["WANDB_DIR"] = str(run_dir)
         if not wandb_is_authenticated():
             os.environ["WANDB_MODE"] = "offline"
-        self._run = wandb.init(project=project, name=name, config=dict(config), dir=str(run_dir))
+        self._run = wandb.init(
+            project=project, name=name, group=group, config=dict(config), dir=str(run_dir)
+        )
 
     def log(self, metrics: Mapping[str, float], step: int, phase: str) -> None:
         self._run.log({f"{phase}/{key}": float(value) for key, value in metrics.items()}, step=int(step))
@@ -97,9 +104,11 @@ class WandbSink:
         self._run.finish()
 
 
-def make_wandb_sink(name: str, config: Mapping[str, object], run_dir: Path) -> MetricSink:
+def make_wandb_sink(
+    name: str, config: Mapping[str, object], run_dir: Path, group: str | None = None
+) -> MetricSink:
     try:
-        return WandbSink(name, config, run_dir)
+        return WandbSink(name, config, run_dir, group=group)
     except Exception as error:
         print(f"wandb unavailable ({type(error).__name__}); continuing with local metrics only")
         return NullSink()
@@ -142,11 +151,12 @@ def make_logger(
     run_dir: Path,
     use_wandb: bool = True,
     show_progress: bool = True,
+    group: str | None = None,
 ) -> RunLogger:
     run_dir.mkdir(parents=True, exist_ok=True)
     sinks: list[MetricSink] = [JsonlSink(run_dir / METRICS_FILENAME)]
     if use_wandb:
-        sinks.append(make_wandb_sink(name, config, run_dir))
+        sinks.append(make_wandb_sink(name, config, run_dir, group=group))
     return RunLogger(name=name, run_dir=run_dir, sinks=tuple(sinks), show_progress=show_progress)
 
 
