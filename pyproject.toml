@@ -48,5 +48,6 @@ select = ["E", "F", "I", "UP", "B", "SIM", "ANN"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+pythonpath = ["."]
 markers = ["realdata: requires the downloaded UT Zappos50K dataset"]
 addopts = "-m 'not realdata'"
