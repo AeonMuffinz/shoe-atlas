@@ -3,20 +3,16 @@
 from __future__ import annotations
 
 import argparse
-import json
 from pathlib import Path
 
 import numpy as np
 from sklearn.metrics import f1_score
 
-from src import data_setup, metrics
+from src import data_setup, metrics, reporting
 from src.catalog import LabelSchema
-from src.evaluate import EVALUATION_NAME, TEST_WITHHELD
+from src.reporting import PROCESSED_DIR, RUNS_ROOT, TEST_WITHHELD
 
-RUNS_ROOT: Path = Path("artifacts/runs")
-PROCESSED_DIR: Path = Path("data/processed")
 RUN_NAME: str = "prevalence_floor"
-SUMMARY_NAME: str = "run_summary.json"
 FOLDS: int = 5
 
 
@@ -24,17 +20,18 @@ def constant_predictions(train_scores: np.ndarray, rows: int) -> np.ndarray:
     return np.tile(train_scores, (rows, 1))
 
 
-def out_of_fold_macro_f1(
+def out_of_fold_scores(
     probs: np.ndarray,
     labels: np.ndarray,
     family_observed: np.ndarray,
     schema: LabelSchema,
     folds: int = FOLDS,
     seed: int = 0,
-) -> float:
+) -> dict[str, float]:
     index = np.arange(probs.shape[0])
     assignment = np.random.default_rng(seed).permutation(index) % folds
     predicted = np.zeros_like(labels, dtype=np.int8)
+    held_out = np.zeros_like(labels, dtype=np.float64)
     for fold in range(folds):
         fit = index[assignment != fold]
         held = index[assignment == fold]
@@ -44,20 +41,23 @@ def out_of_fold_macro_f1(
             probs[fit], labels[fit], metrics.cell_mask(family_observed[fit], schema), schema
         )
         predicted[held] = (probs[held] >= thresholds).astype(np.int8)
+        held_out[held] = probs[held]
 
     mask = metrics.cell_mask(family_observed, schema)
-    scores = metrics.per_label_f1(probs, labels, mask, np.full(probs.shape[1], 0.5))
+    f1 = np.full(labels.shape[1], np.nan)
     for family in schema.bce_families():
         for column in range(family.start, family.end):
             valid = np.flatnonzero(mask[:, column])
             if valid.size == 0:
                 continue
-            scores[column] = float(
+            f1[column] = float(
                 f1_score(labels[valid, column], predicted[valid, column], zero_division=0)
             )
-    columns = [c for f in schema.bce_families() for c in range(f.start, f.end)]
-    value, _ = metrics.macro_average(scores[columns])
-    return value
+    macro_f1, _ = metrics.macro_average(f1)
+    calibration, _ = metrics.macro_average(
+        metrics.per_label_calibration_error(held_out, labels, mask)
+    )
+    return {"macro_f1_bce": macro_f1, "calibration_error": calibration}
 
 
 def build(processed_dir: Path = PROCESSED_DIR, runs_root: Path = RUNS_ROOT) -> dict[str, object]:
@@ -76,7 +76,7 @@ def build(processed_dir: Path = PROCESSED_DIR, runs_root: Path = RUNS_ROOT) -> d
 
     thresholds, uncalibrated = metrics.sweep_thresholds(probs, labels, mask, schema)
     summary = metrics.summarise(probs, labels, observed, schema, thresholds)
-    honest = out_of_fold_macro_f1(probs, labels, observed, schema)
+    honest = out_of_fold_scores(probs, labels, observed, schema)
 
     run_dir = runs_root / RUN_NAME
     run_dir.mkdir(parents=True, exist_ok=True)
@@ -94,14 +94,19 @@ def build(processed_dir: Path = PROCESSED_DIR, runs_root: Path = RUNS_ROOT) -> d
             "map_bce": summary["map_bce_labels"],
             "map_calibrated": summary["map"],
             "macro_f1_bce": summary["macro_f1_bce"],
-            "macro_f1_bce_out_of_fold": honest,
+            "macro_f1_bce_out_of_fold": honest["macro_f1_bce"],
             "calibration_error": summary["calibration_error"],
+            "calibration_error_out_of_fold": honest["calibration_error"],
             "calibration_error_uncalibrated": summary["calibration_error"],
             "family_top1": summary["family_top1"],
             "unscoreable_labels": summary["unscoreable_labels"],
             "uncalibrated_thresholds": uncalibrated,
             "identity_calibrated_labels": [],
             "rows": int(len(val)),
+            "note_macro_f1": (
+                "a constant predictor scores the same fitted and out of fold, because every row "
+                "carries the same score and the best threshold cannot vary by fold"
+            ),
             "note_map": (
                 "a constant predictor returning each label's training frequency; it is already "
                 "calibrated by construction, so calibrated and uncalibrated figures coincide"
@@ -109,7 +114,8 @@ def build(processed_dir: Path = PROCESSED_DIR, runs_root: Path = RUNS_ROOT) -> d
         },
         "test": TEST_WITHHELD,
     }
-    (run_dir / EVALUATION_NAME).write_text(json.dumps(report, indent=2), encoding="utf-8")
+    reporting.assert_contract(report["val"], RUN_NAME)
+    reporting.write_report(run_dir, report)
 
     run_summary = {
         "name": RUN_NAME,
@@ -126,7 +132,7 @@ def build(processed_dir: Path = PROCESSED_DIR, runs_root: Path = RUNS_ROOT) -> d
             "before its mAP means anything"
         ),
     }
-    (run_dir / SUMMARY_NAME).write_text(json.dumps(run_summary, indent=2), encoding="utf-8")
+    reporting.write_summary(run_dir, run_summary)
     return report
 
 
@@ -141,7 +147,10 @@ def main() -> None:
     print(f"prevalence floor over {val['rows']} validation rows")
     print(f"  mAP          {val['map']:.4f}   softmax {val['map_softmax']:.4f}   bce {val['map_bce']:.4f}")
     print(f"  macro F1 bce {val['macro_f1_bce']:.4f}   out-of-fold {val['macro_f1_bce_out_of_fold']:.4f}")
-    print(f"  calibration  {val['calibration_error']:.4f}")
+    print(
+        f"  calibration  {val['calibration_error']:.4f}   "
+        f"out-of-fold {val['calibration_error_out_of_fold']:.4f}"
+    )
     print(f"  family top-1 {({k: round(v, 4) for k, v in val['family_top1'].items()})}")
 
 

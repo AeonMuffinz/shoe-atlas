@@ -164,6 +164,32 @@ def per_label_calibration_error(
     return errors
 
 
+def tie_inflating_bce_columns(
+    raw: np.ndarray,
+    probs: np.ndarray,
+    schema: LabelSchema,
+) -> list[str]:
+    inflated: list[str] = []
+    for family in schema.bce_families():
+        for column in range(family.start, family.end):
+            if np.unique(probs[:, column]).size < np.unique(raw[:, column]).size:
+                inflated.append(schema.columns[column])
+    return inflated
+
+
+def assert_bce_ranking_survives(
+    raw: np.ndarray,
+    probs: np.ndarray,
+    schema: LabelSchema,
+) -> None:
+    inflated = tie_inflating_bce_columns(raw, probs, schema)
+    if inflated:
+        raise ValueError(
+            f"{len(inflated)} BCE column(s) lost distinct values when scores became probabilities, "
+            f"which silently corrupts per-label ranking and therefore mAP: {inflated[:8]}"
+        )
+
+
 def prevalence_scores(train_labels: np.ndarray, train_mask: np.ndarray) -> np.ndarray:
     scores = np.zeros(train_labels.shape[1], dtype=np.float64)
     for column in range(train_labels.shape[1]):

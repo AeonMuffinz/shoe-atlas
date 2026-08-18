@@ -6,7 +6,6 @@ import argparse
 import json
 import os
 import time
-from dataclasses import dataclass
 from itertools import islice
 from pathlib import Path
 
@@ -16,147 +15,20 @@ from torch import nn
 from torch.optim import Optimizer
 from torch.optim.lr_scheduler import CosineAnnealingLR, LRScheduler
 
-from src import data_setup, engine, losses, metrics, model_builder, utils
+from src import data_setup, engine, losses, model_builder, reporting, utils
 from src.catalog import LabelSchema
+from src.reporting import CONFIG_NAME, PROCESSED_DIR, RUNS_ROOT
+from src.selection import BestState, ConstrainedSelector, EarlyStopping, ScalarSelector, make_selector
 
-RUNS_ROOT: Path = Path("artifacts/runs")
-PROCESSED_DIR: Path = Path("data/processed")
 LAST_NAME: str = "last.pt"
 BEST_NAME: str = "best.pt"
-SUMMARY_NAME: str = "run_summary.json"
-CONFIG_NAME: str = "config.yaml"
 WARMUP_PHASE: str = "warmup"
 FINETUNE_PHASE: str = "finetune"
-CONSTRAINED: str = "constrained"
 SELECTION_SCOPE: str = "best epoch within this run; the architecture winner is chosen on mAP elsewhere"
 
 
 class TrainingError(RuntimeError):
     pass
-
-
-@dataclass
-class BestState:
-    value: float
-    epoch: int
-    mode: str
-
-    def improves(self, candidate: float) -> bool:
-        return candidate < self.value if self.mode == "min" else candidate > self.value
-
-
-@dataclass
-class EarlyStopping:
-    patience: int
-    min_delta: float = 0.0
-    mode: str = "min"
-    best: float = float("inf")
-    waited: int = 0
-    stopped_epoch: int | None = None
-
-    def __post_init__(self) -> None:
-        if self.mode == "max" and self.best == float("inf"):
-            self.best = float("-inf")
-
-    def improved(self, candidate: float) -> bool:
-        if self.mode == "min":
-            return candidate < self.best - self.min_delta
-        return candidate > self.best + self.min_delta
-
-    def update(self, candidate: float, epoch: int) -> bool:
-        improved = self.improved(candidate)
-        if improved:
-            self.best = candidate
-        return self.observe(improved, epoch)
-
-    def observe(self, improved: bool, epoch: int) -> bool:
-        if improved:
-            self.waited = 0
-            return False
-        self.waited += 1
-        if self.waited >= self.patience:
-            self.stopped_epoch = epoch
-            return True
-        return False
-
-
-@dataclass
-class ScalarSelector:
-    monitor: str
-    mode: str
-    value: float = 0.0
-    epoch: int = -1
-
-    def __post_init__(self) -> None:
-        self.value = float("inf") if self.mode == "min" else float("-inf")
-
-    def improves(self, candidate: float) -> bool:
-        return candidate < self.value if self.mode == "min" else candidate > self.value
-
-    def update(self, values: dict[str, float], epoch: int) -> bool:
-        candidate = float(values[self.monitor])
-        if not self.improves(candidate):
-            return False
-        self.value, self.epoch = candidate, epoch
-        return True
-
-    def state(self) -> BestState:
-        return BestState(value=self.value, epoch=self.epoch, mode=self.mode)
-
-    def describe(self) -> dict[str, object]:
-        return {"selection_metric": f"val_{self.monitor}", "selection_mode": self.mode}
-
-
-@dataclass
-class ConstrainedSelector:
-    primary: str = "map_bce"
-    guard: str = "map_softmax"
-    epsilon: float = 0.01
-    value: float = float("-inf")
-    epoch: int = -1
-    guard_peak: float = float("-inf")
-    guard_at_best: float = float("nan")
-    rejected: int = 0
-
-    def floor(self) -> float:
-        return (1.0 - self.epsilon) * self.guard_peak
-
-    def update(self, values: dict[str, float], epoch: int) -> bool:
-        guard_value = float(values[self.guard])
-        self.guard_peak = max(self.guard_peak, guard_value)
-        if guard_value < self.floor():
-            self.rejected += 1
-            return False
-        candidate = float(values[self.primary])
-        if candidate <= self.value:
-            return False
-        self.value, self.epoch, self.guard_at_best = candidate, epoch, guard_value
-        return True
-
-    def state(self) -> BestState:
-        return BestState(value=self.value, epoch=self.epoch, mode="max")
-
-    def describe(self) -> dict[str, object]:
-        return {
-            "selection_metric": f"val_{self.primary}",
-            "selection_mode": "max",
-            "selection_guard": f"val_{self.guard}",
-            "selection_epsilon": self.epsilon,
-            "guard_peak": self.guard_peak,
-            "guard_at_best": self.guard_at_best,
-            "epochs_rejected_by_guard": self.rejected,
-        }
-
-
-def make_selector(config: dict) -> ScalarSelector | ConstrainedSelector:
-    monitor = str(config["monitor"])
-    if monitor != CONSTRAINED:
-        return ScalarSelector(monitor=monitor, mode=str(config["monitor_mode"]))
-    return ConstrainedSelector(
-        primary=str(config.get("selection_primary", "map_bce")),
-        guard=str(config.get("selection_guard", "map_softmax")),
-        epsilon=float(config["selection_epsilon"]),
-    )
 
 
 def assert_cuda(allow_cpu: bool) -> torch.device:
@@ -303,19 +175,9 @@ def run_phase(
 
 
 def validation_ranking(evaluation: engine.EvalOutputs, schema: LabelSchema) -> dict[str, float]:
-    probs = metrics.logits_to_probabilities(evaluation.logits.numpy(), schema)
-    labels = evaluation.targets.numpy()
-    mask = metrics.cell_mask(evaluation.mask.numpy(), schema)
-    per_label = metrics.per_label_average_precision(probs, labels, mask)
-    value, unscoreable = metrics.macro_average(per_label)
-    softmax_columns = [c for f in schema.softmax_families() for c in range(f.start, f.end)]
-    bce_columns = [c for f in schema.bce_families() for c in range(f.start, f.end)]
-    return {
-        "map": value,
-        "map_softmax": metrics.macro_average(per_label[softmax_columns])[0],
-        "map_bce": metrics.macro_average(per_label[bce_columns])[0],
-        "unscoreable_labels": float(unscoreable),
-    }
+    return reporting.ranking_from_logits(
+        evaluation.logits.numpy(), evaluation.targets.numpy(), evaluation.mask.numpy(), schema
+    )
 
 
 CANDIDATE: str = "candidate"
@@ -491,7 +353,7 @@ def train(config: dict, args: argparse.Namespace) -> dict:
         }
         logger.summary({"best_value": selector.value, "best_epoch": float(selector.epoch)})
 
-    (run_dir / SUMMARY_NAME).write_text(json.dumps(summary, indent=2), encoding="utf-8")
+    reporting.write_summary(run_dir, summary)
     return summary
 
 

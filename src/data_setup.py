@@ -156,6 +156,27 @@ def build_dataloader(cfg: DataConfig, artifacts: Artifacts, split: str) -> DataL
     )
 
 
+def build_eval_dataloader(cfg: DataConfig, artifacts: Artifacts, split: str) -> DataLoader:
+    transform = build_transforms(cfg.image_size, cfg.mean, cfg.std, train=False)
+    dataset = ShoeDataset(
+        processed_dir=cfg.processed_dir,
+        indices=artifacts.splits[split],
+        labels=artifacts.labels,
+        family_observed=artifacts.family_observed,
+        transform=transform,
+    )
+    return DataLoader(
+        dataset,
+        batch_size=cfg.batch_size,
+        shuffle=False,
+        drop_last=False,
+        num_workers=cfg.num_workers,
+        pin_memory=torch.cuda.is_available(),
+        persistent_workers=cfg.num_workers > 0,
+        worker_init_fn=seed_worker,
+    )
+
+
 def build_dataloaders(
     cfg: DataConfig, artifacts: Artifacts, splits: tuple[str, ...] = ("train", "val")
 ) -> dict[str, DataLoader]:

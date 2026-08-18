@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import argparse
 import json
-from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
 
@@ -12,32 +11,20 @@ import numpy as np
 import torch
 from torch import nn
 
-from src import data_setup, metrics, model_builder
-from src.catalog import FAMILIES, MIN_LABEL_POSITIVES, LabelSchema
+from src import data_setup, model_builder, reporting
+from src.catalog import FAMILIES, LabelSchema
+from src.reporting import (
+    CALIBRATION_NAME,
+    ERRORS_DIR,
+    PROBS_NAME,
+    PROCESSED_DIR,
+    TEST_WITHHELD,
+    THRESHOLDS_NAME,
+    EvaluationError,
+    Predictions,
+)
 
-RUNS_ROOT: Path = Path("artifacts/runs")
-PROCESSED_DIR: Path = Path("data/processed")
-WINNER_PATH: Path = Path("artifacts/winner.json")
-EVALUATION_NAME: str = "evaluation.json"
-THRESHOLDS_NAME: str = "thresholds.json"
-CALIBRATION_NAME: str = "calibration.json"
-PROBS_NAME: str = "{split}_probs.npy"
-CONFUSION_DIR: str = "confusion"
-ERRORS_DIR: str = "errors"
-TEST_WITHHELD: str = "not evaluated, test opened once for the winner"
 WORST_ERRORS: int = 16
-
-
-class EvaluationError(RuntimeError):
-    pass
-
-
-@dataclass(frozen=True)
-class Predictions:
-    logits: np.ndarray
-    labels: np.ndarray
-    family_observed: np.ndarray
-    rows: np.ndarray
 
 
 def load_checkpoint(run_dir: Path, name: str = "best.pt") -> dict:
@@ -82,93 +69,6 @@ def gather(artifacts: data_setup.Artifacts, split: str, logits: np.ndarray) -> P
         family_observed=artifacts.family_observed[rows],
         rows=rows,
     )
-
-
-def assert_test_unlocked(run_name: str) -> dict:
-    if not WINNER_PATH.exists():
-        raise EvaluationError(
-            f"refusing to open the test set: {WINNER_PATH} does not exist. The test set is opened once, "
-            "for the winner only, so a winner has to be recorded before any test score is computed."
-        )
-    winner = json.loads(WINNER_PATH.read_text(encoding="utf-8"))
-    if str(winner.get("winner")) != run_name:
-        raise EvaluationError(
-            f"refusing to open the test set: {WINNER_PATH} names {winner.get('winner')!r}, not {run_name!r}. "
-            "Losing runs never get a test score."
-        )
-    return winner
-
-
-def score_split(
-    predictions: Predictions,
-    schema: LabelSchema,
-    min_positives: int = MIN_LABEL_POSITIVES,
-) -> tuple[dict[str, object], np.ndarray, np.ndarray, metrics.Calibrators]:
-    calibrators = metrics.fit_calibrators(
-        predictions.logits, predictions.labels, predictions.family_observed, schema, min_positives
-    )
-    calibrated = metrics.apply_calibrators(predictions.logits, schema, calibrators)
-    mask = metrics.cell_mask(predictions.family_observed, schema)
-    thresholds, uncalibrated = metrics.sweep_thresholds(
-        calibrated, predictions.labels, mask, schema
-    )
-
-    raw = metrics.logits_to_probabilities(predictions.logits, schema)
-    ranking = metrics.summarise(
-        raw, predictions.labels, predictions.family_observed, schema, thresholds
-    )
-    summary = metrics.summarise(
-        calibrated, predictions.labels, predictions.family_observed, schema, thresholds
-    )
-    raw_calibration = ranking["calibration_error"]
-    out_of_fold = metrics.out_of_fold_scores(
-        predictions.logits, predictions.labels, predictions.family_observed, schema,
-        min_positives=min_positives,
-    )
-
-    scores: dict[str, object] = {
-        "map": ranking["map"],
-        "map_softmax": ranking["map_softmax_labels"],
-        "map_bce": ranking["map_bce_labels"],
-        "map_calibrated": summary["map"],
-        "macro_f1_bce": summary["macro_f1_bce"],
-        "macro_f1_bce_out_of_fold": out_of_fold["macro_f1_bce"],
-        "calibration_error": summary["calibration_error"],
-        "calibration_error_out_of_fold": out_of_fold["calibration_error"],
-        "calibration_error_uncalibrated": raw_calibration,
-        "family_top1": summary["family_top1"],
-        "unscoreable_labels": summary["unscoreable_labels"],
-        "uncalibrated_thresholds": uncalibrated,
-        "identity_calibrated_labels": calibrators.identity,
-        "rows": int(len(predictions.rows)),
-        "note_macro_f1": (
-            "macro_f1_bce is fitted and scored on the same split and is therefore optimistic; "
-            "macro_f1_bce_out_of_fold refits thresholds and calibrators per fold and is the honest one."
-        ),
-        "note_map": (
-            "map is computed on uncalibrated probabilities, matching what training selected on. "
-            "Calibration does shift it: isotonic collapses scores into ties and temperature scaling "
-            "renormalises each row, so neither preserves per-column ranking. map_calibrated is "
-            "reported for transparency but is not the comparison number."
-        ),
-    }
-    return scores, calibrated, thresholds, calibrators
-
-
-def write_confusion(
-    run_dir: Path, calibrated: np.ndarray, predictions: Predictions, schema: LabelSchema
-) -> None:
-    folder = run_dir / CONFUSION_DIR
-    folder.mkdir(parents=True, exist_ok=True)
-    matrices = metrics.confusion_matrices(
-        calibrated, predictions.labels, predictions.family_observed, schema
-    )
-    for family, matrix in matrices.items():
-        names = schema.family(family).labels
-        lines = ["true\\predicted," + ",".join(names)]
-        for name, row in zip(names, matrix, strict=True):
-            lines.append(name + "," + ",".join(str(int(v)) for v in row))
-        (folder / f"{family}.csv").write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
 def worst_error_rows(
@@ -243,7 +143,7 @@ def evaluate_run(
     assert_schema_matches(payload, schema)
 
     run_name = run_dir.name
-    winner = assert_test_unlocked(run_name) if unlock_test else None
+    winner = reporting.assert_test_unlocked(run_name) if unlock_test else None
 
     device = device or torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = build_from_checkpoint(payload, len(schema.columns), device)
@@ -271,11 +171,12 @@ def evaluate_run(
     for split in splits_to_score:
         loader = data_setup.build_dataloader(data_cfg, artifacts, split)
         predictions = gather(artifacts, split, predict(model, loader, device))
-        scores, calibrated, thresholds, calibrators = score_split(predictions, schema)
+        scores, calibrated, thresholds, calibrators = reporting.score_split(predictions, schema)
+        reporting.assert_contract(scores, f"{run_name}/{split}")
         report[split] = scores
         np.save(run_dir / PROBS_NAME.format(split=split), calibrated.astype(np.float32))
         if split == "val":
-            write_confusion(run_dir, calibrated, predictions, schema)
+            reporting.write_confusion(run_dir, calibrated, predictions, schema)
             (run_dir / THRESHOLDS_NAME).write_text(
                 json.dumps(
                     {name: float(thresholds[i]) for i, name in enumerate(schema.columns)}, indent=2
@@ -294,7 +195,7 @@ def evaluate_run(
         report["test_unlocked_on"] = date.today().isoformat()
         report["winner_record"] = winner
 
-    (run_dir / EVALUATION_NAME).write_text(json.dumps(report, indent=2), encoding="utf-8")
+    reporting.write_report(run_dir, report)
     return report
 
 
