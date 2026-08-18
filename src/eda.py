@@ -212,6 +212,7 @@ def labels_section(
         "bce_labels": sum(len(f.labels) for f in schema.bce_families()),
         "survival_curve": curve,
         "zero_train_positives": [str(c) for c in train_counts.index if train_counts[c] == 0],
+        "surviving_labels": list(schema.columns),
         "dropped": dropped,
         "by_family": by_family,
         "train_positives": {str(k): int(v) for k, v in train_counts.loc[list(schema.columns)].items()},
