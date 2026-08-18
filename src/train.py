@@ -27,6 +27,7 @@ SUMMARY_NAME: str = "run_summary.json"
 CONFIG_NAME: str = "config.yaml"
 WARMUP_PHASE: str = "warmup"
 FINETUNE_PHASE: str = "finetune"
+CONSTRAINED: str = "constrained"
 SELECTION_SCOPE: str = "best epoch within this run; the architecture winner is chosen on mAP elsewhere"
 
 
@@ -63,8 +64,13 @@ class EarlyStopping:
         return candidate > self.best + self.min_delta
 
     def update(self, candidate: float, epoch: int) -> bool:
-        if self.improved(candidate):
+        improved = self.improved(candidate)
+        if improved:
             self.best = candidate
+        return self.observe(improved, epoch)
+
+    def observe(self, improved: bool, epoch: int) -> bool:
+        if improved:
             self.waited = 0
             return False
         self.waited += 1
@@ -72,6 +78,85 @@ class EarlyStopping:
             self.stopped_epoch = epoch
             return True
         return False
+
+
+@dataclass
+class ScalarSelector:
+    monitor: str
+    mode: str
+    value: float = 0.0
+    epoch: int = -1
+
+    def __post_init__(self) -> None:
+        self.value = float("inf") if self.mode == "min" else float("-inf")
+
+    def improves(self, candidate: float) -> bool:
+        return candidate < self.value if self.mode == "min" else candidate > self.value
+
+    def update(self, values: dict[str, float], epoch: int) -> bool:
+        candidate = float(values[self.monitor])
+        if not self.improves(candidate):
+            return False
+        self.value, self.epoch = candidate, epoch
+        return True
+
+    def state(self) -> BestState:
+        return BestState(value=self.value, epoch=self.epoch, mode=self.mode)
+
+    def describe(self) -> dict[str, object]:
+        return {"selection_metric": f"val_{self.monitor}", "selection_mode": self.mode}
+
+
+@dataclass
+class ConstrainedSelector:
+    primary: str = "map_bce"
+    guard: str = "map_softmax"
+    epsilon: float = 0.01
+    value: float = float("-inf")
+    epoch: int = -1
+    guard_peak: float = float("-inf")
+    guard_at_best: float = float("nan")
+    rejected: int = 0
+
+    def floor(self) -> float:
+        return (1.0 - self.epsilon) * self.guard_peak
+
+    def update(self, values: dict[str, float], epoch: int) -> bool:
+        guard_value = float(values[self.guard])
+        self.guard_peak = max(self.guard_peak, guard_value)
+        if guard_value < self.floor():
+            self.rejected += 1
+            return False
+        candidate = float(values[self.primary])
+        if candidate <= self.value:
+            return False
+        self.value, self.epoch, self.guard_at_best = candidate, epoch, guard_value
+        return True
+
+    def state(self) -> BestState:
+        return BestState(value=self.value, epoch=self.epoch, mode="max")
+
+    def describe(self) -> dict[str, object]:
+        return {
+            "selection_metric": f"val_{self.primary}",
+            "selection_mode": "max",
+            "selection_guard": f"val_{self.guard}",
+            "selection_epsilon": self.epsilon,
+            "guard_peak": self.guard_peak,
+            "guard_at_best": self.guard_at_best,
+            "epochs_rejected_by_guard": self.rejected,
+        }
+
+
+def make_selector(config: dict) -> ScalarSelector | ConstrainedSelector:
+    monitor = str(config["monitor"])
+    if monitor != CONSTRAINED:
+        return ScalarSelector(monitor=monitor, mode=str(config["monitor_mode"]))
+    return ConstrainedSelector(
+        primary=str(config.get("selection_primary", "map_bce")),
+        guard=str(config.get("selection_guard", "map_softmax")),
+        epsilon=float(config["selection_epsilon"]),
+    )
 
 
 def assert_cuda(allow_cpu: bool) -> torch.device:
@@ -159,10 +244,9 @@ def run_phase(
     run_dir: Path,
     phase: str,
     epochs: range,
-    best: BestState,
+    selector: ScalarSelector | ConstrainedSelector,
     stopper: EarlyStopping | None = None,
-) -> tuple[BestState, bool]:
-    monitor = str(config["monitor"])
+) -> bool:
     stopped = False
     for epoch in epochs:
         train_metrics = engine.train_one_epoch(
@@ -178,13 +262,13 @@ def run_phase(
         )
         val_metrics = dict(evaluation.metrics)
         val_metrics.update(validation_ranking(evaluation, schema))
-        candidate = float(val_metrics[monitor])
+        accepted = selector.update(val_metrics, epoch)
+        best = selector.state()
 
         save_checkpoint(
             run_dir / LAST_NAME, model, schema, config, epoch, phase, best, optimizer, scheduler
         )
-        if best.improves(candidate):
-            best = BestState(value=candidate, epoch=epoch, mode=best.mode)
+        if accepted:
             save_checkpoint(run_dir / BEST_NAME, model, schema, config, epoch, phase, best)
 
         logger.log(
@@ -208,14 +292,14 @@ def run_phase(
             f"(soft {val_metrics['map_softmax']:.4f} / bce {val_metrics['map_bce']:.4f})  "
             f"best {best.value:.4f}@{best.epoch}"
         )
-        if stopper is not None and stopper.update(candidate, epoch):
+        if stopper is not None and stopper.observe(accepted, epoch):
             print(
-                f"[{phase}] early stop at epoch {epoch}: no {monitor} improvement for "
+                f"[{phase}] early stop at epoch {epoch}: selection metric did not improve for "
                 f"{stopper.patience} epochs (best {best.value:.4f}@{best.epoch})"
             )
             stopped = True
             break
-    return best, stopped
+    return stopped
 
 
 def validation_ranking(evaluation: engine.EvalOutputs, schema: LabelSchema) -> dict[str, float]:
@@ -234,6 +318,16 @@ def validation_ranking(evaluation: engine.EvalOutputs, schema: LabelSchema) -> d
     }
 
 
+def rotate_metrics(run_dir: Path) -> Path | None:
+    path = run_dir / utils.METRICS_FILENAME
+    if not path.exists():
+        return None
+    stamp = time.strftime("%Y%m%d_%H%M%S", time.localtime(path.stat().st_mtime))
+    archived = run_dir / f"metrics_{stamp}.jsonl.bak"
+    os.replace(path, archived)
+    return archived
+
+
 def run_name_for(stem: str, seed: int) -> str:
     return f"{stem}_s{seed}"
 
@@ -247,6 +341,10 @@ def train(config: dict, args: argparse.Namespace) -> dict:
     run_dir = RUNS_ROOT / name
     run_dir.mkdir(parents=True, exist_ok=True)
     guard_existing_checkpoints(run_dir, args.force)
+
+    archived = rotate_metrics(run_dir)
+    if archived is not None:
+        print(f"archived previous metrics to {archived.name}")
 
     device = assert_cuda(args.cpu)
     utils.set_seed(int(config["seed"]))
@@ -287,8 +385,7 @@ def train(config: dict, args: argparse.Namespace) -> dict:
 
     warmup_epochs = int(config["warmup_epochs"])
     total_epochs = int(config["max_epochs"])
-    best = BestState(value=float("inf") if config["monitor_mode"] == "min" else float("-inf"),
-                     epoch=-1, mode=str(config["monitor_mode"]))
+    selector = make_selector(config)
     started = time.time()
     timings: dict[str, float] = {}
     params: dict[str, int] = {"total": model_builder.trainable_parameters(model)}
@@ -305,8 +402,8 @@ def train(config: dict, args: argparse.Namespace) -> dict:
 
         phase_start = time.time()
         optimizer = model_builder.build_optimizer(model, model_cfg, model_builder.HEAD_PHASE)
-        best, _ = run_phase(model, loaders, loss_fn, optimizer, None, logger, device, config, schema,
-                            run_dir, WARMUP_PHASE, range(warmup_epochs), best)
+        run_phase(model, loaders, loss_fn, optimizer, None, logger, device, config, schema,
+                  run_dir, WARMUP_PHASE, range(warmup_epochs), selector)
         timings[WARMUP_PHASE] = time.time() - phase_start
 
         model_builder.unfreeze_all(model)
@@ -335,18 +432,18 @@ def train(config: dict, args: argparse.Namespace) -> dict:
             min_delta=float(config["min_delta"]),
             mode=str(config["monitor_mode"]),
         )
-        best, stopped = run_phase(model, loaders, loss_fn, optimizer, scheduler, logger, device, config,
-                                  schema, run_dir, FINETUNE_PHASE, range(warmup_epochs, total_epochs),
-                                  best, stopper)
+        stopped = run_phase(model, loaders, loss_fn, optimizer, scheduler, logger, device, config,
+                            schema, run_dir, FINETUNE_PHASE, range(warmup_epochs, total_epochs),
+                            selector, stopper)
         timings[FINETUNE_PHASE] = time.time() - phase_start
 
         summary = {
             "name": name,
             "stem": stem,
-            "selection_metric": f"val_{config['monitor']}",
+            **selector.describe(),
             "selection_scope": SELECTION_SCOPE,
-            "best_value": best.value,
-            "best_epoch": best.epoch,
+            "best_value": selector.value,
+            "best_epoch": selector.epoch,
             "max_epochs": total_epochs,
             "warmup_epochs": warmup_epochs,
             "stopped_early": stopped,
@@ -363,7 +460,7 @@ def train(config: dict, args: argparse.Namespace) -> dict:
             "torch_version": torch.__version__,
             "determinism": "seed-controlled, not bitwise deterministic",
         }
-        logger.summary({"best_value": best.value, "best_epoch": float(best.epoch)})
+        logger.summary({"best_value": selector.value, "best_epoch": float(selector.epoch)})
 
     (run_dir / SUMMARY_NAME).write_text(json.dumps(summary, indent=2), encoding="utf-8")
     return summary

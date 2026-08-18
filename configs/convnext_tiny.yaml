@@ -9,7 +9,7 @@ num_workers: 4
 crop_scale: [0.8, 1.0]
 
 warmup_epochs: 2
-max_epochs: 30
+max_epochs: 40
 patience: 4
 min_delta: 0.0
 
@@ -25,6 +25,9 @@ pos_weight_cap: 10.0
 softmax_weight: 1.0
 bce_weight: 1.0
 
-monitor: map
+monitor: constrained
 monitor_mode: max
+selection_primary: map_bce
+selection_guard: map_softmax
+selection_epsilon: 0.01
 log_every: 50
