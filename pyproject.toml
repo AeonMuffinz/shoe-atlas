@@ -1,0 +1,52 @@
+[project]
+name = "shoe-catalog"
+version = "0.1.0"
+description = "Multi-label shoe attribute extraction, catalog audit, and same-product retrieval on UT Zappos50K"
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "torch>=2.13.0",
+    "torchvision>=0.28.0",
+    "timm>=1.0.0",
+    "open-clip-torch>=2.24.0",
+    "cleanlab>=2.7.0",
+    "scikit-learn>=1.5.0",
+    "numpy>=2.0.0,<2.5.0",
+    "pandas>=2.2.0",
+    "scipy>=1.14.0",
+    "pillow>=10.4.0",
+    "pyyaml>=6.0",
+    "tqdm>=4.66.0",
+    "matplotlib>=3.9.0",
+    "gradio>=6.0.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3.0",
+    "ruff>=0.6.0",
+]
+
+[tool.uv]
+package = false
+
+[[tool.uv.index]]
+name = "pytorch-cu126"
+url = "https://download.pytorch.org/whl/cu126"
+explicit = true
+
+[tool.uv.sources]
+torch = { index = "pytorch-cu126" }
+torchvision = { index = "pytorch-cu126" }
+
+[tool.ruff]
+line-length = 110
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "ANN"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = ["realdata: requires the downloaded UT Zappos50K dataset"]
+addopts = "-m 'not realdata'"
