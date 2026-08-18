@@ -16,7 +16,7 @@ from torch import nn
 from torch.optim import Optimizer
 from torch.optim.lr_scheduler import CosineAnnealingLR, LRScheduler
 
-from src import data_setup, engine, losses, model_builder, utils
+from src import data_setup, engine, losses, metrics, model_builder, utils
 from src.catalog import LabelSchema
 
 RUNS_ROOT: Path = Path("artifacts/runs")
@@ -176,7 +176,9 @@ def run_phase(
             model, loaders["val"], loss_fn, logger, device, epoch, phase="val",
             global_step=int(train_metrics["global_step"]),
         )
-        candidate = float(evaluation.metrics[monitor])
+        val_metrics = dict(evaluation.metrics)
+        val_metrics.update(validation_ranking(evaluation, schema))
+        candidate = float(val_metrics[monitor])
 
         save_checkpoint(
             run_dir / LAST_NAME, model, schema, config, epoch, phase, best, optimizer, scheduler
@@ -192,16 +194,18 @@ def run_phase(
                 "val_loss": float(evaluation.metrics["loss"]),
                 "val_loss_softmax": float(evaluation.metrics.get("loss_softmax", 0.0)),
                 "val_loss_bce": float(evaluation.metrics.get("loss_bce", 0.0)),
+                "val_map": float(val_metrics["map"]),
+                "val_map_softmax": float(val_metrics["map_softmax"]),
+                "val_map_bce": float(val_metrics["map_bce"]),
                 "best_value": best.value,
             },
             step=int(train_metrics["global_step"]),
             phase="epoch",
         )
-        soft = evaluation.metrics.get("loss_softmax", 0.0)
-        bce = evaluation.metrics.get("loss_bce", 0.0)
         print(
             f"[{phase}] epoch {epoch:2d}  train {train_metrics['loss']:.4f}  "
-            f"val {evaluation.metrics['loss']:.4f}  (softmax {soft:.4f} / bce {bce:.4f})  "
+            f"val {evaluation.metrics['loss']:.4f}  mAP {val_metrics['map']:.4f}  "
+            f"(soft {val_metrics['map_softmax']:.4f} / bce {val_metrics['map_bce']:.4f})  "
             f"best {best.value:.4f}@{best.epoch}"
         )
         if stopper is not None and stopper.update(candidate, epoch):
@@ -212,6 +216,22 @@ def run_phase(
             stopped = True
             break
     return best, stopped
+
+
+def validation_ranking(evaluation: engine.EvalOutputs, schema: LabelSchema) -> dict[str, float]:
+    probs = metrics.logits_to_probabilities(evaluation.logits.numpy(), schema)
+    labels = evaluation.targets.numpy()
+    mask = metrics.cell_mask(evaluation.mask.numpy(), schema)
+    per_label = metrics.per_label_average_precision(probs, labels, mask)
+    value, unscoreable = metrics.macro_average(per_label)
+    softmax_columns = [c for f in schema.softmax_families() for c in range(f.start, f.end)]
+    bce_columns = [c for f in schema.bce_families() for c in range(f.start, f.end)]
+    return {
+        "map": value,
+        "map_softmax": metrics.macro_average(per_label[softmax_columns])[0],
+        "map_bce": metrics.macro_average(per_label[bce_columns])[0],
+        "unscoreable_labels": float(unscoreable),
+    }
 
 
 def run_name_for(stem: str, seed: int) -> str:
@@ -302,8 +322,9 @@ def train(config: dict, args: argparse.Namespace) -> dict:
                 "distinct_lrs": float(len(distinct_lrs)),
                 "lr_min": distinct_lrs[0],
                 "lr_max": distinct_lrs[-1],
+                "lr_head": distinct_lrs[-1],
             },
-            step=warmup_epochs, phase="phase_finetune_start",
+            step=warmup_epochs * len(loaders["train"]), phase="phase_finetune_start",
         )
         print(f"finetune: {params['finetune_trainable']:,} params trainable, "
               f"{len(distinct_lrs)} distinct lrs {distinct_lrs[0]:.2e}..{distinct_lrs[-1]:.2e}")

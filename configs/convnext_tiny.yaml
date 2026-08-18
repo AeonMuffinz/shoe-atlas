@@ -25,6 +25,6 @@ pos_weight_cap: 10.0
 softmax_weight: 1.0
 bce_weight: 1.0
 
-monitor: loss
-monitor_mode: min
+monitor: map
+monitor_mode: max
 log_every: 50

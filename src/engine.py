@@ -96,7 +96,10 @@ def train_one_epoch(
 
     end_step = (epoch + 1) * (steps_per_epoch or 1)
     summary = running.result()
-    summary["lr"] = float(optimizer.param_groups[0]["lr"])
+    group_lrs = [float(group["lr"]) for group in optimizer.param_groups]
+    summary["lr"] = group_lrs[0]
+    summary["lr_min"] = min(group_lrs)
+    summary["lr_max"] = max(group_lrs)
     summary["epoch"] = float(epoch)
     summary["global_step"] = float(end_step)
     logger.log(summary, step=end_step, phase=f"{phase}_epoch")
