@@ -123,6 +123,22 @@ def build_optimizer(model: nn.Module, cfg: ModelConfig, phase: str) -> Optimizer
     return optimizer
 
 
+def backbone_floor(optimizer: Optimizer) -> float:
+    return min(float(group["lr"]) for group in optimizer.param_groups)
+
+
+def assert_backbone_floor(optimizer: Optimizer, expected: float, tolerance: float = 0.01) -> None:
+    actual = backbone_floor(optimizer)
+    drift = abs(actual - expected) / expected
+    if drift > tolerance:
+        raise ModelBuildError(
+            f"the earliest layer group trains at {actual:.3e} but the config expects {expected:.3e}, "
+            f"a drift of {drift * 100:.1f}% against a {tolerance * 100:.0f}% tolerance. layer_decay is "
+            "matched on the derived floor rather than the nominal value, so a mismatch means this run "
+            "is not comparable to the reference."
+        )
+
+
 def fold_layer_scale_into_lr(optimizer: Optimizer) -> int:
     folded = 0
     for group in optimizer.param_groups:

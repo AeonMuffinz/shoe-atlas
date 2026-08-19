@@ -318,6 +318,10 @@ def train(config: dict, args: argparse.Namespace) -> dict:
         params["finetune_trainable"] = model_builder.trainable_parameters(model)
         optimizer = model_builder.build_optimizer(model, model_cfg, model_builder.FULL_PHASE)
         distinct_lrs = sorted({round(float(g["lr"]), 12) for g in optimizer.param_groups})
+        if config.get("expected_backbone_floor") is not None:
+            model_builder.assert_backbone_floor(
+                optimizer, float(config["expected_backbone_floor"])
+            )
         scheduler = build_scheduler(
             optimizer, total_epochs - warmup_epochs, len(loaders["train"]), int(config["grad_accum"])
         )
