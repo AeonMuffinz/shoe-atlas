@@ -313,6 +313,11 @@ def train(config: dict, args: argparse.Namespace) -> dict:
     started = time.time()
     timings: dict[str, float] = {}
     params: dict[str, int] = {"total": model_builder.trainable_parameters(model)}
+    if config.get("expected_backbone_floor") is not None:
+        model_builder.assert_backbone_floor(
+            model_builder.build_optimizer(model, model_cfg, model_builder.FULL_PHASE),
+            float(config["expected_backbone_floor"]),
+        )
     disk = assert_disk_budget(run_dir, params["total"], total_epochs)
     print(f"disk: {disk['disk_free_gib']:.1f} GiB free, worst case needs "
           f"{disk['disk_required_gib']:.1f} GiB")
@@ -337,10 +342,6 @@ def train(config: dict, args: argparse.Namespace) -> dict:
         params["finetune_trainable"] = model_builder.trainable_parameters(model)
         optimizer = model_builder.build_optimizer(model, model_cfg, model_builder.FULL_PHASE)
         distinct_lrs = sorted({round(float(g["lr"]), 12) for g in optimizer.param_groups})
-        if config.get("expected_backbone_floor") is not None:
-            model_builder.assert_backbone_floor(
-                optimizer, float(config["expected_backbone_floor"])
-            )
         scheduler = build_scheduler(
             optimizer, total_epochs - warmup_epochs, len(loaders["train"]), int(config["grad_accum"])
         )
