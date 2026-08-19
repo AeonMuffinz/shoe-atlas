@@ -15,7 +15,7 @@ from torch import nn
 from torch.optim import Optimizer
 from torch.optim.lr_scheduler import CosineAnnealingLR, LRScheduler
 
-from src import data_setup, engine, losses, model_builder, reporting, utils
+from src import data_setup, engine, losses, model_builder, reporting, selection, utils
 from src.catalog import LabelSchema
 from src.reporting import CONFIG_NAME, PROCESSED_DIR, RUNS_ROOT
 from src.selection import BestState, ConstrainedSelector, EarlyStopping, ScalarSelector, make_selector
@@ -118,6 +118,7 @@ def run_phase(
     epochs: range,
     selector: ScalarSelector | ConstrainedSelector,
     stopper: EarlyStopping | None = None,
+    history: list[tuple[int, dict[str, float]]] | None = None,
 ) -> bool:
     stopped = False
     for epoch in epochs:
@@ -136,6 +137,8 @@ def run_phase(
         val_metrics.update(validation_ranking(evaluation, schema))
         accepted = selector.update(val_metrics, epoch)
         best = selector.state()
+        if history is not None:
+            history.append((epoch, dict(val_metrics)))
 
         save_checkpoint(
             run_dir / LAST_NAME, model, schema, config, epoch, phase, best, optimizer, scheduler
@@ -164,13 +167,15 @@ def run_phase(
             f"(soft {val_metrics['map_softmax']:.4f} / bce {val_metrics['map_bce']:.4f})  "
             f"best {best.value:.4f}@{best.epoch}"
         )
-        if stopper is not None and stopper.observe(accepted, epoch):
-            print(
-                f"[{phase}] early stop at epoch {epoch}: selection metric did not improve for "
-                f"{stopper.patience} epochs (best {best.value:.4f}@{best.epoch})"
-            )
-            stopped = True
-            break
+        if stopper is not None:
+            tracked = float(val_metrics[selector.progress_metric()])
+            if stopper.update(tracked, epoch):
+                print(
+                    f"[{phase}] early stop at epoch {epoch}: {selector.progress_metric()} did not improve "
+                    f"for {stopper.patience} epochs (best {best.value:.4f}@{best.epoch})"
+                )
+                stopped = True
+                break
     return stopped
 
 
@@ -276,6 +281,7 @@ def train(config: dict, args: argparse.Namespace) -> dict:
     warmup_epochs = int(config["warmup_epochs"])
     total_epochs = int(config["max_epochs"])
     selector = make_selector(config)
+    history: list[tuple[int, dict[str, float]]] = []
     started = time.time()
     timings: dict[str, float] = {}
     params: dict[str, int] = {"total": model_builder.trainable_parameters(model)}
@@ -293,7 +299,7 @@ def train(config: dict, args: argparse.Namespace) -> dict:
         phase_start = time.time()
         optimizer = model_builder.build_optimizer(model, model_cfg, model_builder.HEAD_PHASE)
         run_phase(model, loaders, loss_fn, optimizer, None, logger, device, config, schema,
-                  run_dir, WARMUP_PHASE, range(warmup_epochs), selector)
+                  run_dir, WARMUP_PHASE, range(warmup_epochs), selector, history=history)
         timings[WARMUP_PHASE] = time.time() - phase_start
 
         model_builder.unfreeze_all(model)
@@ -324,8 +330,15 @@ def train(config: dict, args: argparse.Namespace) -> dict:
         )
         stopped = run_phase(model, loaders, loss_fn, optimizer, scheduler, logger, device, config,
                             schema, run_dir, FINETUNE_PHASE, range(warmup_epochs, total_epochs),
-                            selector, stopper)
+                            selector, stopper, history=history)
         timings[FINETUNE_PHASE] = time.time() - phase_start
+
+        guard_audit: dict[str, object] = {}
+        if isinstance(selector, ConstrainedSelector):
+            guard_audit = selection.assert_online_matches_offline(selector, history)
+            print(f"guard audit: online and offline both select epoch "
+                  f"{guard_audit['offline_selected_epoch']} "
+                  f"({guard_audit['offline_eligible_epochs']} of {len(history)} epochs eligible)")
 
         summary = {
             "name": name,
@@ -338,8 +351,12 @@ def train(config: dict, args: argparse.Namespace) -> dict:
             "max_epochs": total_epochs,
             "warmup_epochs": warmup_epochs,
             "stopped_early": stopped,
+            "stopped_at_ceiling": not stopped,
+            "stop_reason": ("primary_plateau" if stopped else "max_epochs_ceiling"),
             "stopped_at_epoch": stopper.stopped_epoch,
             "epochs_completed": (stopper.stopped_epoch + 1) if stopped else total_epochs,
+            "progress_metric": f"val_{selector.progress_metric()}",
+            **guard_audit,
             "patience": int(config["patience"]),
             "seed": int(config["seed"]),
             "device": str(device),

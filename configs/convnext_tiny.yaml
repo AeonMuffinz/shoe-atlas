@@ -9,7 +9,7 @@ num_workers: 4
 crop_scale: [0.8, 1.0]
 
 warmup_epochs: 2
-max_epochs: 40
+max_epochs: 60
 patience: 4
 min_delta: 0.0
 

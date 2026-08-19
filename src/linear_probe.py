@@ -15,7 +15,7 @@ from torch import nn
 from torch.optim import AdamW
 from torch.utils.data import DataLoader, TensorDataset
 
-from src import data_setup, engine, features, losses, reporting, utils
+from src import data_setup, engine, features, losses, reporting, selection, utils
 from src.catalog import LabelSchema
 from src.reporting import PROCESSED_DIR, RUNS_ROOT, TEST_WITHHELD
 from src.selection import ConstrainedSelector, EarlyStopping
@@ -136,6 +136,7 @@ def fit_head(
     max_epochs: int,
     selector: ConstrainedSelector,
     stopper: EarlyStopping,
+    history: list[tuple[int, dict[str, float]]],
 ) -> bool:
     stopped = False
     for epoch in range(max_epochs):
@@ -157,6 +158,7 @@ def fit_head(
             )
         )
         accepted = selector.update(val_metrics, epoch)
+        history.append((epoch, dict(val_metrics)))
         if accepted:
             save_head(run_dir / BEST_NAME, head, schema, config, epoch)
 
@@ -179,8 +181,11 @@ def fit_head(
             f"(soft {val_metrics['map_softmax']:.4f} / bce {val_metrics['map_bce']:.4f})  "
             f"best {selector.value:.4f}@{selector.epoch}"
         )
-        if stopper.observe(accepted, epoch):
-            print(f"[{PHASE}] early stop at epoch {epoch}: no improvement for {stopper.patience} epochs")
+        if stopper.update(float(val_metrics[selector.progress_metric()]), epoch):
+            print(
+                f"[{PHASE}] early stop at epoch {epoch}: {selector.progress_metric()} did not improve "
+                f"for {stopper.patience} epochs"
+            )
             stopped = True
             break
     return stopped
@@ -198,7 +203,7 @@ def default_config(seed: int, image_size: int) -> dict:
         "num_workers": 4,
         "lr": 1.0e-3,
         "weight_decay": 0.0,
-        "max_epochs": 40,
+        "max_epochs": 60,
         "patience": 4,
         "min_delta": 0.0,
         "max_grad_norm": 1.0,
@@ -305,10 +310,12 @@ def run(
     trainable = sum(p.numel() for p in head.parameters() if p.requires_grad)
     with utils.make_logger(name, config, run_dir, use_wandb=use_wandb, group=STEM) as logger:
         print(f"probe: {trainable:,} trainable params on {dimension}-d frozen features")
+        history: list[tuple[int, dict[str, float]]] = []
         stopped = fit_head(
             head, loaders, loss_fn, optimizer, scheduler, logger, device, schema, config,
-            run_dir, int(config["max_epochs"]), selector, stopper,
+            run_dir, int(config["max_epochs"]), selector, stopper, history,
         )
+        guard_audit = selection.assert_online_matches_offline(selector, history)
         logger.summary({"best_value": selector.value, "best_epoch": float(selector.epoch)})
 
     payload = torch.load(run_dir / BEST_NAME, map_location=device, weights_only=False)
@@ -364,6 +371,10 @@ def run(
             "max_epochs": int(config["max_epochs"]),
             "warmup_epochs": 0,
             "stopped_early": stopped,
+            "stopped_at_ceiling": not stopped,
+            "stop_reason": ("primary_plateau" if stopped else "max_epochs_ceiling"),
+            "progress_metric": f"val_{selector.progress_metric()}",
+            **guard_audit,
             "stopped_at_epoch": stopper.stopped_epoch,
             "epochs_completed": (stopper.stopped_epoch + 1) if stopped else int(config["max_epochs"]),
             "patience": int(config["patience"]),

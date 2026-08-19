@@ -75,6 +75,9 @@ class ScalarSelector:
     def state(self) -> BestState:
         return BestState(value=self.value, epoch=self.epoch, mode=self.mode)
 
+    def progress_metric(self) -> str:
+        return self.monitor
+
     def describe(self) -> dict[str, object]:
         return {"selection_metric": f"val_{self.monitor}", "selection_mode": self.mode}
 
@@ -108,6 +111,9 @@ class ConstrainedSelector:
     def state(self) -> BestState:
         return BestState(value=self.value, epoch=self.epoch, mode="max")
 
+    def progress_metric(self) -> str:
+        return self.primary
+
     def describe(self) -> dict[str, object]:
         return {
             "selection_metric": f"val_{self.primary}",
@@ -129,3 +135,57 @@ def make_selector(config: dict) -> ScalarSelector | ConstrainedSelector:
         guard=str(config.get("selection_guard", "map_softmax")),
         epsilon=float(config["selection_epsilon"]),
     )
+
+
+class SelectionDivergence(RuntimeError):
+    pass
+
+
+def offline_selection(
+    history: list[tuple[int, dict[str, float]]],
+    primary: str,
+    guard: str,
+    epsilon: float,
+) -> tuple[int, float, int]:
+    if not history:
+        return -1, float("nan"), 0
+    peak = max(float(values[guard]) for _, values in history)
+    floor = (1.0 - epsilon) * peak
+    eligible = [(epoch, float(values[primary])) for epoch, values in history
+                if float(values[guard]) >= floor]
+    if not eligible:
+        return -1, peak, 0
+    chosen = max(eligible, key=lambda item: item[1])
+    return chosen[0], peak, len(eligible)
+
+
+def audit_online_against_offline(
+    selector: ConstrainedSelector,
+    history: list[tuple[int, dict[str, float]]],
+) -> dict[str, object]:
+    epoch, peak, eligible = offline_selection(
+        history, selector.primary, selector.guard, selector.epsilon
+    )
+    return {
+        "offline_selected_epoch": epoch,
+        "offline_guard_peak": peak,
+        "offline_eligible_epochs": eligible,
+        "online_selected_epoch": selector.epoch,
+        "online_matches_offline": epoch == selector.epoch,
+    }
+
+
+def assert_online_matches_offline(
+    selector: ConstrainedSelector,
+    history: list[tuple[int, dict[str, float]]],
+) -> dict[str, object]:
+    audit = audit_online_against_offline(selector, history)
+    if not audit["online_matches_offline"]:
+        raise SelectionDivergence(
+            f"the online guard selected epoch {audit['online_selected_epoch']} but an offline pass over "
+            f"the whole curve selects epoch {audit['offline_selected_epoch']}. The running peak rose after "
+            f"a checkpoint was already accepted, which is the order-dependence hazard this assertion "
+            f"exists to catch. The written checkpoint is the online one and is no longer the rule's "
+            f"choice; record this and re-select rather than working around it."
+        )
+    return audit
