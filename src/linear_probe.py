@@ -24,6 +24,7 @@ STEM: str = "linear_probe"
 BACKBONE: str = "convnext_tiny.fb_in22k_ft_in1k"
 FEATURE_ROOT: Path = Path("artifacts")
 BEST_NAME: str = "best.pt"
+ELIGIBLE_NAME: str = "eligible_ep{epoch:03d}.pt"
 PHASE: str = "probe"
 SELECTION_SCOPE: str = "best epoch within this run; the architecture winner is chosen on mAP elsewhere"
 
@@ -135,8 +136,9 @@ def fit_head(
     run_dir: Path,
     max_epochs: int,
     selector: ConstrainedSelector,
-    stopper: EarlyStopping,
+    stopper: EarlyStopping | selection.SelectionComplete,
     history: list[tuple[int, dict[str, float]]],
+    eligible: list[int],
 ) -> bool:
     stopped = False
     for epoch in range(max_epochs):
@@ -161,6 +163,9 @@ def fit_head(
         history.append((epoch, dict(val_metrics)))
         if accepted:
             save_head(run_dir / BEST_NAME, head, schema, config, epoch)
+        if selector.last_guard_ok:
+            eligible.append(epoch)
+            save_head(run_dir / ELIGIBLE_NAME.format(epoch=epoch), head, schema, config, epoch)
 
         logger.log(
             {
@@ -181,10 +186,15 @@ def fit_head(
             f"(soft {val_metrics['map_softmax']:.4f} / bce {val_metrics['map_bce']:.4f})  "
             f"best {selector.value:.4f}@{selector.epoch}"
         )
-        if stopper.update(float(val_metrics[selector.progress_metric()]), epoch):
+        fired = (
+            stopper.update(val_metrics, epoch)
+            if isinstance(stopper, selection.SelectionComplete)
+            else stopper.update(float(val_metrics[selector.progress_metric()]), epoch)
+        )
+        if fired:
             print(
-                f"[{PHASE}] early stop at epoch {epoch}: {selector.progress_metric()} did not improve "
-                f"for {stopper.patience} epochs"
+                f"[{PHASE}] early stop at epoch {epoch} after {stopper.patience} epochs "
+                f"without progress on {selector.progress_metric()}"
             )
             stopped = True
             break
@@ -292,11 +302,7 @@ def run(
         guard=str(config["selection_guard"]),
         epsilon=float(config["selection_epsilon"]),
     )
-    stopper = EarlyStopping(
-        patience=int(config["patience"]),
-        min_delta=float(config["min_delta"]),
-        mode=str(config["monitor_mode"]),
-    )
+    stopper = selection.make_stopper(config, selector)
 
     config["feature_dim"] = dimension
     config["mean"] = list(data_cfg.mean)
@@ -311,9 +317,10 @@ def run(
     with utils.make_logger(name, config, run_dir, use_wandb=use_wandb, group=STEM) as logger:
         print(f"probe: {trainable:,} trainable params on {dimension}-d frozen features")
         history: list[tuple[int, dict[str, float]]] = []
+        eligible: list[int] = []
         stopped = fit_head(
             head, loaders, loss_fn, optimizer, scheduler, logger, device, schema, config,
-            run_dir, int(config["max_epochs"]), selector, stopper, history,
+            run_dir, int(config["max_epochs"]), selector, stopper, history, eligible,
         )
         guard_audit = selection.assert_online_matches_offline(selector, history)
         logger.summary({"best_value": selector.value, "best_epoch": float(selector.epoch)})
@@ -370,6 +377,10 @@ def run(
             "best_epoch": selector.epoch,
             "max_epochs": int(config["max_epochs"]),
             "warmup_epochs": 0,
+            "stopping_mode": str(config.get("stopping_mode", selection.MODE_CONVERGENCE)),
+            "stopping_patience": int(stopper.patience),
+            "eligible_epochs": eligible,
+            "eligible_checkpoints_saved": len(eligible),
             "stopped_early": stopped,
             "stopped_at_ceiling": not stopped,
             "stop_reason": ("primary_plateau" if stopped else "max_epochs_ceiling"),

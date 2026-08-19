@@ -22,6 +22,7 @@ from src.selection import BestState, ConstrainedSelector, EarlyStopping, ScalarS
 
 LAST_NAME: str = "last.pt"
 BEST_NAME: str = "best.pt"
+ELIGIBLE_NAME: str = "eligible_ep{epoch:03d}.pt"
 WARMUP_PHASE: str = "warmup"
 FINETUNE_PHASE: str = "finetune"
 SELECTION_SCOPE: str = "best epoch within this run; the architecture winner is chosen on mAP elsewhere"
@@ -117,8 +118,9 @@ def run_phase(
     phase: str,
     epochs: range,
     selector: ScalarSelector | ConstrainedSelector,
-    stopper: EarlyStopping | None = None,
+    stopper: EarlyStopping | selection.SelectionComplete | None = None,
     history: list[tuple[int, dict[str, float]]] | None = None,
+    eligible: list[int] | None = None,
 ) -> bool:
     stopped = False
     for epoch in epochs:
@@ -145,6 +147,11 @@ def run_phase(
         )
         if accepted:
             save_checkpoint(run_dir / BEST_NAME, model, schema, config, epoch, phase, best)
+        if eligible is not None and getattr(selector, "last_guard_ok", False):
+            eligible.append(epoch)
+            save_checkpoint(
+                run_dir / ELIGIBLE_NAME.format(epoch=epoch), model, schema, config, epoch, phase, best
+            )
 
         logger.log(
             {
@@ -168,8 +175,12 @@ def run_phase(
             f"best {best.value:.4f}@{best.epoch}"
         )
         if stopper is not None:
-            tracked = float(val_metrics[selector.progress_metric()])
-            if stopper.update(tracked, epoch):
+            fired = (
+                stopper.update(val_metrics, epoch)
+                if isinstance(stopper, selection.SelectionComplete)
+                else stopper.update(float(val_metrics[selector.progress_metric()]), epoch)
+            )
+            if fired:
                 print(
                     f"[{phase}] early stop at epoch {epoch}: {selector.progress_metric()} did not improve "
                     f"for {stopper.patience} epochs (best {best.value:.4f}@{best.epoch})"
@@ -282,6 +293,7 @@ def train(config: dict, args: argparse.Namespace) -> dict:
     total_epochs = int(config["max_epochs"])
     selector = make_selector(config)
     history: list[tuple[int, dict[str, float]]] = []
+    eligible: list[int] = []
     started = time.time()
     timings: dict[str, float] = {}
     params: dict[str, int] = {"total": model_builder.trainable_parameters(model)}
@@ -299,7 +311,7 @@ def train(config: dict, args: argparse.Namespace) -> dict:
         phase_start = time.time()
         optimizer = model_builder.build_optimizer(model, model_cfg, model_builder.HEAD_PHASE)
         run_phase(model, loaders, loss_fn, optimizer, None, logger, device, config, schema,
-                  run_dir, WARMUP_PHASE, range(warmup_epochs), selector, history=history)
+                  run_dir, WARMUP_PHASE, range(warmup_epochs), selector, history=history, eligible=eligible)
         timings[WARMUP_PHASE] = time.time() - phase_start
 
         model_builder.unfreeze_all(model)
@@ -323,14 +335,10 @@ def train(config: dict, args: argparse.Namespace) -> dict:
               f"{len(distinct_lrs)} distinct lrs {distinct_lrs[0]:.2e}..{distinct_lrs[-1]:.2e}")
 
         phase_start = time.time()
-        stopper = EarlyStopping(
-            patience=int(config["patience"]),
-            min_delta=float(config["min_delta"]),
-            mode=str(config["monitor_mode"]),
-        )
+        stopper = selection.make_stopper(config, selector)
         stopped = run_phase(model, loaders, loss_fn, optimizer, scheduler, logger, device, config,
                             schema, run_dir, FINETUNE_PHASE, range(warmup_epochs, total_epochs),
-                            selector, stopper, history=history)
+                            selector, stopper, history=history, eligible=eligible)
         timings[FINETUNE_PHASE] = time.time() - phase_start
 
         guard_audit: dict[str, object] = {}
@@ -350,6 +358,10 @@ def train(config: dict, args: argparse.Namespace) -> dict:
             "best_epoch": selector.epoch,
             "max_epochs": total_epochs,
             "warmup_epochs": warmup_epochs,
+            "stopping_mode": str(config.get("stopping_mode", selection.MODE_CONVERGENCE)),
+            "stopping_patience": int(stopper.patience),
+            "eligible_epochs": eligible,
+            "eligible_checkpoints_saved": len(eligible),
             "stopped_early": stopped,
             "stopped_at_ceiling": not stopped,
             "stop_reason": ("primary_plateau" if stopped else "max_epochs_ceiling"),

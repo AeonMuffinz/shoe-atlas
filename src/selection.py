@@ -5,6 +5,9 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 CONSTRAINED: str = "constrained"
+MODE_CONVERGENCE: str = "convergence"
+MODE_SELECTION_COMPLETE: str = "selection_complete"
+SELECTION_COMPLETE_PATIENCE: int = 6
 
 
 @dataclass
@@ -92,6 +95,7 @@ class ConstrainedSelector:
     guard_peak: float = float("-inf")
     guard_at_best: float = float("nan")
     rejected: int = 0
+    last_guard_ok: bool = False
 
     def floor(self) -> float:
         return (1.0 - self.epsilon) * self.guard_peak
@@ -99,7 +103,8 @@ class ConstrainedSelector:
     def update(self, values: dict[str, float], epoch: int) -> bool:
         guard_value = float(values[self.guard])
         self.guard_peak = max(self.guard_peak, guard_value)
-        if guard_value < self.floor():
+        self.last_guard_ok = guard_value >= self.floor()
+        if not self.last_guard_ok:
             self.rejected += 1
             return False
         candidate = float(values[self.primary])
@@ -134,6 +139,52 @@ def make_selector(config: dict) -> ScalarSelector | ConstrainedSelector:
         primary=str(config.get("selection_primary", "map_bce")),
         guard=str(config.get("selection_guard", "map_softmax")),
         epsilon=float(config["selection_epsilon"]),
+    )
+
+
+@dataclass
+class SelectionComplete:
+    guard: str
+    epsilon: float
+    patience: int = SELECTION_COMPLETE_PATIENCE
+    peak: float = float("-inf")
+    unreachable: int = 0
+    stopped_epoch: int | None = None
+
+    def update(self, values: dict[str, float], epoch: int) -> bool:
+        guard_value = float(values[self.guard])
+        self.peak = max(self.peak, guard_value)
+        if guard_value >= (1.0 - self.epsilon) * self.peak:
+            self.unreachable = 0
+            return False
+        self.unreachable += 1
+        if self.unreachable >= self.patience:
+            self.stopped_epoch = epoch
+            return True
+        return False
+
+
+def make_stopper(
+    config: dict, selector: ScalarSelector | ConstrainedSelector
+) -> EarlyStopping | SelectionComplete:
+    mode = str(config.get("stopping_mode", MODE_CONVERGENCE))
+    if mode == MODE_SELECTION_COMPLETE:
+        if not isinstance(selector, ConstrainedSelector):
+            raise ValueError(
+                f"{MODE_SELECTION_COMPLETE!r} needs a guard to declare unreachable, and "
+                f"{type(selector).__name__} has none"
+            )
+        return SelectionComplete(
+            guard=selector.guard,
+            epsilon=selector.epsilon,
+            patience=int(config.get("selection_complete_patience", SELECTION_COMPLETE_PATIENCE)),
+        )
+    if mode != MODE_CONVERGENCE:
+        raise ValueError(f"unknown stopping_mode {mode!r}")
+    return EarlyStopping(
+        patience=int(config["patience"]),
+        min_delta=float(config["min_delta"]),
+        mode=str(config["monitor_mode"]),
     )
 
 
