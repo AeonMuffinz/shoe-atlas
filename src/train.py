@@ -57,6 +57,22 @@ def guard_existing_checkpoints(run_dir: Path, force: bool) -> None:
     )
 
 
+def assert_disk_budget(run_dir: Path, parameters: int, max_epochs: int) -> dict[str, float]:
+    required = reporting.checkpoint_budget(parameters, max_epochs)
+    free = reporting.free_bytes(run_dir)
+    if free < required:
+        raise TrainingError(
+            f"insufficient disk for {run_dir}: every epoch may be guard-eligible, so the worst case is "
+            f"{max_epochs + 1} weight-only checkpoints plus last.pt carrying two optimizer moments, "
+            f"{required / 2**30:.1f} GiB with margin, against {free / 2**30:.1f} GiB free. Free space or "
+            "reduce max_epochs before starting; filling the disk at epoch 40 loses the whole run."
+        )
+    return {
+        "disk_required_gib": round(required / 2**30, 3),
+        "disk_free_gib": round(free / 2**30, 3),
+    }
+
+
 def assert_artifacts_match_schema(artifacts: data_setup.Artifacts) -> None:
     manifest = artifacts.manifest
     if manifest and manifest.get("labels") != len(artifacts.schema.columns):
@@ -297,6 +313,9 @@ def train(config: dict, args: argparse.Namespace) -> dict:
     started = time.time()
     timings: dict[str, float] = {}
     params: dict[str, int] = {"total": model_builder.trainable_parameters(model)}
+    disk = assert_disk_budget(run_dir, params["total"], total_epochs)
+    print(f"disk: {disk['disk_free_gib']:.1f} GiB free, worst case needs "
+          f"{disk['disk_required_gib']:.1f} GiB")
 
     with utils.make_logger(name, config, run_dir, use_wandb=not args.no_wandb, group=stem) as logger:
         frozen = model_builder.freeze_backbone(model)
@@ -364,6 +383,8 @@ def train(config: dict, args: argparse.Namespace) -> dict:
             "warmup_epochs": warmup_epochs,
             "stopping_mode": str(config.get("stopping_mode", selection.MODE_CONVERGENCE)),
             "stopping_patience": int(stopper.patience),
+            "eligible_retention": "all",
+            **disk,
             "eligible_epochs": eligible,
             "eligible_checkpoints_saved": len(eligible),
             "stopped_early": stopped,

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import shutil
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -57,8 +58,28 @@ VAL_CONTRACT_KEYS: frozenset[str] = frozenset(
 )
 
 
+FP32_BYTES: int = 4
+OPTIMIZER_MULTIPLE: int = 3
+DISK_SAFETY_MARGIN: float = 1.2
+
 ARCHIVED_KEY: str = "archived"
 ARCHIVED_REASON_KEY: str = "archived_reason"
+
+
+def checkpoint_bytes(parameters: int) -> int:
+    return parameters * FP32_BYTES
+
+
+def checkpoint_budget(
+    parameters: int, max_epochs: int, margin: float = DISK_SAFETY_MARGIN
+) -> int:
+    per = checkpoint_bytes(parameters)
+    worst_case = per * (max_epochs + 1) + per * OPTIMIZER_MULTIPLE
+    return int(worst_case * margin)
+
+
+def free_bytes(path: Path) -> int:
+    return shutil.disk_usage(path).free
 
 
 def is_archived(summary: dict[str, object]) -> bool:
