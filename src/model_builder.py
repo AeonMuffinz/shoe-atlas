@@ -28,6 +28,7 @@ class ModelConfig:
     head_lr: float = 1e-3
     weight_decay: float = 0.05
     layer_decay: float = 0.75
+    grad_checkpointing: bool = False
 
     @classmethod
     def from_dict(cls, payload: dict[str, object]) -> ModelConfig:
@@ -42,7 +43,19 @@ def build_model(cfg: ModelConfig) -> nn.Module:
     model = timm.create_model(cfg.backbone, **kwargs)
     assert_group_matcher(model)
     assert_output_width(model, cfg.num_labels)
+    if cfg.grad_checkpointing:
+        enable_grad_checkpointing(model)
     return model
+
+
+def enable_grad_checkpointing(model: nn.Module) -> None:
+    setter = getattr(model, "set_grad_checkpointing", None)
+    if setter is None or not callable(setter):
+        raise ModelBuildError(
+            f"{type(model).__name__} does not implement set_grad_checkpointing, so the memory the "
+            "config asked to trade for compute would silently not be freed"
+        )
+    setter(enable=True)
 
 
 def assert_group_matcher(model: nn.Module) -> None:
