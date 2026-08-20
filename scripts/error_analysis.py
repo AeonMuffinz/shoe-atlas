@@ -51,6 +51,36 @@ def per_label_ap(
     return {name: float(values[i]) for i, name in enumerate(schema.columns)}
 
 
+def floor_ap(
+    labels: np.ndarray,
+    family_observed: np.ndarray,
+    schema: LabelSchema,
+    train_labels: np.ndarray,
+    train_observed: np.ndarray,
+) -> dict[str, float]:
+    train_mask = metrics.cell_mask(train_observed, schema)
+    scores = metrics.prevalence_scores(train_labels, train_mask)
+    constant = np.tile(scores, (labels.shape[0], 1))
+    mask = metrics.cell_mask(family_observed, schema)
+    values = metrics.per_label_average_precision(constant, labels, mask)
+    return {name: float(values[i]) for i, name in enumerate(schema.columns)}
+
+
+def floor_relative(ap: dict[str, float], floor: dict[str, float]) -> dict[str, dict[str, float]]:
+    out: dict[str, dict[str, float]] = {}
+    for name, value in ap.items():
+        base = floor[name]
+        headroom = 1.0 - base
+        out[name] = {
+            "ap": value,
+            "floor": base,
+            "above_floor": value - base,
+            "normalised": (value - base) / headroom if headroom > 0 else float("nan"),
+            "lift": value / base if base > 0 else float("nan"),
+        }
+    return out
+
+
 def stratum_of(count: int) -> str:
     for name, low, high in STRATA:
         if low <= count <= high:
