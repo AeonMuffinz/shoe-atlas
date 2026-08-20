@@ -73,6 +73,20 @@ def assert_disk_budget(run_dir: Path, parameters: int, max_epochs: int) -> dict[
     }
 
 
+def assert_finetune_optimizer_is_sound(
+    model: nn.Module, model_cfg: model_builder.ModelConfig, config: dict
+) -> dict[str, float]:
+    probe = model_builder.build_optimizer(model, model_cfg, model_builder.FULL_PHASE)
+    expected = config.get("expected_backbone_floor")
+    if expected is not None:
+        model_builder.assert_backbone_floor(probe, float(expected))
+    distinct = {round(float(group["lr"]), 12) for group in probe.param_groups}
+    return {
+        "distinct_lrs": float(len(distinct)),
+        "backbone_floor": model_builder.backbone_floor(probe),
+    }
+
+
 def assert_artifacts_match_schema(artifacts: data_setup.Artifacts) -> None:
     manifest = artifacts.manifest
     if manifest and manifest.get("labels") != len(artifacts.schema.columns):
@@ -214,10 +228,28 @@ def validation_ranking(evaluation: engine.EvalOutputs, schema: LabelSchema) -> d
 
 CANDIDATE: str = "candidate"
 PROBE: str = "probe"
+CAPACITY_PROBE: str = "capacity_probe"
 
 
 def probe_metadata(config: dict) -> dict[str, object]:
     role = str(config.get("role", CANDIDATE))
+    if role == CAPACITY_PROBE:
+        reference = config.get("capacity_reference_run")
+        confounds = config.get("capacity_confounds")
+        if not reference or not confounds:
+            raise TrainingError(
+                "a run with role: capacity_probe must declare capacity_reference_run and "
+                "capacity_confounds. A larger backbone breaks the comparison grid's premise that every "
+                "candidate sits at similar capacity, so it is reported separately and the reasons it is "
+                "not a clean architecture comparison travel with it rather than being rediscovered."
+            )
+        return {
+            "role": role,
+            "capacity_probe": {
+                "reference_run": str(reference),
+                "confounds": [str(c) for c in confounds],
+            },
+        }
     if role != PROBE:
         return {"role": role}
     varies = config.get("probe_varies")
@@ -313,11 +345,9 @@ def train(config: dict, args: argparse.Namespace) -> dict:
     started = time.time()
     timings: dict[str, float] = {}
     params: dict[str, int] = {"total": model_builder.trainable_parameters(model)}
-    if config.get("expected_backbone_floor") is not None:
-        model_builder.assert_backbone_floor(
-            model_builder.build_optimizer(model, model_cfg, model_builder.FULL_PHASE),
-            float(config["expected_backbone_floor"]),
-        )
+    lr_audit = assert_finetune_optimizer_is_sound(model, model_cfg, config)
+    print(f"optimizer: {lr_audit['distinct_lrs']} distinct lrs, "
+          f"floor {lr_audit['backbone_floor']:.3e}, checked before training")
     disk = assert_disk_budget(run_dir, params["total"], total_epochs)
     print(f"disk: {disk['disk_free_gib']:.1f} GiB free, worst case needs "
           f"{disk['disk_required_gib']:.1f} GiB")

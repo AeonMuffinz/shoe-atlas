@@ -15,6 +15,7 @@ from src.reporting import RUNS_ROOT, WINNER_PATH
 COMPARISON_MD: Path = Path("artifacts/comparison.md")
 COMPARISON_CSV: Path = Path("artifacts/comparison.csv")
 NOT_MEASURED: str = "not measured"
+CAPACITY_PROBE: str = "capacity_probe"
 SEED_SUFFIX = re.compile(r"_s\d+$")
 MIN_SEEDS_FOR_SPREAD: int = 3
 
@@ -57,6 +58,18 @@ class Run:
             return None
         value = block.get(family)
         return float(value) if isinstance(value, int | float) else None
+
+    @property
+    def confounds(self) -> list[str]:
+        block = self.summary.get("capacity_probe")
+        if not isinstance(block, dict):
+            return []
+        return [str(c) for c in block.get("confounds", [])]
+
+    @property
+    def capacity_reference(self) -> str:
+        block = self.summary.get("capacity_probe")
+        return str(block.get("reference_run", NOT_MEASURED)) if isinstance(block, dict) else NOT_MEASURED
 
     def test_cell(self, winner: str | None) -> str:
         if isinstance(self.evaluation.get("test"), dict):
@@ -171,6 +184,32 @@ def mean_and_spread(values: list[float]) -> tuple[float, float]:
     return mean, variance**0.5
 
 
+def split_by_role(runs: list[Run]) -> tuple[list[Run], list[Run]]:
+    grid = [r for r in runs if r.role != CAPACITY_PROBE]
+    capacity = [r for r in runs if r.role == CAPACITY_PROBE]
+    return grid, capacity
+
+
+def metric_table(runs: list[Run], winner: str | None) -> list[str]:
+    header = ["run", "role", "sel ep", "epochs"] + [label for _key, label in COLUMNS]
+    header += [f"top1 {f}" for f in FAMILIES] + ["test"]
+    lines = ["| " + " | ".join(header) + " |", "|" + "|".join(["---"] * len(header)) + "|"]
+    for run in runs:
+        cells = [
+            f"`{run.name}`",
+            run.role,
+            str(run.evaluation.get("epoch", NOT_MEASURED)),
+            epochs_cell(run),
+        ]
+        for key, _label in COLUMNS:
+            suffix = macro_f1_note(run) if key == "macro_f1_bce_out_of_fold" else ""
+            cells.append(cell(run.metric(key)) + suffix)
+        cells += [cell(run.family_top1(f)) for f in FAMILIES]
+        cells.append(run.test_cell(winner))
+        lines.append("| " + " | ".join(cells) + " |")
+    return lines
+
+
 def render(runs: list[Run], archived: list[str], winner: str | None) -> str:
     lines: list[str] = ["# Run comparison", ""]
     lines.append(
@@ -187,23 +226,26 @@ def render(runs: list[Run], archived: list[str], winner: str | None) -> str:
         lines.append(f"**Winner: `{winner}`.** Only that row may carry a test score.")
     lines.append("")
 
-    header = ["run", "role", "sel ep", "epochs"] + [label for _key, label in COLUMNS]
-    header += [f"top1 {f}" for f in FAMILIES] + ["test"]
-    lines.append("| " + " | ".join(header) + " |")
-    lines.append("|" + "|".join(["---"] * len(header)) + "|")
-    for run in runs:
-        cells = [
-            f"`{run.name}`",
-            run.role,
-            str(run.evaluation.get("epoch", NOT_MEASURED)),
-            epochs_cell(run),
-        ]
-        for key, _label in COLUMNS:
-            suffix = macro_f1_note(run) if key == "macro_f1_bce_out_of_fold" else ""
-            cells.append(cell(run.metric(key)) + suffix)
-        cells += [cell(run.family_top1(f)) for f in FAMILIES]
-        cells.append(run.test_cell(winner))
-        lines.append("| " + " | ".join(cells) + " |")
+    grid, capacity = split_by_role(runs)
+    lines += metric_table(grid, winner)
+
+    if capacity:
+        lines += ["", "## Capacity probes, reported separately from the grid", ""]
+        lines.append(
+            "The comparison grid holds every candidate at similar capacity so that architecture is not "
+            "confounded with parameter count. A larger backbone breaks that premise by design, so these "
+            "runs are reported here rather than as another architecture row."
+        )
+        lines.append("")
+        lines += metric_table(capacity, winner)
+        lines.append("")
+        for run in capacity:
+            lines.append(f"**`{run.name}`** against `{run.capacity_reference}`. Confounds:")
+            for confound in run.confounds:
+                lines.append(f"- {confound}")
+            if not run.confounds:
+                lines.append(f"- {NOT_MEASURED}")
+            lines.append("")
 
     lines += ["", "## Selection and guard", ""]
     lines.append("| run | stop reason | guard | online vs offline |")

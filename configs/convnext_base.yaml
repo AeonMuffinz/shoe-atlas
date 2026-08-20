@@ -27,7 +27,12 @@ pos_weight_cap: 10.0
 softmax_weight: 1.0
 bce_weight: 1.0
 
-role: candidate
+role: capacity_probe
+capacity_reference_run: convnext_tiny_s42
+capacity_confounds:
+  - the head widens to 1024 dims, 109,675 parameters against the reference's 82,283, so width moves alongside capacity and the warmup phase is not identical
+  - layer_decay 0.8627 rather than the project's standing 0.75, matched on the derived backbone floor per FINDINGS 7A.4, because holding the nominal value would drive the floor below a level already measured as harmful
+  - one seed, so seed variance is unmeasured and could exceed the primary band in FINDINGS 7B
 
 monitor: constrained
 monitor_mode: max

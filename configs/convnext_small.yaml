@@ -27,7 +27,11 @@ pos_weight_cap: 10.0
 softmax_weight: 1.0
 bce_weight: 1.0
 
-role: candidate
+role: capacity_probe
+capacity_reference_run: convnext_tiny_s42
+capacity_confounds:
+  - layer_decay 0.8627 rather than the project's standing 0.75, matched on the derived backbone floor per FINDINGS 7A.4
+  - one seed, so seed variance is unmeasured and could exceed the primary band in FINDINGS 7B
 
 monitor: constrained
 monitor_mode: max
