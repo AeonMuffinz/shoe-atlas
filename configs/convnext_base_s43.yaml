@@ -1,6 +1,6 @@
-name: convnext_small
-backbone: convnext_small.fb_in22k_ft_in1k
-seed: 42
+name: convnext_base
+backbone: convnext_base.fb_in22k_ft_in1k
+seed: 43
 
 image_size: 224
 batch_size: 64
@@ -30,8 +30,8 @@ bce_weight: 1.0
 role: capacity_probe
 capacity_reference_run: convnext_tiny_s42
 capacity_confounds:
-  - unlike convnext_base this keeps the classifier head at 768 dims and 82,283 parameters, identical to the reference, so width does not move alongside capacity and the warmup phase is the same one the reference ran; isolating capacity is the entire point of this run
-  - layer_decay 0.8627 rather than the project's standing 0.75, matched on the derived backbone floor per FINDINGS 7A.4
+  - the head widens to 1024 dims, 109,675 parameters against the reference's 82,283, so width moves alongside capacity and the warmup phase is not identical
+  - layer_decay 0.8627 rather than the project's standing 0.75, matched on the derived backbone floor per FINDINGS 7A.4, because holding the nominal value would drive the floor below a level already measured as harmful
   - one seed, so seed variance is unmeasured and could exceed the primary band in FINDINGS 7B
 
 monitor: constrained

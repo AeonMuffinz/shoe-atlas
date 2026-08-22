@@ -1,5 +1,5 @@
-name: convnext_small
-backbone: convnext_small.fb_in22k_ft_in1k
+name: convnext_base_pw50
+backbone: convnext_base.fb_in22k_ft_in1k
 seed: 42
 
 image_size: 224
@@ -23,16 +23,17 @@ weight_decay: 0.05
 drop_path: 0.1
 max_grad_norm: 1.0
 
-pos_weight_cap: 10.0
+pos_weight_cap: 50.0
 softmax_weight: 1.0
 bce_weight: 1.0
 
 role: capacity_probe
 capacity_reference_run: convnext_tiny_s42
 capacity_confounds:
-  - unlike convnext_base this keeps the classifier head at 768 dims and 82,283 parameters, identical to the reference, so width does not move alongside capacity and the warmup phase is the same one the reference ran; isolating capacity is the entire point of this run
+  - the head widens to 1024 dims, 109,675 parameters against the reference's 82,283, so width moves alongside capacity and the warmup phase is not identical
   - layer_decay 0.8627 rather than the project's standing 0.75, matched on the derived backbone floor per FINDINGS 7A.4
   - one seed, so seed variance is unmeasured and could exceed the primary band in FINDINGS 7B
+  - pos_weight_cap is 50.0 rather than the project's standing 10.0, so this run differs from convnext_base_s42 in the loss as well as carrying base's own capacity confounds; a cap effect must never be attributed to capacity nor the reverse
 
 monitor: constrained
 monitor_mode: max
