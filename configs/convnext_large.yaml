@@ -1,9 +1,9 @@
-name: null
+name: convnext_large_r192b32
 backbone: convnext_large.fb_in22k_ft_in1k
 seed: 42
 
-image_size: null
-batch_size: null
+image_size: 192
+batch_size: 32
 grad_accum: 1
 grad_checkpointing: true
 num_workers: 4
@@ -34,6 +34,8 @@ capacity_confounds:
   - batch size is 32 rather than the project's standing 64, because no resolution rung clears the 600 MiB headroom gate at batch 64; this changes the warmup phase and the observed-cell denominator FamilyLoss normalises masked BCE by
   - lr stays 3.0e-4 and is deliberately not scaled for the halved batch, per the decision recorded in FINDINGS 14.3; the effective gradient noise scale therefore differs from every other run in the project
   - the feature output is 1536 dims and the head is 164,459 parameters, against the grid's 768 and 82,283 and convnext_base_s42's 1024 and 109,675, so head width moves alongside capacity for the second time and by more than base moved it
+  - image_size is 192 rather than 224, because 224 at batch 32 reserves 4,698 MiB and leaves 432 MiB against the 600 MiB gate; 192 reserves 4,288 MiB and leaves 842 MiB
+  - 192 is the same resolution as convnextv2_base_r192_s42, which makes that run the better-matched comparison partner of the two references, since convnext_base_s42 ran at 224
   - one seed, so seed variance is unmeasured and could exceed the primary band in FINDINGS 7B
 
 monitor: constrained
