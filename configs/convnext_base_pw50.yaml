@@ -31,9 +31,9 @@ role: capacity_probe
 capacity_reference_run: convnext_tiny_s42
 capacity_confounds:
   - the head widens to 1024 dims, 109,675 parameters against the reference's 82,283, so width moves alongside capacity and the warmup phase is not identical
-  - layer_decay 0.8627 rather than the project's standing 0.75, matched on the derived backbone floor per FINDINGS 7A.4
+  - layer_decay 0.8627 rather than the project's standing 0.75, matched on the derived backbone floor per FINDINGS 7A.4, because holding the nominal value would drive the floor below a level already measured as harmful
   - one seed, so seed variance is unmeasured and could exceed the primary band in FINDINGS 7B
-  - pos_weight_cap is 50.0 rather than the project's standing 10.0, so this run differs from convnext_base_s42 in the loss as well as carrying base's own capacity confounds; a cap effect must never be attributed to capacity nor the reverse
+  - pos_weight_cap is 50.0 rather than the project's standing 10.0, so this run differs from convnext_base_s42 in the loss as well as carrying base's own three capacity confounds; a cap effect must never be attributed to capacity nor the reverse
 
 monitor: constrained
 monitor_mode: max

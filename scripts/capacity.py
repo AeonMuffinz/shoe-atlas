@@ -12,7 +12,11 @@ from src.catalog import LabelSchema
 from src.data_setup import load_artifacts
 
 REFERENCE = "convnext_tiny.fb_in22k_ft_in1k"
-CANDIDATES = ["convnext_small.fb_in22k_ft_in1k", "convnext_base.fb_in22k_ft_in1k"]
+CANDIDATES = [
+    "convnext_small.fb_in22k_ft_in1k",
+    "convnext_base.fb_in22k_ft_in1k",
+    "convnextv2_base.fcmae_ft_in22k_in1k",
+]
 BASE_LR = 3.0e-4
 REFERENCE_DECAY = 0.75
 BATCH = 64

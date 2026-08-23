@@ -1,0 +1,45 @@
+name: convnextv2_base_r192
+backbone: convnextv2_base.fcmae_ft_in22k_in1k
+seed: 42
+
+image_size: 192
+batch_size: 64
+grad_accum: 1
+grad_checkpointing: true
+num_workers: 4
+crop_scale: [0.8, 1.0]
+
+warmup_epochs: 2
+max_epochs: 60
+patience: 4
+min_delta: 0.0
+
+opt: adamw
+head_lr: 1.0e-3
+lr: 3.0e-4
+layer_decay: 0.8627
+expected_backbone_floor: 1.268e-06
+weight_decay: 0.05
+drop_path: 0.1
+max_grad_norm: 1.0
+
+pos_weight_cap: 10.0
+softmax_weight: 1.0
+bce_weight: 1.0
+
+role: capacity_probe
+capacity_reference_run: convnext_base_s42
+capacity_confounds:
+  - the pretraining recipe is FCMAE self-supervised masked autoencoding followed by in22k to in1k, against every other run's supervised in22k to in1k; this is the axis the run exists to vary and it is not separable from the two below
+  - the architecture version is ConvNeXt V2, which adds GRN and drops LayerScale, so a difference is not attributable to the pretraining corpus alone
+  - image_size is 192 rather than 224, because 224 reserves 4,912 MiB against a 5,130 MiB budget and fails the 600 MiB headroom gate; a win is attributable to this checkpoint at this resolution and never to pretraining alone
+  - the grid anchor is convnext_tiny_s42 and the capacity reference is convnext_base_s42; both carry the 1024-dim feature output and 109,675-param head that convnext_base introduced
+  - one seed, so seed variance is unmeasured and could exceed the primary band in FINDINGS 7B
+
+monitor: constrained
+monitor_mode: max
+selection_primary: map_bce
+selection_guard: map_softmax
+selection_epsilon: 0.01
+stopping_mode: convergence
+log_every: 50
