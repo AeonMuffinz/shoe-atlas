@@ -24,6 +24,7 @@ OBSERVED_NAME: str = "family_observed.npy"
 SCHEMA_NAME: str = "label_schema.json"
 SPLITS_NAME: str = "splits.json"
 MANIFEST_NAME: str = "manifest.json"
+DEFAULT_CROP_RATIO: tuple[float, float] = (3.0 / 4.0, 4.0 / 3.0)
 
 
 @dataclass(frozen=True)
@@ -34,6 +35,7 @@ class DataConfig:
     num_workers: int = 4
     seed: int = 42
     crop_scale: tuple[float, float] = (0.8, 1.0)
+    crop_ratio: tuple[float, float] = DEFAULT_CROP_RATIO
     mean: tuple[float, float, float] = IMAGENET_MEAN
     std: tuple[float, float, float] = IMAGENET_STD
 
@@ -68,11 +70,13 @@ def build_transforms(
     std: tuple[float, float, float],
     train: bool,
     crop_scale: tuple[float, float] = (0.8, 1.0),
+    crop_ratio: tuple[float, float] = DEFAULT_CROP_RATIO,
 ) -> Callable[[torch.Tensor], torch.Tensor]:
     geometry: list[Callable[[torch.Tensor], torch.Tensor]] = (
         [
             v2.RandomResizedCrop(
-                image_size, scale=crop_scale, interpolation=v2.InterpolationMode.BICUBIC, antialias=True
+                image_size, scale=crop_scale, ratio=crop_ratio,
+                interpolation=v2.InterpolationMode.BICUBIC, antialias=True
             ),
             v2.RandomHorizontalFlip(),
         ]
@@ -127,7 +131,8 @@ class ShoeDataset(Dataset):
 
 def build_dataset(cfg: DataConfig, artifacts: Artifacts, split: str) -> ShoeDataset:
     transform = build_transforms(
-        cfg.image_size, cfg.mean, cfg.std, train=(split == "train"), crop_scale=cfg.crop_scale
+        cfg.image_size, cfg.mean, cfg.std, train=(split == "train"),
+        crop_scale=cfg.crop_scale, crop_ratio=cfg.crop_ratio,
     )
     return ShoeDataset(
         processed_dir=cfg.processed_dir,

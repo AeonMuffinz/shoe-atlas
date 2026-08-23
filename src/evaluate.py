@@ -154,6 +154,7 @@ def evaluate_run(
         batch_size=int(config.get("batch_size", 64)),
         num_workers=int(config.get("num_workers", 4)),
         seed=int(config.get("seed", 42)),
+        crop_ratio=tuple(config.get("crop_ratio", data_setup.DEFAULT_CROP_RATIO)),
         mean=tuple(config.get("mean", data_setup.IMAGENET_MEAN)),
         std=tuple(config.get("std", data_setup.IMAGENET_STD)),
     )

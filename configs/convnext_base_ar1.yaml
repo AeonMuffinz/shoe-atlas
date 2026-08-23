@@ -1,6 +1,6 @@
-name: convnext_base
+name: convnext_base_ar1
 backbone: convnext_base.fb_in22k_ft_in1k
-seed: 43
+seed: 42
 
 image_size: 224
 batch_size: 64
@@ -8,7 +8,7 @@ grad_accum: 1
 grad_checkpointing: true
 num_workers: 4
 crop_scale: [0.8, 1.0]
-crop_ratio: [0.75, 1.3333333333333333]
+crop_ratio: [1.0, 1.0]
 
 warmup_epochs: 2
 max_epochs: 60
@@ -29,11 +29,12 @@ softmax_weight: 1.0
 bce_weight: 1.0
 
 role: capacity_probe
-capacity_reference_run: convnext_tiny_s42
+capacity_reference_run: convnext_base_s42
 capacity_confounds:
   - the head widens to 1024 dims, 109,675 parameters against the reference's 82,283, so width moves alongside capacity and the warmup phase is not identical
   - layer_decay 0.8627 rather than the project's standing 0.75, matched on the derived backbone floor per FINDINGS 7A.4, because holding the nominal value would drive the floor below a level already measured as harmful
   - one seed, so seed variance is unmeasured and could exceed the primary band in FINDINGS 7B
+  - crop_ratio is [1.0, 1.0] rather than torchvision's [0.75, 1.3333333333333333], so the RandomResizedCrop aspect jitter every other run trained under is removed; this also reduces augmentation diversity, which is a second effect of the same change and is registered in FINDINGS 18
 
 monitor: constrained
 monitor_mode: max

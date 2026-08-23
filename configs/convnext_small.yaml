@@ -8,6 +8,7 @@ grad_accum: 1
 grad_checkpointing: true
 num_workers: 4
 crop_scale: [0.8, 1.0]
+crop_ratio: [0.75, 1.3333333333333333]
 
 warmup_epochs: 2
 max_epochs: 60

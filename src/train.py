@@ -319,6 +319,7 @@ def train(config: dict, args: argparse.Namespace) -> dict:
         num_workers=int(config["num_workers"]),
         seed=int(config["seed"]),
         crop_scale=tuple(config["crop_scale"]),
+        crop_ratio=tuple(config.get("crop_ratio", data_setup.DEFAULT_CROP_RATIO)),
         mean=tuple(data_cfg_source["mean"]),
         std=tuple(data_cfg_source["std"]),
     )
