@@ -74,13 +74,15 @@ def table(rows: list[dict], title: str) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser(description="Compare an intervention run against the reference")
     parser.add_argument("run", type=str)
+    parser.add_argument("--baseline", type=str, default=REFERENCE)
     args = parser.parse_args()
 
     new_rows = epochs(RUNS / args.run / "metrics.jsonl")
-    ref_rows = epochs(RUNS / REFERENCE / "metrics.jsonl")
-    long_rows = epochs(LONG_REFERENCE)
+    ref_rows = epochs(RUNS / args.baseline / "metrics.jsonl")
+    long_path = LONG_REFERENCE if args.baseline == REFERENCE else RUNS / args.baseline / "metrics.jsonl"
+    long_rows = epochs(long_path)
 
-    table(ref_rows, f"REFERENCE {REFERENCE} (lr 3e-4)")
+    table(ref_rows, f"REFERENCE {args.baseline}")
     table(new_rows, f"INTERVENTION {args.run}")
 
     ref, new = summarise(ref_rows), summarise(new_rows)
