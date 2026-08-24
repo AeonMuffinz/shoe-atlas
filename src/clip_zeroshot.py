@@ -11,12 +11,11 @@ import torch
 
 from src import data_setup, features, metrics, reporting
 from src.catalog import LabelSchema
+from src.features import CLIP_MODEL, CLIP_PRETRAINED, build_clip  # noqa: F401
 from src.glossary import Glossary
 from src.reporting import PROCESSED_DIR, RUNS_ROOT, TEST_WITHHELD
 
 RUN_NAME: str = "clip_zeroshot"
-CLIP_MODEL: str = "ViT-B-32"
-CLIP_PRETRAINED: str = "laion2b_s34b_b79k"
 EXCLUDED_FAMILY: str = "Insole"
 BARE: str = "bare"
 TEMPLATES: dict[str, str] = {
@@ -75,13 +74,6 @@ def assert_exclusions_match_glossary(glossary: Glossary, schema: LabelSchema) ->
         )
 
 
-def build_clip(device: torch.device) -> tuple[object, object, dict]:
-    import open_clip
-
-    model, _, _ = open_clip.create_model_and_transforms(CLIP_MODEL, pretrained=CLIP_PRETRAINED)
-    tokenizer = open_clip.get_tokenizer(CLIP_MODEL)
-    preprocess = open_clip.get_model_preprocess_cfg(model)
-    return model.to(device).eval(), tokenizer, preprocess
 
 
 @torch.no_grad()
