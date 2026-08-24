@@ -3,10 +3,12 @@
 from __future__ import annotations
 
 import argparse
+import json
 from pathlib import Path
 
 import numpy as np
 
+from src import corruption as corruption_module
 from src import metrics, reporting
 from src.catalog import LabelSchema
 from src.corruption import Corruption, CorruptionError, observed_rows
@@ -16,6 +18,11 @@ AUDIT_NAME: str = "audit.json"
 IMPUTATION_NAME: str = "imputation.json"
 DEFAULT_RATES: tuple[float, ...] = (0.01, 0.02, 0.05, 0.10)
 PRECISION_K: int = 100
+NOTE_DIRECTION: str = (
+    "add and drop are scored separately because they are not symmetric: adding a spurious positive is a "
+    "different detection problem from dropping a true one, and on ToeStyle a dropped positive may be "
+    "close to undetectable. The pooled row above is retained for continuity and is the weaker number."
+)
 
 
 def multihot_to_index_lists(block: np.ndarray) -> list[list[int]]:
@@ -132,19 +139,28 @@ def score_backends(
     corruption: Corruption,
     family_observed: np.ndarray,
     schema: LabelSchema,
-) -> dict[str, dict[str, float]]:
+    kind: np.ndarray | None = None,
+) -> dict[str, dict[str, object]]:
     exclusive = exclusive_issues(probs, corruption.labels, family_observed, schema)
     multi = bce_issues(probs, corruption.labels, family_observed, schema)
 
-    per_group: dict[str, dict[str, float]] = {}
+    per_group: dict[str, dict[str, object]] = {}
     for family in schema.softmax_families():
         rows = exclusive[family.name]
         truth = corruption.corrupted[:, family.start : family.end].any(axis=1)
-        per_group[family.name] = detection_metrics(rows, truth)
+        per_group[family.name] = dict(detection_metrics(rows, truth))
     for family in schema.bce_families():
-        per_group[family.name] = detection_metrics(
-            multi[family.name], corruption.corrupted[:, family.start : family.end]
+        block = slice(family.start, family.end)
+        entry: dict[str, object] = dict(
+            detection_metrics(multi[family.name], corruption.corrupted[:, block])
         )
+        if kind is not None:
+            for direction in (corruption_module.ADD, corruption_module.DROP):
+                code = corruption_module.KIND_CODES[direction]
+                truth = kind[:, block] == code
+                entry[direction] = detection_metrics(multi[family.name], truth)
+            entry["note_direction"] = NOTE_DIRECTION
+        per_group[family.name] = entry
     return per_group
 
 
@@ -164,16 +180,76 @@ def summarise_groups(per_family: dict[str, dict[str, float]], schema: LabelSchem
     }
 
 
+def load_run_inputs(
+    run_dir: Path, processed: Path, rate: float, seed: int
+) -> tuple[np.ndarray, Corruption, np.ndarray, np.ndarray, LabelSchema, dict]:
+    schema = LabelSchema.load(processed / "label_schema.json")
+    observed_all = np.load(processed / "family_observed.npy")
+    splits = json.loads((processed / "splits.json").read_text(encoding="utf-8"))["indices"]
+    val = np.asarray(splits["val"], dtype=np.int64)
+
+    probs_path = run_dir / reporting.PROBS_OOF_NAME.format(split="val")
+    if not probs_path.exists():
+        raise AuditError(
+            f"{probs_path.name} is missing. cleanlab needs out-of-sample probabilities and the "
+            "in-sample val_probs.npy will not do; re-run evaluate.py for this run to write it."
+        )
+    probs = np.load(probs_path).astype(np.float64)
+
+    source = corruption_module.corruption_dir(processed, rate, seed)
+    dirty, mask, manifest = corruption_module.load_corruption(source)
+    kind = manifest.pop("kind")
+    planted = Corruption(
+        labels=dirty[val].astype(np.float64), corrupted=mask[val], kind="mixed", rate=rate
+    )
+    return probs, planted, observed_all[val], kind[val], schema, manifest
+
+
+def run_audit(
+    run_dir: Path, processed: Path, rate: float, seed: int
+) -> dict[str, object]:
+    probs, planted, observed, kind, schema, manifest = load_run_inputs(
+        run_dir, processed, rate, seed
+    )
+    per_family = score_backends(probs, planted, observed, schema, kind)
+    report: dict[str, object] = {
+        "run": run_dir.name,
+        "split": "val",
+        "corruption": {k: v for k, v in manifest.items() if k != "kind"},
+        "probabilities": reporting.PROBS_OOF_NAME.format(split="val"),
+        "per_family": per_family,
+        **summarise_groups(per_family, schema),
+    }
+    unobserved = unobserved_cells(observed, schema)
+    report["imputation_candidates"] = int(unobserved.sum())
+    return report
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Score the catalog audit against known corruption")
     parser.add_argument("--run", type=Path, required=True)
     parser.add_argument("--processed", type=Path, default=reporting.PROCESSED_DIR)
+    parser.add_argument("--corrupt-rate", type=float, required=True)
+    parser.add_argument("--corrupt-seed", type=int, required=True)
+    parser.add_argument("--out", type=Path, default=None)
     args = parser.parse_args()
-    raise AuditError(
-        f"phase A needs a model trained on corrupted labels, which {args.run} does not yet carry. "
-        "The corruption, both cleanlab backends and the detection metrics are importable and tested; "
-        "what is missing is a training run over a corrupted label matrix."
-    )
+
+    report = run_audit(args.run, args.processed, args.corrupt_rate, args.corrupt_seed)
+    destination = args.out or (args.run / AUDIT_NAME)
+    destination.write_text(json.dumps(report, indent=2, default=float), encoding="utf-8")
+    print(f"audit written to {destination}")
+    for group in ("exclusive_families", "bce_families"):
+        print("")
+        print(group)
+        for family, scores in report[group].items():
+            print(f"  {family:<14} recall {scores['recall']:.4f}  "
+                  f"false alarm {scores['false_alarm_rate']:.5f}  "
+                  f"precision {scores['precision']:.4f}")
+            for direction in (corruption_module.ADD, corruption_module.DROP):
+                if direction in scores:
+                    d = scores[direction]
+                    print(f"    {direction:<12} recall {d['recall']:.4f}  "
+                          f"precision {d['precision']:.4f}")
 
 
 if __name__ == "__main__":

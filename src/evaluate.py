@@ -11,12 +11,13 @@ import numpy as np
 import torch
 from torch import nn
 
-from src import data_setup, model_builder, reporting
+from src import data_setup, metrics, model_builder, reporting
 from src.catalog import FAMILIES, LabelSchema
 from src.reporting import (
     CALIBRATION_NAME,
     ERRORS_DIR,
     PROBS_NAME,
+    PROBS_OOF_NAME,
     PROCESSED_DIR,
     TEST_WITHHELD,
     THRESHOLDS_NAME,
@@ -176,6 +177,10 @@ def evaluate_run(
         reporting.assert_contract(scores, f"{run_name}/{split}")
         report[split] = scores
         np.save(run_dir / PROBS_NAME.format(split=split), calibrated.astype(np.float32))
+        held_out, _ = metrics.out_of_fold_probabilities(
+            predictions.logits, predictions.labels, predictions.family_observed, schema
+        )
+        np.save(run_dir / PROBS_OOF_NAME.format(split=split), held_out.astype(np.float32))
         if split == "val":
             reporting.write_confusion(run_dir, calibrated, predictions, schema)
             (run_dir / THRESHOLDS_NAME).write_text(

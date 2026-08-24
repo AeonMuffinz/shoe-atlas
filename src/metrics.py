@@ -337,7 +337,7 @@ def apply_calibrators(logits: np.ndarray, schema: LabelSchema, calibrators: Cali
     return out
 
 
-def out_of_fold_scores(
+def out_of_fold_probabilities(
     logits: np.ndarray,
     labels: np.ndarray,
     family_observed: np.ndarray,
@@ -345,7 +345,15 @@ def out_of_fold_scores(
     folds: int = 5,
     seed: int = 0,
     min_positives: int = MIN_LABEL_POSITIVES,
-) -> dict[str, float]:
+    fit_labels: np.ndarray | None = None,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Held-out calibrated probabilities. fit_labels chooses which matrix the calibrators see."""
+    targets = labels if fit_labels is None else fit_labels
+    if targets.shape != labels.shape:
+        raise ValueError(
+            f"fit_labels is {targets.shape} against labels {labels.shape}; the calibrators and the "
+            "scoring have to run over the same cells"
+        )
     rows = np.arange(logits.shape[0])
     rng = np.random.default_rng(seed)
     assignment = rng.permutation(rows) % folds
@@ -358,16 +366,31 @@ def out_of_fold_scores(
         if fit_rows.size == 0 or score_rows.size == 0:
             continue
         calibrators = fit_calibrators(
-            logits[fit_rows], labels[fit_rows], family_observed[fit_rows], schema, min_positives
+            logits[fit_rows], targets[fit_rows], family_observed[fit_rows], schema, min_positives
         )
         fit_probs = apply_calibrators(logits[fit_rows], schema, calibrators)
         thresholds, _ = sweep_thresholds(
-            fit_probs, labels[fit_rows], cell_mask(family_observed[fit_rows], schema), schema
+            fit_probs, targets[fit_rows], cell_mask(family_observed[fit_rows], schema), schema
         )
         held = apply_calibrators(logits[score_rows], schema, calibrators)
         calibrated[score_rows] = held
         predicted[score_rows] = (held >= thresholds).astype(np.int8)
+    return calibrated, predicted
 
+
+def out_of_fold_scores(
+    logits: np.ndarray,
+    labels: np.ndarray,
+    family_observed: np.ndarray,
+    schema: LabelSchema,
+    folds: int = 5,
+    seed: int = 0,
+    min_positives: int = MIN_LABEL_POSITIVES,
+    fit_labels: np.ndarray | None = None,
+) -> dict[str, float]:
+    calibrated, predicted = out_of_fold_probabilities(
+        logits, labels, family_observed, schema, folds, seed, min_positives, fit_labels
+    )
     mask = cell_mask(family_observed, schema)
     f1 = np.full(labels.shape[1], np.nan)
     for family in schema.bce_families():

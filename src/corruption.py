@@ -12,7 +12,7 @@ from pathlib import Path
 
 import numpy as np
 
-from src.catalog import FAMILIES, LabelSchema
+from src.catalog import FAMILIES, FamilySlice, LabelSchema
 
 UNIFORM: str = "uniform"
 CONFUSION: str = "confusion_weighted"
@@ -22,6 +22,10 @@ LABELS_NAME: str = "labels.npy"
 MASK_NAME: str = "corruption_mask.npy"
 MANIFEST_NAME: str = "corruption.json"
 CORRUPTION_ROOT: str = "corruption"
+KIND_NAME: str = "corruption_kind.npy"
+KIND_NONE: int = 0
+KIND_CODES: dict[str, int] = {UNIFORM: 1, CONFUSION: 2, ADD: 3, DROP: 4}
+KIND_NAMES: dict[int, str] = {v: k for k, v in KIND_CODES.items()}
 
 
 class CorruptionError(RuntimeError):
@@ -47,10 +51,16 @@ class CorruptedCatalog:
     rate: float
     seed: int
     per_family: dict[str, dict[str, int]]
+    kind: np.ndarray
 
     @property
     def count(self) -> int:
         return int(self.corrupted.sum())
+
+    def mask_for(self, kind: str) -> np.ndarray:
+        if kind not in KIND_CODES:
+            raise CorruptionError(f"unknown corruption kind {kind!r}, expected one of {sorted(KIND_CODES)}")
+        return self.kind == KIND_CODES[kind]
 
 
 def observed_rows(family_observed: np.ndarray, family: str) -> np.ndarray:
@@ -160,6 +170,7 @@ def corrupt_catalog(
     rng = np.random.default_rng(seed)
     out = labels.copy()
     flagged = np.zeros_like(labels, dtype=bool)
+    kind = np.zeros(labels.shape, dtype=np.int8)
     per_family: dict[str, dict[str, int]] = {}
 
     for slice_ in schema.softmax_families():
@@ -169,6 +180,7 @@ def corrupt_catalog(
         )
         out = step.labels
         flagged |= step.corrupted
+        kind[step.corrupted] = KIND_CODES[step.kind]
         per_family[slice_.name] = {step.kind: int(step.corrupted.any(axis=1).sum())}
 
     for slice_ in schema.bce_families():
@@ -183,12 +195,15 @@ def corrupt_catalog(
         out[picks[ADD]] = 1.0
         out[picks[DROP]] = 0.0
         flagged |= picks[ADD] | picks[DROP]
+        kind[picks[ADD]] = KIND_CODES[ADD]
+        kind[picks[DROP]] = KIND_CODES[DROP]
         per_family[slice_.name] = counts
 
     assert_exclusive_families_intact(out, family_observed, schema)
     assert_mask_matches_difference(labels, out, flagged)
+    assert_kind_covers_mask(flagged, kind)
     return CorruptedCatalog(
-        labels=out, corrupted=flagged, rate=rate, seed=seed, per_family=per_family
+        labels=out, corrupted=flagged, rate=rate, seed=seed, per_family=per_family, kind=kind
     )
 
 
@@ -230,12 +245,17 @@ def write_corruption(destination: Path, corrupted: CorruptedCatalog) -> Path:
     destination.mkdir(parents=True, exist_ok=True)
     np.save(destination / LABELS_NAME, corrupted.labels)
     np.save(destination / MASK_NAME, corrupted.corrupted)
+    np.save(destination / KIND_NAME, corrupted.kind)
     manifest = {
         "rate": corrupted.rate,
         "seed": corrupted.seed,
         "cells_corrupted": corrupted.count,
         "rows_touched": int(corrupted.corrupted.any(axis=1).sum()),
         "per_family": corrupted.per_family,
+        "cells_by_kind": {
+            name: int((corrupted.kind == code).sum()) for name, code in KIND_CODES.items()
+        },
+        "kind_codes": KIND_CODES,
         "note": (
             "labels.npy here is the corrupted matrix the model trains on; corruption_mask.npy is the "
             "ground truth the audit scores against. The uncorrupted matrix stays in the parent "
@@ -247,7 +267,7 @@ def write_corruption(destination: Path, corrupted: CorruptedCatalog) -> Path:
 
 
 def load_corruption(destination: Path) -> tuple[np.ndarray, np.ndarray, dict]:
-    for name in (LABELS_NAME, MASK_NAME, MANIFEST_NAME):
+    for name in (LABELS_NAME, MASK_NAME, KIND_NAME, MANIFEST_NAME):
         if not (destination / name).exists():
             raise CorruptionError(
                 f"{destination} is missing {name}. Generate it with "
@@ -255,7 +275,10 @@ def load_corruption(destination: Path) -> tuple[np.ndarray, np.ndarray, dict]:
             )
     labels = np.load(destination / LABELS_NAME)
     mask = np.load(destination / MASK_NAME)
+    kind = np.load(destination / KIND_NAME)
     manifest = json.loads((destination / MANIFEST_NAME).read_text(encoding="utf-8"))
+    assert_kind_covers_mask(mask, kind)
+    manifest["kind"] = kind
     return labels, mask, manifest
 
 
@@ -267,3 +290,48 @@ def assert_shapes_match(clean: np.ndarray, corrupted: np.ndarray, mask: np.ndarr
         )
     if mask.shape != clean.shape:
         raise CorruptionError(f"corruption mask is {mask.shape} against labels {clean.shape}")
+
+
+def assert_kind_covers_mask(mask: np.ndarray, kind: np.ndarray) -> None:
+    flagged = mask.astype(bool)
+    typed = kind != KIND_NONE
+    if not np.array_equal(flagged, typed):
+        untyped = int((flagged & ~typed).sum())
+        orphan = int((typed & ~flagged).sum())
+        raise CorruptionError(
+            f"the per-cell corruption kind does not cover the mask: {untyped} corrupted cells carry no "
+            f"kind, {orphan} cells carry a kind but are not corrupted. The audit reports detection per "
+            "corruption type, so every flagged cell must say which type it is."
+        )
+
+
+def load_confusion(path: Path, family: FamilySlice) -> np.ndarray:
+    rows = [line.split(",") for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
+    header = rows[0][1:]
+    expected = list(family.labels)
+    if header != expected:
+        raise CorruptionError(
+            f"{path.name} column order is {header[:3]}… but {family.name}'s schema order is "
+            f"{expected[:3]}…. reassign_by_confusion indexes by within-family position, so a mismatched "
+            "column order would silently reassign to the wrong class. Regenerate the confusion matrix "
+            "against the current schema rather than reordering it here."
+        )
+    body = rows[1:]
+    if [r[0] for r in body] != expected:
+        raise CorruptionError(
+            f"{path.name} row order does not match {family.name}'s schema order; the matrix must be "
+            "square and indexed identically on both axes."
+        )
+    matrix = np.array([[float(v) for v in r[1:]] for r in body], dtype=np.float64)
+    if matrix.shape != (len(expected), len(expected)):
+        raise CorruptionError(f"{path.name} is {matrix.shape}, expected {(len(expected),) * 2}")
+    return matrix
+
+
+def load_confusions(run_dir: Path, schema: LabelSchema) -> dict[str, np.ndarray]:
+    out: dict[str, np.ndarray] = {}
+    for family in schema.softmax_families():
+        path = run_dir / "confusion" / f"{family.name}.csv"
+        if path.exists():
+            out[family.name] = load_confusion(path, family)
+    return out
