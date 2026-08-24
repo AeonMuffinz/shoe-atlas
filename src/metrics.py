@@ -379,3 +379,95 @@ def out_of_fold_scores(
     macro_f1, _ = macro_average(f1)
     calibration, _ = macro_average(per_label_calibration_error(calibrated, labels, mask))
     return {"macro_f1_bce": macro_f1, "calibration_error": calibration}
+
+
+CAPPED: str = "capped"
+UNCAPPED: str = "uncapped"
+
+
+class RetrievalDefinitionError(RuntimeError):
+    pass
+
+
+def ranked_relevance(similarity: np.ndarray, relevant: np.ndarray, query: int) -> np.ndarray:
+    scores = np.asarray(similarity, dtype=np.float64).copy()
+    scores[query] = -np.inf
+    order = np.argsort(-scores, kind="stable")
+    order = order[order != query]
+    return np.asarray(relevant, dtype=bool)[order]
+
+
+def recall_at_k(hits: np.ndarray, total_relevant: int, k: int, convention: str) -> float:
+    if convention not in (CAPPED, UNCAPPED):
+        raise RetrievalDefinitionError(
+            f"recall@k needs an explicit convention, got {convention!r}. 'capped' divides by "
+            "min(k, R) and can reach 1.0; 'uncapped' divides by R and cannot when R > k. They are "
+            "different numbers and the choice must be stated, not defaulted."
+        )
+    if total_relevant <= 0:
+        return float("nan")
+    found = int(np.asarray(hits, dtype=bool)[:k].sum())
+    denominator = min(k, total_relevant) if convention == CAPPED else total_relevant
+    return found / denominator
+
+
+def cmc_at_k(hits: np.ndarray, k: int) -> float:
+    return float(bool(np.asarray(hits, dtype=bool)[:k].any()))
+
+
+def average_precision_at_rank(hits: np.ndarray, total_relevant: int) -> float:
+    truth = np.asarray(hits, dtype=bool)
+    if total_relevant <= 0:
+        return float("nan")
+    positions = np.flatnonzero(truth)
+    if positions.size == 0:
+        return 0.0
+    precisions = (np.arange(positions.size) + 1) / (positions + 1)
+    return float(precisions.sum() / total_relevant)
+
+
+def reciprocal_rank(hits: np.ndarray) -> float:
+    positions = np.flatnonzero(np.asarray(hits, dtype=bool))
+    return float(1.0 / (positions[0] + 1)) if positions.size else 0.0
+
+
+def retrieval_scores(
+    similarity: np.ndarray,
+    product_ids: np.ndarray,
+    queries: np.ndarray,
+    ks: tuple[int, ...],
+    convention: str,
+) -> dict[str, object]:
+    ids = np.asarray(product_ids)
+    per_query: dict[str, list[float]] = {f"recall@{k}": [] for k in ks}
+    per_query.update({f"cmc@{k}": [] for k in ks})
+    per_query["ap"] = []
+    per_query["rr"] = []
+    relevant_counts: list[int] = []
+
+    for query in np.asarray(queries, dtype=np.int64):
+        relevant = ids == ids[query]
+        total = int(relevant.sum()) - 1
+        relevant_counts.append(total)
+        hits = ranked_relevance(similarity[query], relevant, int(query))
+        for k in ks:
+            per_query[f"recall@{k}"].append(recall_at_k(hits, total, k, convention))
+            per_query[f"cmc@{k}"].append(cmc_at_k(hits, k))
+        per_query["ap"].append(average_precision_at_rank(hits, total))
+        per_query["rr"].append(reciprocal_rank(hits))
+
+    counts = np.asarray(relevant_counts, dtype=np.float64)
+    out: dict[str, object] = {
+        name: float(np.nanmean(values)) for name, values in per_query.items()
+    }
+    out["mean_average_precision"] = out.pop("ap")
+    out["mean_reciprocal_rank"] = out.pop("rr")
+    out["queries"] = float(len(relevant_counts))
+    out["relevant_per_query"] = {
+        "mean": float(counts.mean()) if counts.size else float("nan"),
+        "median": float(np.median(counts)) if counts.size else float("nan"),
+        "min": float(counts.min()) if counts.size else float("nan"),
+        "max": float(counts.max()) if counts.size else float("nan"),
+    }
+    out["recall_convention"] = convention
+    return out

@@ -28,6 +28,12 @@ BCE_FAMILIES: tuple[str, ...] = tuple(f for f in FAMILIES if f not in SOFTMAX_FA
 IMAGE_SIZE: int = 136
 MIN_LABEL_POSITIVES: int = 50
 PATH_DEPTH: int = 4
+RETRIEVAL_PRODUCTS: int = 13_153
+RETRIEVAL_IMAGES: int = 38_655
+
+
+class CatalogError(RuntimeError):
+    pass
 
 
 @dataclass(frozen=True)
@@ -261,3 +267,49 @@ def normalize_image(image: Image.Image, size: int = IMAGE_SIZE) -> Image.Image:
     canvas = Image.new("RGB", (size, size), (255, 255, 255))
     canvas.paste(rgb, ((size - rgb.width) // 2, (size - rgb.height) // 2))
     return canvas
+
+
+@dataclass(frozen=True)
+class QuerySet:
+    rows: np.ndarray
+    product_ids: np.ndarray
+    products: int
+    images: int
+    excluded_products: int
+    excluded_images: int
+
+
+def colorway_counts(product_ids: np.ndarray) -> dict[str, int]:
+    values, counts = np.unique(np.asarray(product_ids), return_counts=True)
+    return {str(v): int(c) for v, c in zip(values, counts, strict=True)}
+
+
+def retrieval_query_set(product_ids: np.ndarray) -> QuerySet:
+    ids = np.asarray(product_ids)
+    values, inverse, counts = np.unique(ids, return_inverse=True, return_counts=True)
+    multi = counts > 1
+    keep = multi[inverse]
+    rows = np.flatnonzero(keep)
+    return QuerySet(
+        rows=rows,
+        product_ids=ids[rows],
+        products=int(multi.sum()),
+        images=int(rows.size),
+        excluded_products=int((~multi).sum()),
+        excluded_images=int((~keep).sum()),
+    )
+
+
+def assert_query_set_matches_findings(
+    query_set: QuerySet, products: int = RETRIEVAL_PRODUCTS, images: int = RETRIEVAL_IMAGES
+) -> None:
+    if (query_set.products, query_set.images) != (products, images):
+        raise CatalogError(
+            f"the retrieval query set is {query_set.products} products over {query_set.images} images, "
+            f"against the {products} and {images} recorded in FINDINGS 4.5. The product join or the "
+            "colorway grouping has drifted; fix that rather than updating the expected counts."
+        )
+
+
+def relevance_mask(query_product: str, gallery_product_ids: np.ndarray) -> np.ndarray:
+    return np.asarray(gallery_product_ids) == query_product
