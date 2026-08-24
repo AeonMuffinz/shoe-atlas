@@ -1,0 +1,51 @@
+name: convnext_base_ar1_uniform05
+backbone: convnext_base.fb_in22k_ft_in1k
+seed: 42
+
+image_size: 224
+batch_size: 64
+grad_accum: 1
+grad_checkpointing: true
+num_workers: 4
+crop_scale: [0.8, 1.0]
+crop_ratio: [1.0, 1.0]
+
+warmup_epochs: 2
+max_epochs: 60
+patience: 4
+min_delta: 0.0
+
+opt: adamw
+head_lr: 1.0e-3
+lr: 3.0e-4
+layer_decay: 0.8627
+expected_backbone_floor: 1.268e-06
+weight_decay: 0.05
+drop_path: 0.1
+max_grad_norm: 1.0
+
+pos_weight_cap: 10.0
+softmax_weight: 1.0
+bce_weight: 1.0
+
+role: capacity_probe
+capacity_reference_run: convnext_base_s42
+capacity_confounds:
+  - the head widens to 1024 dims, 109,675 parameters against the reference's 82,283, so width moves alongside capacity and the warmup phase is not identical
+  - layer_decay 0.8627 rather than the project's standing 0.75, matched on the derived backbone floor per FINDINGS 7A.4, because holding the nominal value would drive the floor below a level already measured as harmful
+  - one seed, so seed variance is unmeasured and could exceed the primary band in FINDINGS 7B
+  - crop_ratio is [1.0, 1.0] rather than torchvision's [0.75, 1.3333333333333333], so the RandomResizedCrop aspect jitter every other run trained under is removed; this also reduces augmentation diversity, which is a second effect of the same change and is registered in FINDINGS 18
+  - audit phase A run per FINDINGS 24: uniform corruption on all eight families at rate 0.05, trained on corrupted training labels with calibrators fit out of fold on corrupted validation labels; no clean label enters training, calibration or the audit
+  - selection is a fixed epoch 11 rather than the constrained selector, per FINDINGS 24.2, so training duration is held constant across the detection curve and no guard runs under noise
+
+monitor: constrained
+monitor_mode: max
+selection_primary: map_bce
+selection_guard: map_softmax
+selection_epsilon: 0.01
+stopping_mode: convergence
+corrupt_rate: 0.05
+corrupt_seed: 4242
+corrupt_type: uniform
+fixed_epoch: 11
+log_every: 50
