@@ -12,6 +12,7 @@ import torch
 from torch.utils.data import DataLoader, Dataset
 from torchvision.transforms import v2
 
+from src import corruption
 from src.catalog import LabelSchema
 from src.utils import seed_worker
 
@@ -47,12 +48,25 @@ class Artifacts:
     family_observed: np.ndarray
     splits: dict[str, np.ndarray]
     manifest: dict = field(default_factory=dict)
+    corruption: dict = field(default_factory=dict)
+    corruption_mask: np.ndarray | None = None
 
 
-def load_artifacts(processed_dir: Path) -> Artifacts:
+def load_artifacts(
+    processed_dir: Path,
+    corrupt_rate: float = 0.0,
+    corrupt_seed: int = 42,
+) -> Artifacts:
     schema = LabelSchema.load(processed_dir / SCHEMA_NAME)
     labels = np.load(processed_dir / LABELS_NAME)
     observed = np.load(processed_dir / OBSERVED_NAME)
+    planted: dict = {}
+    mask = None
+    if corrupt_rate > 0.0:
+        source = corruption.corruption_dir(processed_dir, corrupt_rate, corrupt_seed)
+        corrupted, mask, planted = corruption.load_corruption(source)
+        corruption.assert_shapes_match(labels, corrupted, mask)
+        labels = corrupted
     payload = json.loads((processed_dir / SPLITS_NAME).read_text(encoding="utf-8"))
     splits = {name: np.asarray(idx, dtype=np.int64) for name, idx in payload["indices"].items()}
     manifest_path = processed_dir / MANIFEST_NAME
@@ -61,7 +75,15 @@ def load_artifacts(processed_dir: Path) -> Artifacts:
         raise ValueError(f"labels has {labels.shape[1]} columns, schema declares {len(schema.columns)}")
     if labels.shape[0] != observed.shape[0]:
         raise ValueError(f"labels has {labels.shape[0]} rows, family_observed has {observed.shape[0]}")
-    return Artifacts(schema=schema, labels=labels, family_observed=observed, splits=splits, manifest=manifest)
+    return Artifacts(
+        schema=schema,
+        labels=labels,
+        family_observed=observed,
+        splits=splits,
+        manifest=manifest,
+        corruption=planted,
+        corruption_mask=mask,
+    )
 
 
 def build_transforms(

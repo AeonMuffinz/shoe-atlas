@@ -11,7 +11,7 @@ import numpy as np
 from PIL import Image
 from tqdm import tqdm
 
-from src import catalog, splits
+from src import catalog, corruption, splits
 from src.eda import DataPaths
 
 IMAGES_NAME: str = "images_u8.npy"
@@ -37,6 +37,8 @@ class Artifacts:
     normalized_images: int
     reused_memmap: bool
     out_dir: Path
+    corruption_dir: Path | None = None
+    corrupted_cells: int = 0
 
 
 def load_expected_survivors(eda_path: Path) -> list[str]:
@@ -114,6 +116,8 @@ def prepare(
     threshold: int = catalog.MIN_LABEL_POSITIVES,
     seed: int = splits.DEFAULT_SEED,
     force: bool = False,
+    corrupt_rate: float = 0.0,
+    corrupt_seed: int = splits.DEFAULT_SEED,
 ) -> Artifacts:
     built = catalog.build_catalog(paths.square, paths.bin_csv)
     frame = built.frame
@@ -149,6 +153,14 @@ def prepare(
         out_dir / CATALOG_NAME, index=False
     )
 
+    planted = None
+    if corrupt_rate > 0.0:
+        planted = corruption.corrupt_catalog(
+            labels.astype(np.float64), observed, schema, corrupt_rate, corrupt_seed
+        )
+        target = corruption.corruption_dir(out_dir, corrupt_rate, corrupt_seed)
+        corruption.write_corruption(target, planted)
+
     manifest = {
         "rows": int(len(frame)),
         "labels": len(schema.columns),
@@ -168,6 +180,16 @@ def prepare(
             TARGETS_NAME: list(targets.shape),
         },
         "survivors_cross_checked_against": str(eda_path),
+        "corruption": (
+            None
+            if planted is None
+            else {
+                "rate": planted.rate,
+                "seed": planted.seed,
+                "cells": planted.count,
+                "directory": str(corruption.corruption_dir(out_dir, corrupt_rate, corrupt_seed)),
+            }
+        ),
     }
     (out_dir / MANIFEST_NAME).write_text(json.dumps(manifest, indent=2), encoding="utf-8")
 
@@ -177,6 +199,10 @@ def prepare(
         normalized_images=normalized,
         reused_memmap=reused,
         out_dir=out_dir,
+        corruption_dir=(
+            None if planted is None else corruption.corruption_dir(out_dir, corrupt_rate, corrupt_seed)
+        ),
+        corrupted_cells=0 if planted is None else planted.count,
     )
 
 
@@ -188,6 +214,11 @@ def main() -> None:
     parser.add_argument("--threshold", type=int, default=catalog.MIN_LABEL_POSITIVES)
     parser.add_argument("--seed", type=int, default=splits.DEFAULT_SEED)
     parser.add_argument("--force", action="store_true", help="re-decode even if the memmap already exists")
+    parser.add_argument(
+        "--corrupt-rate", type=float, default=0.0,
+        help="plant label noise at this rate and write the corrupted matrix beside the clean one",
+    )
+    parser.add_argument("--corrupt-seed", type=int, default=splits.DEFAULT_SEED)
     args = parser.parse_args()
 
     result = prepare(
@@ -197,6 +228,8 @@ def main() -> None:
         args.threshold,
         args.seed,
         args.force,
+        args.corrupt_rate,
+        args.corrupt_seed,
     )
     action = "reused existing" if result.reused_memmap else f"decoded, {result.normalized_images} normalized"
     print(f"rows      {result.rows}")

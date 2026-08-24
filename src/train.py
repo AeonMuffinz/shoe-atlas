@@ -303,10 +303,15 @@ def train(config: dict, args: argparse.Namespace) -> dict:
     device = assert_cuda(args.cpu)
     utils.set_seed(int(config["seed"]))
 
-    artifacts = data_setup.load_artifacts(PROCESSED_DIR)
+    artifacts = data_setup.load_artifacts(
+        PROCESSED_DIR,
+        corrupt_rate=float(config.get("corrupt_rate", 0.0)),
+        corrupt_seed=int(config.get("corrupt_seed", config["seed"])),
+    )
     assert_artifacts_match_schema(artifacts)
     schema = artifacts.schema
     config["num_labels"] = len(schema.columns)
+    config["corruption"] = artifacts.corruption or None
 
     model_cfg = model_builder.ModelConfig.from_dict({**config, "num_labels": len(schema.columns)})
     model = model_builder.build_model(model_cfg).to(device)

@@ -3,132 +3,19 @@
 from __future__ import annotations
 
 import argparse
-from dataclasses import dataclass
 from pathlib import Path
 
 import numpy as np
 
 from src import metrics, reporting
-from src.catalog import FAMILIES, LabelSchema
+from src.catalog import LabelSchema
+from src.corruption import Corruption, CorruptionError, observed_rows
 
-UNIFORM: str = "uniform"
-CONFUSION: str = "confusion_weighted"
-ADD: str = "add"
-DROP: str = "drop"
+AuditError = CorruptionError
 AUDIT_NAME: str = "audit.json"
 IMPUTATION_NAME: str = "imputation.json"
 DEFAULT_RATES: tuple[float, ...] = (0.01, 0.02, 0.05, 0.10)
 PRECISION_K: int = 100
-
-
-class AuditError(RuntimeError):
-    pass
-
-
-@dataclass(frozen=True)
-class Corruption:
-    labels: np.ndarray
-    corrupted: np.ndarray
-    kind: str
-    rate: float
-
-    @property
-    def count(self) -> int:
-        return int(self.corrupted.sum())
-
-
-def observed_rows(family_observed: np.ndarray, family: str) -> np.ndarray:
-    return np.flatnonzero(family_observed[:, FAMILIES.index(family)])
-
-
-def sample_rows(rows: np.ndarray, rate: float, rng: np.random.Generator) -> np.ndarray:
-    if not 0.0 <= rate <= 1.0:
-        raise AuditError(f"corruption rate must be a fraction, got {rate}")
-    count = int(round(len(rows) * rate))
-    return rng.choice(rows, size=count, replace=False) if count else np.empty(0, dtype=np.int64)
-
-
-def reassign_uniform(current: int, width: int, rng: np.random.Generator) -> int:
-    choices = [c for c in range(width) if c != current]
-    return int(rng.choice(choices))
-
-
-def reassign_by_confusion(
-    current: int, confusion: np.ndarray, rng: np.random.Generator
-) -> int:
-    weights = np.array(confusion[current], dtype=np.float64)
-    weights[current] = 0.0
-    total = weights.sum()
-    if total <= 0:
-        return reassign_uniform(current, len(weights), rng)
-    return int(rng.choice(len(weights), p=weights / total))
-
-
-def corrupt_exclusive_family(
-    labels: np.ndarray,
-    family_observed: np.ndarray,
-    schema: LabelSchema,
-    family: str,
-    rate: float,
-    rng: np.random.Generator,
-    confusion: np.ndarray | None = None,
-) -> Corruption:
-    slice_ = schema.family(family)
-    if slice_.kind != "softmax":
-        raise AuditError(
-            f"{family} is a {slice_.kind} family. Reassignment keeps exactly one positive per row, "
-            "which is only meaningful where the classes are mutually exclusive."
-        )
-    out = labels.copy()
-    flagged = np.zeros_like(labels, dtype=bool)
-    width = slice_.end - slice_.start
-    for row in sample_rows(observed_rows(family_observed, family), rate, rng):
-        block = out[row, slice_.start : slice_.end]
-        current = int(block.argmax())
-        replacement = (
-            reassign_uniform(current, width, rng)
-            if confusion is None
-            else reassign_by_confusion(current, confusion, rng)
-        )
-        block[:] = 0
-        block[replacement] = 1
-        flagged[row, slice_.start + current] = True
-        flagged[row, slice_.start + replacement] = True
-    kind = UNIFORM if confusion is None else CONFUSION
-    return Corruption(labels=out, corrupted=flagged, kind=kind, rate=rate)
-
-
-def corrupt_bce_family(
-    labels: np.ndarray,
-    family_observed: np.ndarray,
-    schema: LabelSchema,
-    family: str,
-    rate: float,
-    rng: np.random.Generator,
-    mode: str,
-) -> Corruption:
-    slice_ = schema.family(family)
-    if slice_.kind != "bce":
-        raise AuditError(f"{family} is exclusive; a bit flip would leave it with zero or two positives")
-    if mode not in (ADD, DROP):
-        raise AuditError(f"unknown bit-flip mode {mode!r}")
-    out = labels.copy()
-    flagged = np.zeros_like(labels, dtype=bool)
-    rows = observed_rows(family_observed, family)
-    wanted = 1.0 if mode == DROP else 0.0
-    cells = [
-        (row, column)
-        for row in rows
-        for column in range(slice_.start, slice_.end)
-        if out[row, column] == wanted
-    ]
-    if cells:
-        picked = sample_rows(np.arange(len(cells)), rate, rng)
-        for index in picked:
-            row, column = cells[int(index)]
-            out[row, column] = 0.0 if mode == DROP else 1.0
-            flagged[row, column] = True
-    return Corruption(labels=out, corrupted=flagged, kind=mode, rate=rate)
 
 
 def multihot_to_index_lists(block: np.ndarray) -> list[list[int]]:

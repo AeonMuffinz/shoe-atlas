@@ -1,0 +1,269 @@
+"""Injects a known amount of label noise into the catalog, and records exactly what it changed.
+
+Both the audit and the data pipeline need this, and neither may import the other, so the
+primitives live here rather than in either entry point.
+"""
+
+from __future__ import annotations
+
+import json
+from dataclasses import dataclass
+from pathlib import Path
+
+import numpy as np
+
+from src.catalog import FAMILIES, LabelSchema
+
+UNIFORM: str = "uniform"
+CONFUSION: str = "confusion_weighted"
+ADD: str = "add"
+DROP: str = "drop"
+LABELS_NAME: str = "labels.npy"
+MASK_NAME: str = "corruption_mask.npy"
+MANIFEST_NAME: str = "corruption.json"
+CORRUPTION_ROOT: str = "corruption"
+
+
+class CorruptionError(RuntimeError):
+    pass
+
+
+@dataclass(frozen=True)
+class Corruption:
+    labels: np.ndarray
+    corrupted: np.ndarray
+    kind: str
+    rate: float
+
+    @property
+    def count(self) -> int:
+        return int(self.corrupted.sum())
+
+
+@dataclass(frozen=True)
+class CorruptedCatalog:
+    labels: np.ndarray
+    corrupted: np.ndarray
+    rate: float
+    seed: int
+    per_family: dict[str, dict[str, int]]
+
+    @property
+    def count(self) -> int:
+        return int(self.corrupted.sum())
+
+
+def observed_rows(family_observed: np.ndarray, family: str) -> np.ndarray:
+    return np.flatnonzero(family_observed[:, FAMILIES.index(family)])
+
+
+def sample_rows(rows: np.ndarray, rate: float, rng: np.random.Generator) -> np.ndarray:
+    if not 0.0 <= rate <= 1.0:
+        raise CorruptionError(f"corruption rate must be a fraction, got {rate}")
+    count = int(round(len(rows) * rate))
+    return rng.choice(rows, size=count, replace=False) if count else np.empty(0, dtype=np.int64)
+
+
+def reassign_uniform(current: int, width: int, rng: np.random.Generator) -> int:
+    choices = [c for c in range(width) if c != current]
+    return int(rng.choice(choices))
+
+
+def reassign_by_confusion(current: int, confusion: np.ndarray, rng: np.random.Generator) -> int:
+    weights = np.array(confusion[current], dtype=np.float64)
+    weights[current] = 0.0
+    total = weights.sum()
+    if total <= 0:
+        return reassign_uniform(current, len(weights), rng)
+    return int(rng.choice(len(weights), p=weights / total))
+
+
+def corrupt_exclusive_family(
+    labels: np.ndarray,
+    family_observed: np.ndarray,
+    schema: LabelSchema,
+    family: str,
+    rate: float,
+    rng: np.random.Generator,
+    confusion: np.ndarray | None = None,
+) -> Corruption:
+    slice_ = schema.family(family)
+    if slice_.kind != "softmax":
+        raise CorruptionError(
+            f"{family} is a {slice_.kind} family. Reassignment keeps exactly one positive per row, "
+            "which is only meaningful where the classes are mutually exclusive."
+        )
+    out = labels.copy()
+    flagged = np.zeros_like(labels, dtype=bool)
+    width = slice_.end - slice_.start
+    for row in sample_rows(observed_rows(family_observed, family), rate, rng):
+        block = out[row, slice_.start : slice_.end]
+        current = int(block.argmax())
+        replacement = (
+            reassign_uniform(current, width, rng)
+            if confusion is None
+            else reassign_by_confusion(current, confusion, rng)
+        )
+        block[:] = 0
+        block[replacement] = 1
+        flagged[row, slice_.start + current] = True
+        flagged[row, slice_.start + replacement] = True
+    kind = UNIFORM if confusion is None else CONFUSION
+    return Corruption(labels=out, corrupted=flagged, kind=kind, rate=rate)
+
+
+def corrupt_bce_family(
+    labels: np.ndarray,
+    family_observed: np.ndarray,
+    schema: LabelSchema,
+    family: str,
+    rate: float,
+    rng: np.random.Generator,
+    mode: str,
+) -> Corruption:
+    slice_ = schema.family(family)
+    if slice_.kind != "bce":
+        raise CorruptionError(
+            f"{family} is exclusive; a bit flip would leave it with zero or two positives"
+        )
+    if mode not in (ADD, DROP):
+        raise CorruptionError(f"unknown bit-flip mode {mode!r}")
+    out = labels.copy()
+    flagged = np.zeros_like(labels, dtype=bool)
+    rows = observed_rows(family_observed, family)
+    wanted = 1.0 if mode == DROP else 0.0
+    cells = [
+        (row, column)
+        for row in rows
+        for column in range(slice_.start, slice_.end)
+        if out[row, column] == wanted
+    ]
+    if cells:
+        picked = sample_rows(np.arange(len(cells)), rate, rng)
+        for index in picked:
+            row, column = cells[int(index)]
+            out[row, column] = 0.0 if mode == DROP else 1.0
+            flagged[row, column] = True
+    return Corruption(labels=out, corrupted=flagged, kind=mode, rate=rate)
+
+
+def corrupt_catalog(
+    labels: np.ndarray,
+    family_observed: np.ndarray,
+    schema: LabelSchema,
+    rate: float,
+    seed: int,
+    confusions: dict[str, np.ndarray] | None = None,
+) -> CorruptedCatalog:
+    if not 0.0 < rate <= 1.0:
+        raise CorruptionError(f"corruption rate must be in (0, 1], got {rate}")
+    rng = np.random.default_rng(seed)
+    out = labels.copy()
+    flagged = np.zeros_like(labels, dtype=bool)
+    per_family: dict[str, dict[str, int]] = {}
+
+    for slice_ in schema.softmax_families():
+        confusion = (confusions or {}).get(slice_.name)
+        step = corrupt_exclusive_family(
+            out, family_observed, schema, slice_.name, rate, rng, confusion
+        )
+        out = step.labels
+        flagged |= step.corrupted
+        per_family[slice_.name] = {step.kind: int(step.corrupted.any(axis=1).sum())}
+
+    for slice_ in schema.bce_families():
+        counts: dict[str, int] = {}
+        picks: dict[str, np.ndarray] = {}
+        for mode in (ADD, DROP):
+            step = corrupt_bce_family(
+                labels, family_observed, schema, slice_.name, rate, rng, mode
+            )
+            picks[mode] = step.corrupted
+            counts[mode] = step.count
+        out[picks[ADD]] = 1.0
+        out[picks[DROP]] = 0.0
+        flagged |= picks[ADD] | picks[DROP]
+        per_family[slice_.name] = counts
+
+    assert_exclusive_families_intact(out, family_observed, schema)
+    assert_mask_matches_difference(labels, out, flagged)
+    return CorruptedCatalog(
+        labels=out, corrupted=flagged, rate=rate, seed=seed, per_family=per_family
+    )
+
+
+def assert_mask_matches_difference(
+    clean: np.ndarray, corrupted: np.ndarray, mask: np.ndarray
+) -> None:
+    changed = corrupted != clean
+    if not np.array_equal(changed, mask):
+        stale = int((mask & ~changed).sum())
+        missed = int((changed & ~mask).sum())
+        raise CorruptionError(
+            f"the corruption mask disagrees with the labels it describes: {stale} cells flagged but "
+            f"unchanged, {missed} changed but unflagged. The mask is the audit's ground truth, so a "
+            "cell that was flipped twice back to its original value must not be reported as corrupted."
+        )
+
+
+def assert_exclusive_families_intact(
+    labels: np.ndarray, family_observed: np.ndarray, schema: LabelSchema
+) -> None:
+    for slice_ in schema.softmax_families():
+        rows = observed_rows(family_observed, slice_.name)
+        if rows.size == 0:
+            continue
+        totals = labels[rows, slice_.start : slice_.end].sum(axis=1)
+        if not np.all(totals == 1):
+            bad = int((totals != 1).sum())
+            raise CorruptionError(
+                f"{slice_.name} has {bad} observed rows without exactly one positive after "
+                "corruption. Reassignment must move the positive, never add or remove one."
+            )
+
+
+def corruption_dir(processed_dir: Path, rate: float, seed: int) -> Path:
+    return processed_dir / CORRUPTION_ROOT / f"r{rate:.4f}_s{seed}"
+
+
+def write_corruption(destination: Path, corrupted: CorruptedCatalog) -> Path:
+    destination.mkdir(parents=True, exist_ok=True)
+    np.save(destination / LABELS_NAME, corrupted.labels)
+    np.save(destination / MASK_NAME, corrupted.corrupted)
+    manifest = {
+        "rate": corrupted.rate,
+        "seed": corrupted.seed,
+        "cells_corrupted": corrupted.count,
+        "rows_touched": int(corrupted.corrupted.any(axis=1).sum()),
+        "per_family": corrupted.per_family,
+        "note": (
+            "labels.npy here is the corrupted matrix the model trains on; corruption_mask.npy is the "
+            "ground truth the audit scores against. The uncorrupted matrix stays in the parent "
+            "directory and is never overwritten."
+        ),
+    }
+    (destination / MANIFEST_NAME).write_text(json.dumps(manifest, indent=2), encoding="utf-8")
+    return destination
+
+
+def load_corruption(destination: Path) -> tuple[np.ndarray, np.ndarray, dict]:
+    for name in (LABELS_NAME, MASK_NAME, MANIFEST_NAME):
+        if not (destination / name).exists():
+            raise CorruptionError(
+                f"{destination} is missing {name}. Generate it with "
+                "python -m src.prepare_data --corrupt-rate R --corrupt-seed S"
+            )
+    labels = np.load(destination / LABELS_NAME)
+    mask = np.load(destination / MASK_NAME)
+    manifest = json.loads((destination / MANIFEST_NAME).read_text(encoding="utf-8"))
+    return labels, mask, manifest
+
+
+def assert_shapes_match(clean: np.ndarray, corrupted: np.ndarray, mask: np.ndarray) -> None:
+    if corrupted.shape != clean.shape:
+        raise CorruptionError(
+            f"corrupted labels are {corrupted.shape} against the clean {clean.shape}; the corruption "
+            "set was generated from a different label schema and must be regenerated"
+        )
+    if mask.shape != clean.shape:
+        raise CorruptionError(f"corruption mask is {mask.shape} against labels {clean.shape}")
