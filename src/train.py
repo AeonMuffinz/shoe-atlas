@@ -282,6 +282,20 @@ def rotate_metrics(run_dir: Path) -> Path | None:
     return archived
 
 
+def finetune_last_epoch(config: dict, total_epochs: int) -> int:
+    fixed = config.get("fixed_epoch")
+    if fixed is None:
+        return total_epochs - 1
+    fixed = int(fixed)
+    warmup = int(config["warmup_epochs"])
+    if not warmup <= fixed <= total_epochs - 1:
+        raise TrainingError(
+            f"fixed_epoch {fixed} is outside the trainable range [{warmup}, {total_epochs - 1}]. "
+            "Epochs are 0-indexed, so fixed_epoch N means N+1 epochs of training in total."
+        )
+    return fixed
+
+
 def run_name_for(stem: str, seed: int) -> str:
     return f"{stem}_s{seed}"
 
@@ -396,8 +410,9 @@ def train(config: dict, args: argparse.Namespace) -> dict:
 
         phase_start = time.time()
         stopper = selection.make_stopper(config, selector)
+        last_epoch = finetune_last_epoch(config, total_epochs)
         stopped = run_phase(model, loaders, loss_fn, optimizer, scheduler, logger, device, config,
-                            schema, run_dir, FINETUNE_PHASE, range(warmup_epochs, total_epochs),
+                            schema, run_dir, FINETUNE_PHASE, range(warmup_epochs, last_epoch + 1),
                             selector, stopper, history=history, eligible=eligible)
         timings[FINETUNE_PHASE] = time.time() - phase_start
 
@@ -419,6 +434,14 @@ def train(config: dict, args: argparse.Namespace) -> dict:
             "max_epochs": total_epochs,
             "warmup_epochs": warmup_epochs,
             "stopping_mode": str(config.get("stopping_mode", selection.MODE_CONVERGENCE)),
+            "fixed_epoch": config.get("fixed_epoch"),
+            "selection_source": (
+                "fixed_epoch: last.pt is the fixed-epoch checkpoint and is the artifact to use; "
+                "best_epoch below is what the ConstrainedSelector WOULD have chosen and is recorded "
+                "as a free secondary observation per FINDINGS 24.2, not used"
+                if config.get("fixed_epoch") is not None
+                else "constrained selector; best.pt is the selected checkpoint"
+            ),
             "stopping_patience": int(stopper.patience),
             "eligible_retention": "all",
             **disk,
