@@ -23,6 +23,11 @@ REVIEW_PENDING: str = "pending"
 REVIEW_SELF: str = "self"
 REVIEW_CONFIRMED: str = "confirmed"
 
+TR_DONE: str = "done"
+TR_FLAGGED: str = "flagged"
+TR_UNSURE: str = "unsure"
+TR_STATUSES: tuple[str, ...] = (TR_DONE, TR_FLAGGED, TR_UNSURE)
+
 
 @dataclass
 class Entry:
@@ -35,6 +40,8 @@ class Entry:
     reason: str = ""
     review: str = REVIEW_SELF
     notes: str = ""
+    tr_source: str = ""
+    tr_status: str = ""
 
     def to_dict(self) -> dict[str, object]:
         return {
@@ -46,6 +53,8 @@ class Entry:
             "reason": self.reason,
             "review": self.review,
             "notes": self.notes,
+            "tr_source": self.tr_source,
+            "tr_status": self.tr_status,
         }
 
     @classmethod
@@ -60,6 +69,8 @@ class Entry:
             reason=str(payload.get("reason", "")),
             review=str(payload.get("review", REVIEW_SELF)),
             notes=str(payload.get("notes", "")),
+            tr_source=str(payload.get("tr_source", "")),
+            tr_status=str(payload.get("tr_status", "")),
         )
 
 
@@ -69,9 +80,17 @@ class FamilyEntry:
     display_en: str
     display_tr: str = ""
     notes: str = ""
+    tr_source: str = ""
+    tr_status: str = ""
 
     def to_dict(self) -> dict[str, object]:
-        return {"display_en": self.display_en, "display_tr": self.display_tr, "notes": self.notes}
+        return {
+            "display_en": self.display_en,
+            "display_tr": self.display_tr,
+            "notes": self.notes,
+            "tr_source": self.tr_source,
+            "tr_status": self.tr_status,
+        }
 
     @classmethod
     def from_dict(cls, family: str, payload: dict) -> FamilyEntry:
@@ -80,6 +99,8 @@ class FamilyEntry:
             display_en=str(payload.get("display_en", "")),
             display_tr=str(payload.get("display_tr", "")),
             notes=str(payload.get("notes", "")),
+            tr_source=str(payload.get("tr_source", "")),
+            tr_status=str(payload.get("tr_status", "")),
         )
 
 

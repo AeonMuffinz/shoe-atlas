@@ -37,8 +37,8 @@ RECORDED_CEILINGS: dict[str, str] = {
 
 CARE_RANK: dict[str, int] = {"HIGH": 0, "MEDIUM": 1, "low": 2}
 FIELDS: tuple[str, ...] = (
-    "kind", "family", "key", "display_en", "display_tr", "tier", "review",
-    "zero_shot_scoreable", "care", "context", "notes",
+    "kind", "family", "key", "display_en", "display_tr", "source_tr", "status", "care",
+    "tier", "review", "context", "notes", "zero_shot_scoreable",
 )
 
 
@@ -64,6 +64,8 @@ def family_rows(glossary: Glossary) -> list[dict[str, object]]:
             "key": family,
             "display_en": entry.display_en,
             "display_tr": entry.display_tr,
+            "source_tr": entry.tr_source,
+            "status": entry.tr_status,
             "tier": "",
             "review": "",
             "zero_shot_scoreable": "",
@@ -83,6 +85,8 @@ def label_rows(glossary: Glossary) -> list[dict[str, object]]:
             "key": key,
             "display_en": entry.display_en,
             "display_tr": entry.display_tr,
+            "source_tr": entry.tr_source,
+            "status": entry.tr_status,
             "tier": entry.tier,
             "review": entry.review,
             "zero_shot_scoreable": entry.zero_shot_scoreable,

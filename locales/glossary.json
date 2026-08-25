@@ -3,1114 +3,1344 @@
     "Category.Boots": {
       "prompt": "a boot",
       "display_en": "Boots",
-      "display_tr": "",
+      "display_tr": "Bot ve Çizme",
       "tier": "direct",
       "zero_shot_scoreable": true,
       "reason": "",
       "review": "self",
-      "notes": ""
+      "notes": "",
+      "tr_source": "TR bot (kısa) ve çizme (uzun) diye ayırır; EN tek kategori ikisini de kapsıyor",
+      "tr_status": "flagged"
     },
     "Category.Sandals": {
       "prompt": "a sandal",
       "display_en": "Sandals",
-      "display_tr": "",
+      "display_tr": "Sandalet",
       "tier": "direct",
       "zero_shot_scoreable": true,
       "reason": "",
       "review": "self",
-      "notes": ""
+      "notes": "",
+      "tr_source": "TR perakende standart",
+      "tr_status": "done"
     },
     "Category.Shoes": {
       "prompt": "a shoe",
       "display_en": "Shoes",
-      "display_tr": "",
+      "display_tr": "Ayakkabı",
       "tier": "direct",
       "zero_shot_scoreable": true,
       "reason": "",
       "review": "self",
-      "notes": ""
+      "notes": "",
+      "tr_source": "TR perakende standart",
+      "tr_status": "done"
     },
     "Category.Slippers": {
       "prompt": "a slipper",
       "display_en": "Slippers",
-      "display_tr": "",
+      "display_tr": "Terlik",
       "tier": "direct",
       "zero_shot_scoreable": true,
       "reason": "",
       "review": "self",
-      "notes": ""
+      "notes": "",
+      "tr_source": "TR perakende standart",
+      "tr_status": "done"
     },
     "Closure.Ankle.Strap": {
       "prompt": "a shoe with a strap fastening around the ankle",
       "display_en": "Ankle strap",
-      "display_tr": "",
+      "display_tr": "Bilek Bantlı",
       "tier": "direct",
       "zero_shot_scoreable": true,
       "reason": "",
       "review": "self",
-      "notes": ""
+      "notes": "",
+      "tr_source": "Stradivarius TR: 'tokalı bilek bantlı'",
+      "tr_status": "done"
     },
     "Closure.Ankle.Wrap": {
       "prompt": "a sandal with long straps wrapped around the ankle and lower leg",
       "display_en": "Ankle wrap",
-      "display_tr": "",
+      "display_tr": "Bilekten Sarmalı",
       "tier": "direct",
       "zero_shot_scoreable": true,
       "reason": "",
       "review": "self",
-      "notes": ""
+      "notes": "",
+      "tr_source": "TR: 'bilekten bağlamalı' / 'sarma'; gladyatör sandalet",
+      "tr_status": "flagged"
     },
     "Closure.Buckle": {
       "prompt": "a shoe fastened with a metal buckle",
       "display_en": "Buckle",
-      "display_tr": "",
+      "display_tr": "Tokalı",
       "tier": "direct",
       "zero_shot_scoreable": true,
       "reason": "",
       "review": "self",
-      "notes": ""
+      "notes": "",
+      "tr_source": "Hepsiburada filtre değeri",
+      "tr_status": "done"
     },
     "Closure.Bungee": {
       "prompt": "a shoe fastened with an elastic bungee cord and a spring toggle",
       "display_en": "Bungee",
-      "display_tr": "",
+      "display_tr": "Streç Bağcıklı",
       "tier": "descriptive",
       "zero_shot_scoreable": true,
       "reason": "",
       "review": "self",
-      "notes": ""
+      "notes": "",
+      "tr_source": "Skechers TR filtre değeri: 'Streç Bağcıklı'",
+      "tr_status": "flagged"
     },
     "Closure.Button.Loop": {
       "prompt": "a shoe fastened with a button passed through a fabric loop",
       "display_en": "Button loop",
-      "display_tr": "",
+      "display_tr": "Düğmeli",
       "tier": "descriptive",
       "zero_shot_scoreable": true,
       "reason": "",
       "review": "self",
-      "notes": ""
+      "notes": "",
+      "tr_source": "TR perakendede ayrı filtre olarak nadir",
+      "tr_status": "flagged"
     },
     "Closure.Elastic.Gore": {
       "prompt": "a boot with elastic gusset panels at the sides of the ankle",
       "display_en": "Elastic gore",
-      "display_tr": "",
+      "display_tr": "Yandan Lastikli",
       "tier": "descriptive",
       "zero_shot_scoreable": true,
       "reason": "",
       "review": "self",
-      "notes": ""
+      "notes": "",
+      "tr_source": "TR chelsea bot tanımı: 'yandan lastikli'",
+      "tr_status": "done"
     },
     "Closure.Hook.and.Loop": {
       "prompt": "a shoe fastened with a hook-and-loop velcro strap",
       "display_en": "Hook and loop",
-      "display_tr": "",
+      "display_tr": "Cırt Cırtlı",
       "tier": "descriptive",
       "zero_shot_scoreable": true,
       "reason": "",
       "review": "self",
-      "notes": ""
+      "notes": "",
+      "tr_source": "Hepsiburada / Skechers TR filtre değeri",
+      "tr_status": "done"
     },
     "Closure.Lace.up": {
       "prompt": "a shoe fastened with laces threaded through eyelets",
       "display_en": "Lace-up",
-      "display_tr": "",
+      "display_tr": "Bağcıklı",
       "tier": "direct",
       "zero_shot_scoreable": true,
       "reason": "",
       "review": "self",
-      "notes": ""
+      "notes": "",
+      "tr_source": "Hepsiburada filtre değeri",
+      "tr_status": "done"
     },
     "Closure.Monk.Strap": {
       "prompt": "a monk strap shoe fastened with a wide strap and buckle across the instep instead of laces",
       "display_en": "Monk strap",
-      "display_tr": "",
+      "display_tr": "Tek Tokalı (Monk)",
       "tier": "descriptive",
       "zero_shot_scoreable": true,
       "reason": "",
       "review": "self",
-      "notes": ""
+      "notes": "",
+      "tr_source": "TR klasik ayakkabıda 'monk' aynen kullanılır",
+      "tr_status": "flagged"
     },
     "Closure.Pull.on": {
       "prompt": "a boot pulled on by hand with no fastening",
       "display_en": "Pull-on",
-      "display_tr": "",
+      "display_tr": "Geçirmeli",
       "tier": "direct",
       "zero_shot_scoreable": true,
       "reason": "",
       "review": "self",
-      "notes": ""
+      "notes": "",
+      "tr_source": "Hepsiburada filtre değeri",
+      "tr_status": "done"
     },
     "Closure.Sling.Back": {
       "prompt": "a shoe with an open back and a strap behind the heel",
       "display_en": "Slingback",
-      "display_tr": "",
+      "display_tr": "Arkası Bantlı",
       "tier": "direct",
       "zero_shot_scoreable": true,
       "reason": "",
       "review": "self",
-      "notes": ""
+      "notes": "",
+      "tr_source": "TR: 'arkası açık bantlı'; 'slingback' de aynen kullanılıyor",
+      "tr_status": "flagged"
     },
     "Closure.Slip.On": {
       "prompt": "a slip-on shoe with no fastening",
       "display_en": "Slip-on",
-      "display_tr": "",
+      "display_tr": "Bağcıksız",
       "tier": "direct",
       "zero_shot_scoreable": true,
       "reason": "",
       "review": "self",
-      "notes": ""
+      "notes": "",
+      "tr_source": "Hepsiburada filtre değeri; alt: 'Slip-on'",
+      "tr_status": "done"
     },
     "Closure.Toggle": {
       "prompt": "a shoe fastened with a toggle clasp",
       "display_en": "Toggle",
-      "display_tr": "",
+      "display_tr": "Çubuk Düğmeli",
       "tier": "descriptive",
       "zero_shot_scoreable": true,
       "reason": "",
       "review": "self",
-      "notes": ""
+      "notes": "",
+      "tr_source": "TR ayakkabı perakendesinde karşılığı yerleşmemiş — ONAY GEREKLİ",
+      "tr_status": "unsure"
     },
     "Closure.Zipper": {
       "prompt": "a shoe fastened with a zip",
       "display_en": "Zipper",
-      "display_tr": "",
+      "display_tr": "Fermuarlı",
       "tier": "direct",
       "zero_shot_scoreable": true,
       "reason": "",
       "review": "self",
-      "notes": ""
+      "notes": "",
+      "tr_source": "Hepsiburada filtre değeri",
+      "tr_status": "done"
     },
     "Gender.Boys": {
       "prompt": "a boy's shoe",
       "display_en": "Boys",
-      "display_tr": "",
+      "display_tr": "Erkek Çocuk",
       "tier": "direct",
       "zero_shot_scoreable": true,
       "reason": "",
       "review": "self",
-      "notes": ""
+      "notes": "",
+      "tr_source": "TR perakende standart",
+      "tr_status": "done"
     },
     "Gender.Girls": {
       "prompt": "a girl's shoe",
       "display_en": "Girls",
-      "display_tr": "",
+      "display_tr": "Kız Çocuk",
       "tier": "direct",
       "zero_shot_scoreable": true,
       "reason": "",
       "review": "self",
-      "notes": ""
+      "notes": "",
+      "tr_source": "TR perakende standart",
+      "tr_status": "done"
     },
     "Gender.Men": {
       "prompt": "a men's shoe",
       "display_en": "Men",
-      "display_tr": "",
+      "display_tr": "Erkek",
       "tier": "direct",
       "zero_shot_scoreable": true,
       "reason": "",
       "review": "self",
-      "notes": ""
+      "notes": "",
+      "tr_source": "TR perakende standart",
+      "tr_status": "done"
     },
     "Gender.Women": {
       "prompt": "a women's shoe",
       "display_en": "Women",
-      "display_tr": "",
+      "display_tr": "Kadın",
       "tier": "direct",
       "zero_shot_scoreable": true,
       "reason": "",
       "review": "self",
-      "notes": ""
+      "notes": "",
+      "tr_source": "TR perakende standart",
+      "tr_status": "done"
     },
     "HeelHeight.1in...1.3.4in": {
       "prompt": "a shoe with a low heel between one and one and three quarter inches high",
       "display_en": "1-1.75 in",
-      "display_tr": "",
+      "display_tr": "2,5 – 4,5 cm",
       "tier": "decoded",
       "zero_shot_scoreable": true,
       "reason": "",
       "review": "self",
-      "notes": ""
+      "notes": "",
+      "tr_source": "BİRİM DÖNÜŞÜMÜ: 1–1,75 in = 2,54–4,45 cm",
+      "tr_status": "flagged"
     },
     "HeelHeight.2in...2.3.4in": {
       "prompt": "a shoe with a mid heel between two and two and three quarter inches high",
       "display_en": "2-2.75 in",
-      "display_tr": "",
+      "display_tr": "5 – 7 cm",
       "tier": "decoded",
       "zero_shot_scoreable": true,
       "reason": "",
       "review": "self",
-      "notes": ""
+      "notes": "",
+      "tr_source": "BİRİM DÖNÜŞÜMÜ: 2–2,75 in = 5,08–6,99 cm",
+      "tr_status": "flagged"
     },
     "HeelHeight.3in...3.3.4in": {
       "prompt": "a shoe with a high heel between three and three and three quarter inches high",
       "display_en": "3-3.75 in",
-      "display_tr": "",
+      "display_tr": "7,5 – 9,5 cm",
       "tier": "decoded",
       "zero_shot_scoreable": true,
       "reason": "",
       "review": "self",
-      "notes": ""
+      "notes": "",
+      "tr_source": "BİRİM DÖNÜŞÜMÜ: 3–3,75 in = 7,62–9,53 cm",
+      "tr_status": "flagged"
     },
     "HeelHeight.4in...4.3.4in": {
       "prompt": "a shoe with a very high heel between four and four and three quarter inches high",
       "display_en": "4-4.75 in",
-      "display_tr": "",
+      "display_tr": "10 – 12 cm",
       "tier": "decoded",
       "zero_shot_scoreable": true,
       "reason": "",
       "review": "self",
-      "notes": ""
+      "notes": "",
+      "tr_source": "BİRİM DÖNÜŞÜMÜ: 4–4,75 in = 10,16–12,07 cm",
+      "tr_status": "flagged"
     },
     "HeelHeight.5in...over": {
       "prompt": "a shoe with an extremely high heel of five inches or more",
       "display_en": "5 in and over",
-      "display_tr": "",
+      "display_tr": "12,5 cm ve üzeri",
       "tier": "decoded",
       "zero_shot_scoreable": true,
       "reason": "",
       "review": "self",
-      "notes": ""
+      "notes": "",
+      "tr_source": "BİRİM DÖNÜŞÜMÜ: 5 in = 12,7 cm",
+      "tr_status": "flagged"
     },
     "HeelHeight.Flat": {
       "prompt": "a flat shoe with no raised heel",
       "display_en": "Flat",
-      "display_tr": "",
+      "display_tr": "Düz Taban",
       "tier": "decoded",
       "zero_shot_scoreable": true,
       "reason": "",
       "review": "self",
-      "notes": ""
+      "notes": "",
+      "tr_source": "Hepsiburada 'Ökçe Yüksekliği' filtresinde birebir değer",
+      "tr_status": "done"
     },
     "HeelHeight.Under.1in": {
       "prompt": "a shoe with a very low heel under one inch high",
       "display_en": "Under 1 in",
-      "display_tr": "",
+      "display_tr": "2,5 cm altı",
       "tier": "decoded",
       "zero_shot_scoreable": true,
       "reason": "",
       "review": "self",
-      "notes": ""
+      "notes": "",
+      "tr_source": "BİRİM DÖNÜŞÜMÜ: TR perakende cm kullanır, inç değil. 1 in = 2,54 cm",
+      "tr_status": "flagged"
     },
     "Insole.EVA": {
       "prompt": "a shoe with an EVA foam insole",
       "display_en": "EVA",
-      "display_tr": "",
+      "display_tr": "EVA",
       "tier": "descriptive",
       "zero_shot_scoreable": false,
       "reason": "not distinguishable by prompt: Poron, EVA, polyurethane, gel and memory foam look alike even when the footbed is fully in frame, which it often is on sandals and slippers. The exclusion is about mutual indistinguishability, not about the insole being hidden.",
       "review": "self",
-      "notes": ""
+      "notes": "",
+      "tr_source": "TR perakendede aynen; Hepsiburada 'Eva'",
+      "tr_status": "done"
     },
     "Insole.Gel": {
       "prompt": "a shoe with a gel cushioned insole",
       "display_en": "Gel",
-      "display_tr": "",
+      "display_tr": "Jel",
       "tier": "descriptive",
       "zero_shot_scoreable": false,
       "reason": "not distinguishable by prompt: Poron, EVA, polyurethane, gel and memory foam look alike even when the footbed is fully in frame, which it often is on sandals and slippers. The exclusion is about mutual indistinguishability, not about the insole being hidden.",
       "review": "self",
-      "notes": ""
+      "notes": "",
+      "tr_source": "TR perakende standart",
+      "tr_status": "done"
     },
     "Insole.Latex.Lined": {
       "prompt": "a shoe with a latex-lined insole",
       "display_en": "Latex Lined",
-      "display_tr": "",
+      "display_tr": "Lateks Astarlı",
       "tier": "descriptive",
       "zero_shot_scoreable": false,
       "reason": "not distinguishable by prompt: Poron, EVA, polyurethane, gel and memory foam look alike even when the footbed is fully in frame, which it often is on sandals and slippers. The exclusion is about mutual indistinguishability, not about the insole being hidden.",
       "review": "self",
-      "notes": ""
+      "notes": "",
+      "tr_source": "açıklayıcı; TR'de ayrı filtre değeri değil",
+      "tr_status": "flagged"
     },
     "Insole.Leather": {
       "prompt": "a shoe with a leather insole",
       "display_en": "Leather",
-      "display_tr": "",
+      "display_tr": "Deri",
       "tier": "descriptive",
       "zero_shot_scoreable": false,
       "reason": "not distinguishable by prompt: Poron, EVA, polyurethane, gel and memory foam look alike even when the footbed is fully in frame, which it often is on sandals and slippers. The exclusion is about mutual indistinguishability, not about the insole being hidden.",
       "review": "self",
-      "notes": ""
+      "notes": "",
+      "tr_source": "TR perakende standart",
+      "tr_status": "done"
     },
     "Insole.Memory.Foam": {
       "prompt": "a shoe with a memory foam insole",
       "display_en": "Memory Foam",
-      "display_tr": "",
+      "display_tr": "Hafızalı Sünger",
       "tier": "descriptive",
       "zero_shot_scoreable": false,
       "reason": "not distinguishable by prompt: Poron, EVA, polyurethane, gel and memory foam look alike even when the footbed is fully in frame, which it often is on sandals and slippers. The exclusion is about mutual indistinguishability, not about the insole being hidden.",
       "review": "self",
-      "notes": ""
+      "notes": "",
+      "tr_source": "TR standart; Skechers TR 'Memory Foam' aynen de kullanıyor",
+      "tr_status": "flagged"
     },
     "Insole.Moisture.Wicking": {
       "prompt": "a shoe with a moisture-wicking insole",
       "display_en": "Moisture Wicking",
-      "display_tr": "",
+      "display_tr": "Nem Emici",
       "tier": "descriptive",
       "zero_shot_scoreable": false,
       "reason": "not distinguishable by prompt: Poron, EVA, polyurethane, gel and memory foam look alike even when the footbed is fully in frame, which it often is on sandals and slippers. The exclusion is about mutual indistinguishability, not about the insole being hidden.",
       "review": "self",
-      "notes": ""
+      "notes": "",
+      "tr_source": "TR perakende standart",
+      "tr_status": "done"
     },
     "Insole.Orthotic.Friendly": {
       "prompt": "a shoe with an orthotic-friendly insole",
       "display_en": "Orthotic Friendly",
-      "display_tr": "",
+      "display_tr": "Ortopedik Tabanlığa Uygun",
       "tier": "descriptive",
       "zero_shot_scoreable": false,
       "reason": "not distinguishable by prompt: Poron, EVA, polyurethane, gel and memory foam look alike even when the footbed is fully in frame, which it often is on sandals and slippers. The exclusion is about mutual indistinguishability, not about the insole being hidden.",
       "review": "self",
-      "notes": ""
+      "notes": "",
+      "tr_source": "açıklayıcı; TR 'ortopedik' tek başına farklı şey ifade eder",
+      "tr_status": "flagged"
     },
     "Insole.Padded": {
       "prompt": "a shoe with a padded cushioned insole",
       "display_en": "Padded",
-      "display_tr": "",
+      "display_tr": "Yastıklamalı",
       "tier": "descriptive",
       "zero_shot_scoreable": false,
       "reason": "not distinguishable by prompt: Poron, EVA, polyurethane, gel and memory foam look alike even when the footbed is fully in frame, which it often is on sandals and slippers. The exclusion is about mutual indistinguishability, not about the insole being hidden.",
       "review": "self",
-      "notes": ""
+      "notes": "",
+      "tr_source": "alt: 'Dolgulu'; TR'de ikisi de geçer",
+      "tr_status": "flagged"
     },
     "Insole.Polyurethane": {
       "prompt": "a shoe with a polyurethane insole",
       "display_en": "Polyurethane",
-      "display_tr": "",
+      "display_tr": "Poliüretan",
       "tier": "descriptive",
       "zero_shot_scoreable": false,
       "reason": "not distinguishable by prompt: Poron, EVA, polyurethane, gel and memory foam look alike even when the footbed is fully in frame, which it often is on sandals and slippers. The exclusion is about mutual indistinguishability, not about the insole being hidden.",
       "review": "self",
-      "notes": ""
+      "notes": "",
+      "tr_source": "Hepsiburada filtre değeri",
+      "tr_status": "done"
     },
     "Insole.Poron": {
       "prompt": "a shoe with a Poron foam insole",
       "display_en": "Poron",
-      "display_tr": "",
+      "display_tr": "Poron",
       "tier": "descriptive",
       "zero_shot_scoreable": false,
       "reason": "not distinguishable by prompt: Poron, EVA, polyurethane, gel and memory foam look alike even when the footbed is fully in frame, which it often is on sandals and slippers. The exclusion is about mutual indistinguishability, not about the insole being hidden.",
       "review": "self",
-      "notes": ""
+      "notes": "",
+      "tr_source": "marka adı, aynen korundu",
+      "tr_status": "done"
     },
     "Insole.Removable": {
       "prompt": "a shoe with a removable insole",
       "display_en": "Removable",
-      "display_tr": "",
+      "display_tr": "Çıkarılabilir",
       "tier": "descriptive",
       "zero_shot_scoreable": false,
       "reason": "not distinguishable by prompt: Poron, EVA, polyurethane, gel and memory foam look alike even when the footbed is fully in frame, which it often is on sandals and slippers. The exclusion is about mutual indistinguishability, not about the insole being hidden.",
       "review": "self",
-      "notes": ""
+      "notes": "",
+      "tr_source": "TR perakende standart",
+      "tr_status": "done"
     },
     "Insole.Synthetic.Leather": {
       "prompt": "a shoe with a synthetic leather insole",
       "display_en": "Synthetic Leather",
-      "display_tr": "",
+      "display_tr": "Suni Deri",
       "tier": "descriptive",
       "zero_shot_scoreable": false,
       "reason": "not distinguishable by prompt: Poron, EVA, polyurethane, gel and memory foam look alike even when the footbed is fully in frame, which it often is on sandals and slippers. The exclusion is about mutual indistinguishability, not about the insole being hidden.",
       "review": "self",
-      "notes": ""
+      "notes": "",
+      "tr_source": "Hepsiburada filtre değeri",
+      "tr_status": "done"
     },
     "Insole.Textile": {
       "prompt": "a shoe with a textile-covered insole",
       "display_en": "Textile",
-      "display_tr": "",
+      "display_tr": "Tekstil",
       "tier": "descriptive",
       "zero_shot_scoreable": false,
       "reason": "not distinguishable by prompt: Poron, EVA, polyurethane, gel and memory foam look alike even when the footbed is fully in frame, which it often is on sandals and slippers. The exclusion is about mutual indistinguishability, not about the insole being hidden.",
       "review": "self",
-      "notes": ""
+      "notes": "",
+      "tr_source": "Hepsiburada filtre değeri",
+      "tr_status": "done"
     },
     "Material.Canvas": {
       "prompt": "a shoe made of woven canvas fabric",
       "display_en": "Canvas",
-      "display_tr": "",
+      "display_tr": "Kanvas",
       "tier": "direct",
       "zero_shot_scoreable": true,
       "reason": "",
       "review": "self",
-      "notes": ""
+      "notes": "",
+      "tr_source": "Hepsiburada filtre değeri",
+      "tr_status": "done"
     },
     "Material.Cordura": {
       "prompt": "a boot made of Cordura, a coarse durable textured nylon fabric used on hiking and work footwear",
       "display_en": "Cordura",
-      "display_tr": "",
+      "display_tr": "Cordura",
       "tier": "descriptive",
       "zero_shot_scoreable": true,
       "reason": "",
       "review": "self",
-      "notes": ""
+      "notes": "",
+      "tr_source": "marka adı, aynen korundu",
+      "tr_status": "done"
     },
     "Material.Cork": {
       "prompt": "a sandal with a cork sole showing a speckled tan texture",
       "display_en": "Cork",
-      "display_tr": "",
+      "display_tr": "Mantar",
       "tier": "direct",
       "zero_shot_scoreable": true,
       "reason": "",
       "review": "self",
-      "notes": ""
+      "notes": "",
+      "tr_source": "TR perakende standart",
+      "tr_status": "done"
     },
     "Material.Cotton": {
       "prompt": "a shoe made of cotton fabric",
       "display_en": "Cotton",
-      "display_tr": "",
+      "display_tr": "Pamuk",
       "tier": "direct",
       "zero_shot_scoreable": true,
       "reason": "",
       "review": "self",
-      "notes": ""
+      "notes": "",
+      "tr_source": "Hepsiburada filtre değeri",
+      "tr_status": "done"
     },
     "Material.EVA": {
       "prompt": "a shoe made of moulded EVA foam",
       "display_en": "EVA",
-      "display_tr": "",
+      "display_tr": "EVA",
       "tier": "direct",
       "zero_shot_scoreable": true,
       "reason": "",
       "review": "self",
-      "notes": ""
+      "notes": "",
+      "tr_source": "Hepsiburada filtre değeri",
+      "tr_status": "done"
     },
     "Material.Faux.Fur": {
       "prompt": "a shoe trimmed with imitation fur",
       "display_en": "Faux fur",
-      "display_tr": "",
+      "display_tr": "Suni Kürk",
       "tier": "direct",
       "zero_shot_scoreable": true,
       "reason": "",
       "review": "self",
-      "notes": ""
+      "notes": "",
+      "tr_source": "Hepsiburada filtre değeri",
+      "tr_status": "done"
     },
     "Material.Faux.Leather": {
       "prompt": "a shoe made of imitation leather",
       "display_en": "Faux leather",
-      "display_tr": "",
+      "display_tr": "Suni Deri",
       "tier": "direct",
       "zero_shot_scoreable": true,
       "reason": "",
       "review": "self",
-      "notes": ""
+      "notes": "",
+      "tr_source": "Hepsiburada filtre değeri",
+      "tr_status": "done"
     },
     "Material.Felt": {
       "prompt": "a shoe made of felted wool",
       "display_en": "Felt",
-      "display_tr": "",
+      "display_tr": "Keçe",
       "tier": "direct",
       "zero_shot_scoreable": true,
       "reason": "",
       "review": "self",
-      "notes": ""
+      "notes": "",
+      "tr_source": "TR perakende standart",
+      "tr_status": "done"
     },
     "Material.Fleece": {
       "prompt": "a slipper made of soft fleece",
       "display_en": "Fleece",
-      "display_tr": "",
+      "display_tr": "Polar",
       "tier": "direct",
       "zero_shot_scoreable": true,
       "reason": "",
       "review": "self",
-      "notes": ""
+      "notes": "",
+      "tr_source": "Hepsiburada astar filtre değeri",
+      "tr_status": "done"
     },
     "Material.Full.grain.leather": {
       "prompt": "a shoe made of full-grain leather showing the natural grain",
       "display_en": "Full-grain leather",
-      "display_tr": "",
+      "display_tr": "Full Grain Deri",
       "tier": "direct",
       "zero_shot_scoreable": true,
       "reason": "",
       "review": "self",
-      "notes": ""
+      "notes": "",
+      "tr_source": "TR perakendede aynen; alt: 'Tam Tahıl Deri'",
+      "tr_status": "flagged"
     },
     "Material.Hair.Calf": {
       "prompt": "a shoe made of hair-on calfskin, leather with the short animal hair left on, often spotted or striped",
       "display_en": "Hair calf",
-      "display_tr": "",
+      "display_tr": "Tüylü Dana Derisi",
       "tier": "descriptive",
       "zero_shot_scoreable": true,
       "reason": "",
       "review": "self",
-      "notes": ""
+      "notes": "",
+      "tr_source": "§7 uyarısı: gerçek saç değil, tüyü bırakılmış dana derisi",
+      "tr_status": "flagged"
     },
     "Material.Jute": {
       "prompt": "a sandal with a woven jute rope sole",
       "display_en": "Jute",
-      "display_tr": "",
+      "display_tr": "Jüt",
       "tier": "direct",
       "zero_shot_scoreable": true,
       "reason": "",
       "review": "self",
-      "notes": ""
+      "notes": "",
+      "tr_source": "TR perakende standart",
+      "tr_status": "done"
     },
     "Material.Lace": {
       "prompt": "a shoe made of lace with an openwork patterned fabric",
       "display_en": "Lace",
-      "display_tr": "",
+      "display_tr": "Dantel",
       "tier": "direct",
       "zero_shot_scoreable": true,
       "reason": "",
       "review": "self",
-      "notes": ""
+      "notes": "",
+      "tr_source": "TR perakende standart",
+      "tr_status": "done"
     },
     "Material.Leather": {
       "prompt": "a shoe made of smooth leather",
       "display_en": "Leather",
-      "display_tr": "",
+      "display_tr": "Deri",
       "tier": "direct",
       "zero_shot_scoreable": true,
       "reason": "",
       "review": "self",
-      "notes": ""
+      "notes": "",
+      "tr_source": "Hepsiburada filtre değeri",
+      "tr_status": "done"
     },
     "Material.Mesh": {
       "prompt": "a shoe made of open mesh fabric with visible perforations",
       "display_en": "Mesh",
-      "display_tr": "",
+      "display_tr": "Fileli",
       "tier": "direct",
       "zero_shot_scoreable": true,
       "reason": "",
       "review": "self",
-      "notes": ""
+      "notes": "",
+      "tr_source": "TR perakende standart; alt: 'Mesh'",
+      "tr_status": "done"
     },
     "Material.Microfiber": {
       "prompt": "a shoe made of microfiber, a fine synthetic fabric with an even matte surface",
       "display_en": "Microfiber",
-      "display_tr": "",
+      "display_tr": "Mikrofiber",
       "tier": "descriptive",
       "zero_shot_scoreable": true,
       "reason": "",
       "review": "self",
-      "notes": ""
+      "notes": "",
+      "tr_source": "Hepsiburada filtre değeri",
+      "tr_status": "done"
     },
     "Material.Nappa": {
       "prompt": "a shoe made of nappa leather, a soft smooth full-grain leather with a fine even surface",
       "display_en": "Nappa",
-      "display_tr": "",
+      "display_tr": "Napa Deri",
       "tier": "descriptive",
       "zero_shot_scoreable": true,
       "reason": "",
       "review": "self",
-      "notes": ""
+      "notes": "",
+      "tr_source": "Meskanto / TR deri sektörü: 'napa deri'",
+      "tr_status": "done"
     },
     "Material.Neoprene": {
       "prompt": "a shoe made of neoprene, a smooth stretchy wetsuit-like rubber fabric",
       "display_en": "Neoprene",
-      "display_tr": "",
+      "display_tr": "Neopren",
       "tier": "direct",
       "zero_shot_scoreable": true,
       "reason": "",
       "review": "self",
-      "notes": ""
+      "notes": "",
+      "tr_source": "TR perakende standart",
+      "tr_status": "done"
     },
     "Material.Nubuck": {
       "prompt": "a shoe made of nubuck, a leather sanded to a soft velvety nap, similar to suede but finer",
       "display_en": "Nubuck",
-      "display_tr": "",
+      "display_tr": "Nubuk",
       "tier": "descriptive",
       "zero_shot_scoreable": true,
       "reason": "",
       "review": "self",
-      "notes": ""
+      "notes": "",
+      "tr_source": "Hepsiburada filtre değeri",
+      "tr_status": "done"
     },
     "Material.Nylon": {
       "prompt": "a shoe made of nylon fabric",
       "display_en": "Nylon",
-      "display_tr": "",
+      "display_tr": "Naylon",
       "tier": "direct",
       "zero_shot_scoreable": true,
       "reason": "",
       "review": "self",
-      "notes": ""
+      "notes": "",
+      "tr_source": "TR perakende standart",
+      "tr_status": "done"
     },
     "Material.Patent.Leather": {
       "prompt": "a shoe made of glossy patent leather with a mirror-like shine",
       "display_en": "Patent leather",
-      "display_tr": "",
+      "display_tr": "Rugan",
       "tier": "direct",
       "zero_shot_scoreable": true,
       "reason": "",
       "review": "self",
-      "notes": ""
+      "notes": "",
+      "tr_source": "TR deri sektörü standart terimi — 'parlak deri' DEĞİL",
+      "tr_status": "done"
     },
     "Material.Polyester": {
       "prompt": "a shoe made of polyester fabric",
       "display_en": "Polyester",
-      "display_tr": "",
+      "display_tr": "Polyester",
       "tier": "direct",
       "zero_shot_scoreable": true,
       "reason": "",
       "review": "self",
-      "notes": ""
+      "notes": "",
+      "tr_source": "Hepsiburada filtre değeri",
+      "tr_status": "done"
     },
     "Material.Ripstop": {
       "prompt": "a shoe made of ripstop nylon, a lightweight fabric with a visible fine square grid woven into it",
       "display_en": "Ripstop",
-      "display_tr": "",
+      "display_tr": "Ripstop",
       "tier": "descriptive",
       "zero_shot_scoreable": true,
       "reason": "",
       "review": "self",
-      "notes": ""
+      "notes": "",
+      "tr_source": "teknik kumaş adı, TR'de aynen kullanılıyor",
+      "tr_status": "flagged"
     },
     "Material.Rubber": {
       "prompt": "a shoe made of rubber",
       "display_en": "Rubber",
-      "display_tr": "",
+      "display_tr": "Kauçuk",
       "tier": "direct",
       "zero_shot_scoreable": true,
       "reason": "",
       "review": "self",
-      "notes": ""
+      "notes": "",
+      "tr_source": "Hepsiburada filtre değeri",
+      "tr_status": "done"
     },
     "Material.Satin": {
       "prompt": "a shoe made of satin with a smooth lustrous sheen",
       "display_en": "Satin",
-      "display_tr": "",
+      "display_tr": "Saten",
       "tier": "direct",
       "zero_shot_scoreable": true,
       "reason": "",
       "review": "self",
-      "notes": ""
+      "notes": "",
+      "tr_source": "Hepsiburada filtre değeri",
+      "tr_status": "done"
     },
     "Material.Shearling": {
       "prompt": "a boot lined with shearling, showing thick woolly fleece at the opening",
       "display_en": "Shearling",
-      "display_tr": "",
+      "display_tr": "Kuzu Postu",
       "tier": "direct",
       "zero_shot_scoreable": true,
       "reason": "",
       "review": "self",
-      "notes": ""
+      "notes": "",
+      "tr_source": "TR'de 'shearling' de aynen kullanılıyor",
+      "tr_status": "flagged"
     },
     "Material.Sheepskin": {
       "prompt": "a shoe made of sheepskin",
       "display_en": "Sheepskin",
-      "display_tr": "",
+      "display_tr": "Koyun Derisi",
       "tier": "direct",
       "zero_shot_scoreable": true,
       "reason": "",
       "review": "self",
-      "notes": ""
+      "notes": "",
+      "tr_source": "TR perakende standart",
+      "tr_status": "done"
     },
     "Material.Suede": {
       "prompt": "a shoe made of suede with a soft napped surface",
       "display_en": "Suede",
-      "display_tr": "",
+      "display_tr": "Süet",
       "tier": "direct",
       "zero_shot_scoreable": true,
       "reason": "",
       "review": "self",
-      "notes": ""
+      "notes": "",
+      "tr_source": "Hepsiburada filtre değeri",
+      "tr_status": "done"
     },
     "Material.Synthetic": {
       "prompt": "a shoe made of synthetic man-made material",
       "display_en": "Synthetic",
-      "display_tr": "",
+      "display_tr": "Sentetik",
       "tier": "direct",
       "zero_shot_scoreable": true,
       "reason": "",
       "review": "self",
-      "notes": ""
+      "notes": "",
+      "tr_source": "Hepsiburada filtre değeri",
+      "tr_status": "done"
     },
     "Material.Terry": {
       "prompt": "a slipper made of terry cloth with a looped towelling pile",
       "display_en": "Terry",
-      "display_tr": "",
+      "display_tr": "Havlu Kumaş",
       "tier": "descriptive",
       "zero_shot_scoreable": true,
       "reason": "",
       "review": "self",
-      "notes": "91% of Terry positives are Slipper Flats, against slippers being 2.6% of the catalog, a 35x concentration. A correct prediction may reflect recognising a slipper rather than recognising terry cloth, so report this caveat wherever the label is scored."
+      "notes": "91% of Terry positives are Slipper Flats, against slippers being 2.6% of the catalog, a 35x concentration. A correct prediction may reflect recognising a slipper rather than recognising terry cloth, so report this caveat wherever the label is scored.",
+      "tr_source": "TR perakende standart; §7: %91 panduf içinde yoğunlaşıyor",
+      "tr_status": "done"
     },
     "Material.Velvet": {
       "prompt": "a shoe made of velvet with a dense soft pile",
       "display_en": "Velvet",
-      "display_tr": "",
+      "display_tr": "Kadife",
       "tier": "direct",
       "zero_shot_scoreable": true,
       "reason": "",
       "review": "self",
-      "notes": ""
+      "notes": "",
+      "tr_source": "Hepsiburada filtre değeri",
+      "tr_status": "done"
     },
     "Material.Wool": {
       "prompt": "a shoe made of wool",
       "display_en": "Wool",
-      "display_tr": "",
+      "display_tr": "Yün",
       "tier": "direct",
       "zero_shot_scoreable": true,
       "reason": "",
       "review": "self",
-      "notes": ""
+      "notes": "",
+      "tr_source": "TR perakende standart",
+      "tr_status": "done"
     },
     "SubCategory.Ankle": {
       "prompt": "an ankle boot with a short shaft ending at the ankle",
       "display_en": "Ankle boots",
-      "display_tr": "",
+      "display_tr": "Bot",
       "tier": "direct",
       "zero_shot_scoreable": true,
       "reason": "",
       "review": "self",
-      "notes": ""
+      "notes": "",
+      "tr_source": "TR'de 'bot' zaten kısa konçlu; alt: 'Bilekli Bot'",
+      "tr_status": "done"
     },
     "SubCategory.Boat.Shoes": {
       "prompt": "a leather boat shoe with a lace threaded around the collar",
       "display_en": "Boat shoes",
-      "display_tr": "",
+      "display_tr": "Marin Ayakkabı",
       "tier": "direct",
       "zero_shot_scoreable": true,
       "reason": "",
       "review": "self",
-      "notes": ""
+      "notes": "",
+      "tr_source": "TR perakende yaygın; alt: 'Tekne Ayakkabısı'",
+      "tr_status": "flagged"
     },
     "SubCategory.Clogs.and.Mules": {
       "prompt": "a backless clog or mule shoe",
       "display_en": "Clogs and mules",
-      "display_tr": "",
+      "display_tr": "Sabo ve Arkası Açık Ayakkabı",
       "tier": "direct",
       "zero_shot_scoreable": true,
       "reason": "",
       "review": "self",
-      "notes": ""
+      "notes": "",
+      "tr_source": "TR 'sabo' + 'arkası açık'; tek kelime karşılık yok",
+      "tr_status": "flagged"
     },
     "SubCategory.Firstwalker": {
       "prompt": "a small toddler shoe for a child learning to walk",
       "display_en": "Firstwalker",
-      "display_tr": "",
+      "display_tr": "İlk Adım Ayakkabısı",
       "tier": "direct",
       "zero_shot_scoreable": true,
       "reason": "",
       "review": "self",
-      "notes": "Prewalker and Firstwalker are both infant shoes and look similar in a product photo; the difference is sole stiffness, which a photograph shows poorly. Observation, not reviewed."
+      "notes": "Prewalker and Firstwalker are both infant shoes and look similar in a product photo; the difference is sole stiffness, which a photograph shows poorly. Observation, not reviewed.",
+      "tr_source": "TR bebek ayakkabı perakendesinde standart",
+      "tr_status": "done"
     },
     "SubCategory.Flat": {
       "prompt": "a flat sandal with no heel",
       "display_en": "Flat sandals",
-      "display_tr": "",
+      "display_tr": "Düz Sandalet",
       "tier": "direct",
       "zero_shot_scoreable": true,
       "reason": "",
       "review": "self",
-      "notes": ""
+      "notes": "",
+      "tr_source": "TR perakende standart",
+      "tr_status": "done"
     },
     "SubCategory.Flats": {
       "prompt": "a flat women's shoe with no heel",
       "display_en": "Flats",
-      "display_tr": "",
+      "display_tr": "Babet",
       "tier": "direct",
       "zero_shot_scoreable": true,
       "reason": "",
       "review": "self",
-      "notes": ""
+      "notes": "",
+      "tr_source": "TR perakende standart; Stradivarius TR / Trendyol yaygın",
+      "tr_status": "done"
     },
     "SubCategory.Heel": {
       "prompt": "a heeled sandal with a raised heel",
       "display_en": "Heeled sandals",
-      "display_tr": "",
+      "display_tr": "Topuklu Sandalet",
       "tier": "direct",
       "zero_shot_scoreable": true,
       "reason": "",
       "review": "self",
-      "notes": ""
+      "notes": "",
+      "tr_source": "TR perakende standart",
+      "tr_status": "done"
     },
     "SubCategory.Heels": {
       "prompt": "a high-heeled women's shoe",
       "display_en": "Heels",
-      "display_tr": "",
+      "display_tr": "Topuklu Ayakkabı",
       "tier": "direct",
       "zero_shot_scoreable": true,
       "reason": "",
       "review": "self",
-      "notes": ""
+      "notes": "",
+      "tr_source": "TR perakende standart",
+      "tr_status": "done"
     },
     "SubCategory.Knee.High": {
       "prompt": "a knee-high boot with a tall shaft reaching the knee",
       "display_en": "Knee-high boots",
-      "display_tr": "",
+      "display_tr": "Çizme",
       "tier": "direct",
       "zero_shot_scoreable": true,
       "reason": "",
       "review": "self",
-      "notes": ""
+      "notes": "",
+      "tr_source": "TR 'çizme' = uzun konçlu bot",
+      "tr_status": "done"
     },
     "SubCategory.Loafers": {
       "prompt": "a slip-on loafer shoe with no laces",
       "display_en": "Loafers",
-      "display_tr": "",
+      "display_tr": "Loafer",
       "tier": "direct",
       "zero_shot_scoreable": true,
       "reason": "",
       "review": "self",
-      "notes": ""
+      "notes": "",
+      "tr_source": "TR perakendede aynen kullanılıyor; alt: 'Makosen'",
+      "tr_status": "flagged"
     },
     "SubCategory.Mid.Calf": {
       "prompt": "a boot with a shaft reaching the middle of the calf",
       "display_en": "Mid-calf boots",
-      "display_tr": "",
+      "display_tr": "Yarım Çizme",
       "tier": "direct",
       "zero_shot_scoreable": true,
       "reason": "",
       "review": "self",
-      "notes": ""
+      "notes": "",
+      "tr_source": "TR perakende yaygın; konç baldır ortası",
+      "tr_status": "flagged"
     },
     "SubCategory.Oxfords": {
       "prompt": "an oxford dress shoe with closed lacing",
       "display_en": "Oxfords",
-      "display_tr": "",
+      "display_tr": "Oxford Ayakkabı",
       "tier": "direct",
       "zero_shot_scoreable": true,
       "reason": "",
       "review": "self",
-      "notes": ""
+      "notes": "",
+      "tr_source": "TR perakendede aynen; alt: 'Bağcıklı Klasik Ayakkabı'",
+      "tr_status": "flagged"
     },
     "SubCategory.Prewalker": {
       "prompt": "a soft infant shoe for a baby who cannot walk yet",
       "display_en": "Prewalker",
-      "display_tr": "",
+      "display_tr": "Emekleme Patiği",
       "tier": "direct",
       "zero_shot_scoreable": true,
       "reason": "",
       "review": "self",
-      "notes": "Prewalker and Firstwalker are both infant shoes and look similar in a product photo; the difference is sole stiffness, which a photograph shows poorly. Observation, not reviewed."
+      "notes": "Prewalker and Firstwalker are both infant shoes and look similar in a product photo; the difference is sole stiffness, which a photograph shows poorly. Observation, not reviewed.",
+      "tr_source": "TR 'patik' yumuşak tabanlı bebek ayakkabısı; İlk Adım'dan ayrımı perakendede net değil",
+      "tr_status": "flagged"
     },
     "SubCategory.Slipper.Flats": {
       "prompt": "a soft flat house slipper",
       "display_en": "Slipper flats",
-      "display_tr": "",
+      "display_tr": "Panduf",
       "tier": "direct",
       "zero_shot_scoreable": true,
       "reason": "",
       "review": "self",
-      "notes": ""
+      "notes": "",
+      "tr_source": "TR ev ayakkabısı terimi; alt: 'Ev Terliği'",
+      "tr_status": "flagged"
     },
     "SubCategory.Sneakers.and.Athletic.Shoes": {
       "prompt": "a sneaker or athletic trainer",
       "display_en": "Sneakers",
-      "display_tr": "",
+      "display_tr": "Spor Ayakkabı",
       "tier": "direct",
       "zero_shot_scoreable": true,
       "reason": "",
       "review": "self",
-      "notes": ""
+      "notes": "",
+      "tr_source": "TR perakende standart; Skechers TR / Hepsiburada kategori adı",
+      "tr_status": "done"
     },
     "ToeStyle.Algonquin": {
       "prompt": "a shoe with a fine U-shaped seam across the top of the toe forming a flat raised ridge rather than a puckered one",
       "display_en": "Algonquin toe",
-      "display_tr": "",
+      "display_tr": "Algonquin Burun",
       "tier": "descriptive",
       "zero_shot_scoreable": true,
       "reason": "",
       "review": "confirmed",
-      "notes": "Moc Toe and Algonquin are near-identical in a photograph, differing only in whether the seam is puckered or a flat raised ridge. Their ceiling is set by visual distinguishability, not prompt quality, so a low score here is not evidence the prompt is wrong."
+      "notes": "Moc Toe and Algonquin are near-identical in a photograph, differing only in whether the seam is puckered or a flat raised ridge. Their ceiling is set by visual distinguishability, not prompt quality, so a low score here is not evidence the prompt is wrong.",
+      "tr_source": "TR karşılığı YOK; §7 Moc Toe'ya neredeyse özdeş diyor — ONAY GEREKLİ",
+      "tr_status": "unsure"
     },
     "ToeStyle.Almond": {
       "prompt": "a shoe with an almond-shaped toe, tapered but softly rounded at the tip",
       "display_en": "Almond toe",
-      "display_tr": "",
+      "display_tr": "Badem Burun",
       "tier": "direct",
       "zero_shot_scoreable": true,
       "reason": "",
       "review": "self",
-      "notes": ""
+      "notes": "",
+      "tr_source": "TR perakende standart",
+      "tr_status": "done"
     },
     "ToeStyle.Bicycle Toe": {
       "prompt": "a shoe with two parallel seams running down either side of the toe and meeting at the tip like handlebars",
       "display_en": "Bicycle toe",
-      "display_tr": "",
+      "display_tr": "Bisiklet Dikişli Burun",
       "tier": "descriptive",
       "zero_shot_scoreable": true,
       "reason": "",
       "review": "confirmed",
-      "notes": ""
+      "notes": "",
+      "tr_source": "TR karşılığı yerleşmemiş — ONAY GEREKLİ",
+      "tr_status": "unsure"
     },
     "ToeStyle.Bump Toe": {
       "prompt": "a shoe with a slight raised bump at the very tip of the toe, visible in profile",
       "display_en": "Bump toe",
-      "display_tr": "",
+      "display_tr": "Çıkıntılı Burun",
       "tier": "descriptive",
       "zero_shot_scoreable": true,
       "reason": "",
       "review": "confirmed",
-      "notes": ""
+      "notes": "",
+      "tr_source": "TR karşılığı yerleşmemiş — ONAY GEREKLİ",
+      "tr_status": "unsure"
     },
     "ToeStyle.Capped Toe": {
       "prompt": "a dress shoe with a seam across the toe forming a separate toe cap",
       "display_en": "Cap toe",
-      "display_tr": "",
+      "display_tr": "Burnu Dikişli",
       "tier": "direct",
       "zero_shot_scoreable": true,
       "reason": "",
       "review": "self",
-      "notes": ""
+      "notes": "",
+      "tr_source": "TR klasik ayakkabı tanımı; 'cap toe' de aynen kullanılıyor",
+      "tr_status": "flagged"
     },
     "ToeStyle.Center Seam": {
       "prompt": "a shoe with a single vertical seam running down the centre of the toe, dividing it symmetrically",
       "display_en": "Center seam",
-      "display_tr": "",
+      "display_tr": "Ortadan Dikişli Burun",
       "tier": "descriptive",
       "zero_shot_scoreable": true,
       "reason": "",
       "review": "confirmed",
-      "notes": ""
+      "notes": "",
+      "tr_source": "açıklayıcı",
+      "tr_status": "flagged"
     },
     "ToeStyle.Closed Toe": {
       "prompt": "a shoe with a closed toe covering the toes",
       "display_en": "Closed toe",
-      "display_tr": "",
+      "display_tr": "Kapalı Burun",
       "tier": "direct",
       "zero_shot_scoreable": true,
       "reason": "",
       "review": "self",
-      "notes": ""
+      "notes": "",
+      "tr_source": "TR perakende standart",
+      "tr_status": "done"
     },
     "ToeStyle.Medallion": {
       "prompt": "a dress shoe with a decorative pattern of small punched holes on the toe cap, usually floral or circular",
       "display_en": "Medallion toe",
-      "display_tr": "",
+      "display_tr": "Delikli Desenli Burun",
       "tier": "descriptive",
       "zero_shot_scoreable": true,
       "reason": "",
       "review": "confirmed",
-      "notes": ""
+      "notes": "",
+      "tr_source": "§7 uyarısı: 'madalyon' yanlış okunur — bu delikli burun deseni",
+      "tr_status": "flagged"
     },
     "ToeStyle.Moc Toe": {
       "prompt": "a shoe with a prominent U-shaped horseshoe seam across the top of the toe, as if a separate panel of leather were stitched on by hand",
       "display_en": "Moc toe",
-      "display_tr": "",
+      "display_tr": "Mokasen Burun",
       "tier": "descriptive",
       "zero_shot_scoreable": true,
       "reason": "",
       "review": "confirmed",
-      "notes": "Moc Toe and Algonquin are near-identical in a photograph, differing only in whether the seam is puckered or a flat raised ridge. Their ceiling is set by visual distinguishability, not prompt quality, so a low score here is not evidence the prompt is wrong."
+      "notes": "Moc Toe and Algonquin are near-identical in a photograph, differing only in whether the seam is puckered or a flat raised ridge. Their ceiling is set by visual distinguishability, not prompt quality, so a low score here is not evidence the prompt is wrong.",
+      "tr_source": "TR 'mokasen' dikişi; alt: 'at nalı dikişli burun'",
+      "tr_status": "flagged"
     },
     "ToeStyle.Open Toe": {
       "prompt": "a sandal with an open toe leaving the toes exposed",
       "display_en": "Open toe",
-      "display_tr": "",
+      "display_tr": "Açık Burun",
       "tier": "direct",
       "zero_shot_scoreable": true,
       "reason": "",
       "review": "self",
-      "notes": ""
+      "notes": "",
+      "tr_source": "TR perakende standart",
+      "tr_status": "done"
     },
     "ToeStyle.Peep Toe": {
       "prompt": "a shoe with a small peep-toe opening showing only the tips of the toes",
       "display_en": "Peep toe",
-      "display_tr": "",
+      "display_tr": "Peep Toe",
       "tier": "direct",
       "zero_shot_scoreable": true,
       "reason": "",
       "review": "self",
-      "notes": ""
+      "notes": "",
+      "tr_source": "TR perakendede aynen kullanılıyor; alt: 'Küçük Açık Burun'",
+      "tr_status": "flagged"
     },
     "ToeStyle.Pointed Toe": {
       "prompt": "a shoe with a sharply pointed toe",
       "display_en": "Pointed toe",
-      "display_tr": "",
+      "display_tr": "Sivri Burun",
       "tier": "direct",
       "zero_shot_scoreable": true,
       "reason": "",
       "review": "self",
-      "notes": ""
+      "notes": "",
+      "tr_source": "Trendyol / Cimri kategori adı",
+      "tr_status": "done"
     },
     "ToeStyle.Round Toe": {
       "prompt": "a shoe with a rounded toe",
       "display_en": "Round toe",
-      "display_tr": "",
+      "display_tr": "Yuvarlak Burun",
       "tier": "direct",
       "zero_shot_scoreable": true,
       "reason": "",
       "review": "self",
-      "notes": ""
+      "notes": "",
+      "tr_source": "Stradivarius TR: 'yuvarlak burunlu'",
+      "tr_status": "done"
     },
     "ToeStyle.Snip Toe": {
       "prompt": "a western boot with a toe that narrows toward the front but ends in a flat cut tip rather than a point",
       "display_en": "Snip toe",
-      "display_tr": "",
+      "display_tr": "Kesik Sivri Burun",
       "tier": "descriptive",
       "zero_shot_scoreable": true,
       "reason": "",
       "review": "confirmed",
-      "notes": ""
+      "notes": "",
+      "tr_source": "western bot; TR karşılığı yerleşmemiş — ONAY GEREKLİ",
+      "tr_status": "unsure"
     },
     "ToeStyle.Snub Toe": {
       "prompt": "a shoe with a short blunt rounded toe, stubbier and shorter than a standard round toe",
       "display_en": "Snub toe",
-      "display_tr": "",
+      "display_tr": "Küt Burun",
       "tier": "descriptive",
       "zero_shot_scoreable": true,
       "reason": "",
       "review": "confirmed",
-      "notes": ""
+      "notes": "",
+      "tr_source": "TR perakende standart",
+      "tr_status": "done"
     },
     "ToeStyle.Square Toe": {
       "prompt": "a shoe with a flat square toe",
       "display_en": "Square toe",
-      "display_tr": "",
+      "display_tr": "Kare Burun",
       "tier": "direct",
       "zero_shot_scoreable": true,
       "reason": "",
       "review": "self",
-      "notes": ""
+      "notes": "",
+      "tr_source": "TR perakende standart",
+      "tr_status": "done"
     },
     "ToeStyle.Wide Toe Box": {
       "prompt": "a shoe with a wide roomy toe box",
       "display_en": "Wide toe box",
-      "display_tr": "",
+      "display_tr": "Geniş Burun",
       "tier": "direct",
       "zero_shot_scoreable": true,
       "reason": "",
       "review": "self",
-      "notes": ""
+      "notes": "",
+      "tr_source": "TR perakende standart",
+      "tr_status": "done"
     },
     "ToeStyle.Wingtip": {
       "prompt": "a brogue shoe with a W-shaped wingtip seam sweeping back along the sides",
       "display_en": "Wingtip",
-      "display_tr": "",
+      "display_tr": "Kanat Burun (Wingtip)",
       "tier": "direct",
       "zero_shot_scoreable": true,
       "reason": "",
       "review": "self",
-      "notes": ""
+      "notes": "",
+      "tr_source": "TR'de 'brogue' ve 'wingtip' aynen de kullanılıyor",
+      "tr_status": "flagged"
     }
   },
   "families": {
     "Category": {
       "display_en": "Category",
-      "display_tr": "",
-      "notes": "the four top-level shoe types, one value per product"
+      "display_tr": "Kategori",
+      "notes": "the four top-level shoe types, one value per product",
+      "tr_source": "TR perakende standart",
+      "tr_status": "done"
     },
     "Closure": {
       "display_en": "Closure",
-      "display_tr": "",
-      "notes": "how the shoe fastens; a literal rendering of the English is wrong for Turkish retail"
+      "display_tr": "Kapama Tipi",
+      "notes": "how the shoe fastens; a literal rendering of the English is wrong for Turkish retail",
+      "tr_source": "Stradivarius TR ürün metni: 'bağcıklı kapama', 'cırt cırtlı kapama' — 'kapanış' DEĞİL",
+      "tr_status": "done"
     },
     "Gender": {
       "display_en": "Gender",
-      "display_tr": "",
-      "notes": "intended wearer; a product may carry more than one"
+      "display_tr": "Cinsiyet",
+      "notes": "intended wearer; a product may carry more than one",
+      "tr_source": "TR perakende standart",
+      "tr_status": "done"
     },
     "HeelHeight": {
       "display_en": "Heel height",
-      "display_tr": "",
-      "notes": "seven hand-decoded inch ranges, shown as one value chosen by argmax"
+      "display_tr": "Topuk Yüksekliği",
+      "notes": "seven hand-decoded inch ranges, shown as one value chosen by argmax",
+      "tr_source": "TR perakende standart; Hepsiburada 'Ökçe Yüksekliği' de kullanıyor",
+      "tr_status": "done"
     },
     "Insole": {
       "display_en": "Insole",
-      "display_tr": "",
-      "notes": "the footbed material; excluded from zero-shot scoring, the labels are not prompt-distinguishable"
+      "display_tr": "İç Taban",
+      "notes": "the footbed material; excluded from zero-shot scoring, the labels are not prompt-distinguishable",
+      "tr_source": "Skechers TR filtre: 'İç Taban Teknolojisi'",
+      "tr_status": "done"
     },
     "Material": {
       "display_en": "Material",
-      "display_tr": "",
-      "notes": "upper materials; a product may carry several"
+      "display_tr": "Malzeme",
+      "notes": "upper materials; a product may carry several",
+      "tr_source": "Hepsiburada filtre başlığı",
+      "tr_status": "done"
     },
     "SubCategory": {
       "display_en": "Sub-category",
-      "display_tr": "",
-      "notes": "the finer type within Category, one value per product"
+      "display_tr": "Alt Kategori",
+      "notes": "the finer type within Category, one value per product",
+      "tr_source": "TR perakende standart",
+      "tr_status": "done"
     },
     "ToeStyle": {
       "display_en": "Toe style",
-      "display_tr": "",
-      "notes": "the shape and construction of the toe; not a literal rendering of the English"
+      "display_tr": "Burun Tipi",
+      "notes": "the shape and construction of the toe; not a literal rendering of the English",
+      "tr_source": "TR perakende standart: 'sivri burun', 'küt burun' — 'ayak parmağı stili' DEĞİL",
+      "tr_status": "done"
     }
   }
 }
