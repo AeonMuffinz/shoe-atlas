@@ -11,7 +11,7 @@ import numpy as np
 import torch
 from torch import nn
 
-from src import data_setup, metrics, model_builder, reporting
+from src import corruption, data_setup, metrics, model_builder, reporting
 from src.catalog import FAMILIES, LabelSchema
 from src.reporting import (
     CALIBRATION_NAME,
@@ -60,6 +60,34 @@ def predict(model: nn.Module, loader: object, device: torch.device) -> np.ndarra
         with torch.autocast("cuda", dtype=torch.bfloat16, enabled=device.type == "cuda"):
             chunks.append(model(images).float().cpu())
     return torch.cat(chunks).numpy().astype(np.float64)
+
+
+def label_basis(config: dict) -> dict[str, object]:
+    rate = float(config.get("corrupt_rate", 0.0))
+    if rate <= 0.0:
+        return {}
+    return {
+        "corrupt_rate": rate,
+        "corrupt_seed": int(config.get("corrupt_seed", config["seed"])),
+        "corrupt_type": str(config.get("corrupt_type", corruption.TYPE_UNIFORM)),
+    }
+
+
+def clean_label_diagnostic(
+    processed_dir: Path, split: str, logits: np.ndarray, schema: LabelSchema
+) -> dict[str, object]:
+    clean = data_setup.load_artifacts(processed_dir)
+    scores, _, _, _ = reporting.score_split(gather(clean, split, logits), schema)
+    return {
+        "map": scores["map"],
+        "map_softmax": scores["map_softmax"],
+        "map_bce": scores["map_bce"],
+        "note": (
+            "clean-label validation mAP for a run trained on corrupted labels, per FINDINGS 24.8. "
+            "Reported and not scored: it feeds neither calibration nor the audit, and exists so the "
+            "cost of training on noise is visible. Nothing from this pass is persisted."
+        ),
+    }
 
 
 def gather(artifacts: data_setup.Artifacts, split: str, logits: np.ndarray) -> Predictions:
@@ -138,9 +166,11 @@ def evaluate_run(
     device: torch.device | None = None,
     montages: bool = True,
 ) -> dict[str, object]:
-    artifacts = data_setup.load_artifacts(processed_dir)
-    schema = artifacts.schema
     payload = load_checkpoint(run_dir, checkpoint)
+    config = dict(payload["config"])
+    basis = label_basis(config)
+    artifacts = data_setup.load_artifacts(processed_dir, **basis)
+    schema = artifacts.schema
     assert_schema_matches(payload, schema)
 
     run_name = run_dir.name
@@ -148,7 +178,6 @@ def evaluate_run(
 
     device = device or torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = build_from_checkpoint(payload, len(schema.columns), device)
-    config = dict(payload["config"])
     data_cfg = data_setup.DataConfig(
         processed_dir=processed_dir,
         image_size=int(config.get("image_size", 224)),
@@ -167,6 +196,7 @@ def evaluate_run(
         "checkpoint": checkpoint,
         "epoch": payload.get("epoch"),
         "selection_metric": config.get("monitor"),
+        "label_basis": basis or "clean",
     }
 
     splits_to_score = ["val"] + (["test"] if unlock_test else [])
@@ -181,6 +211,10 @@ def evaluate_run(
             predictions.logits, predictions.labels, predictions.family_observed, schema
         )
         np.save(run_dir / PROBS_OOF_NAME.format(split=split), held_out.astype(np.float32))
+        if split == "val" and basis:
+            report["clean_label_diagnostic"] = clean_label_diagnostic(
+                processed_dir, split, predictions.logits, schema
+            )
         if split == "val":
             reporting.write_confusion(run_dir, calibrated, predictions, schema)
             (run_dir / THRESHOLDS_NAME).write_text(

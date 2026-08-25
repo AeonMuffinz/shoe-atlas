@@ -181,7 +181,7 @@ def summarise_groups(per_family: dict[str, dict[str, float]], schema: LabelSchem
 
 
 def load_run_inputs(
-    run_dir: Path, processed: Path, rate: float, seed: int
+    run_dir: Path, processed: Path, rate: float, seed: int, corrupt_type: str
 ) -> tuple[np.ndarray, Corruption, np.ndarray, np.ndarray, LabelSchema, dict]:
     schema = LabelSchema.load(processed / "label_schema.json")
     observed_all = np.load(processed / "family_observed.npy")
@@ -196,8 +196,9 @@ def load_run_inputs(
         )
     probs = np.load(probs_path).astype(np.float64)
 
-    source = corruption_module.corruption_dir(processed, rate, seed)
+    source = corruption_module.corruption_dir(processed, rate, seed, corrupt_type)
     dirty, mask, manifest = corruption_module.load_corruption(source)
+    corruption_module.assert_type_matches(manifest, corrupt_type, source)
     kind = manifest.pop("kind")
     planted = Corruption(
         labels=dirty[val].astype(np.float64), corrupted=mask[val], kind="mixed", rate=rate
@@ -206,10 +207,10 @@ def load_run_inputs(
 
 
 def run_audit(
-    run_dir: Path, processed: Path, rate: float, seed: int
+    run_dir: Path, processed: Path, rate: float, seed: int, corrupt_type: str
 ) -> dict[str, object]:
     probs, planted, observed, kind, schema, manifest = load_run_inputs(
-        run_dir, processed, rate, seed
+        run_dir, processed, rate, seed, corrupt_type
     )
     per_family = score_backends(probs, planted, observed, schema, kind)
     report: dict[str, object] = {
@@ -231,10 +232,16 @@ def main() -> None:
     parser.add_argument("--processed", type=Path, default=reporting.PROCESSED_DIR)
     parser.add_argument("--corrupt-rate", type=float, required=True)
     parser.add_argument("--corrupt-seed", type=int, required=True)
+    parser.add_argument(
+        "--corrupt-type", choices=list(corruption_module.CORRUPT_TYPES), required=True,
+        help="the scheme the run trained under; detection is reported per corruption type",
+    )
     parser.add_argument("--out", type=Path, default=None)
     args = parser.parse_args()
 
-    report = run_audit(args.run, args.processed, args.corrupt_rate, args.corrupt_seed)
+    report = run_audit(
+        args.run, args.processed, args.corrupt_rate, args.corrupt_seed, args.corrupt_type
+    )
     destination = args.out or (args.run / AUDIT_NAME)
     destination.write_text(json.dumps(report, indent=2, default=float), encoding="utf-8")
     print(f"audit written to {destination}")

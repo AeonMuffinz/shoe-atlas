@@ -18,6 +18,10 @@ UNIFORM: str = "uniform"
 CONFUSION: str = "confusion_weighted"
 ADD: str = "add"
 DROP: str = "drop"
+TYPE_UNIFORM: str = "uniform"
+TYPE_CONFUSION: str = "confusion"
+CORRUPT_TYPES: tuple[str, ...] = (TYPE_UNIFORM, TYPE_CONFUSION)
+EXCLUSIVE_KIND_FOR_TYPE: dict[str, str] = {TYPE_UNIFORM: UNIFORM, TYPE_CONFUSION: CONFUSION}
 LABELS_NAME: str = "labels.npy"
 MASK_NAME: str = "corruption_mask.npy"
 MANIFEST_NAME: str = "corruption.json"
@@ -52,6 +56,7 @@ class CorruptedCatalog:
     seed: int
     per_family: dict[str, dict[str, int]]
     kind: np.ndarray
+    corrupt_type: str = TYPE_UNIFORM
 
     @property
     def count(self) -> int:
@@ -164,9 +169,11 @@ def corrupt_catalog(
     rate: float,
     seed: int,
     confusions: dict[str, np.ndarray] | None = None,
+    corrupt_type: str = TYPE_UNIFORM,
 ) -> CorruptedCatalog:
     if not 0.0 < rate <= 1.0:
         raise CorruptionError(f"corruption rate must be in (0, 1], got {rate}")
+    assert_type_pairs_with_confusions(corrupt_type, confusions, schema)
     rng = np.random.default_rng(seed)
     out = labels.copy()
     flagged = np.zeros_like(labels, dtype=bool)
@@ -202,8 +209,15 @@ def corrupt_catalog(
     assert_exclusive_families_intact(out, family_observed, schema)
     assert_mask_matches_difference(labels, out, flagged)
     assert_kind_covers_mask(flagged, kind)
+    assert_exclusive_kind_matches_type(kind, schema, corrupt_type)
     return CorruptedCatalog(
-        labels=out, corrupted=flagged, rate=rate, seed=seed, per_family=per_family, kind=kind
+        labels=out,
+        corrupted=flagged,
+        rate=rate,
+        seed=seed,
+        per_family=per_family,
+        kind=kind,
+        corrupt_type=corrupt_type,
     )
 
 
@@ -237,8 +251,9 @@ def assert_exclusive_families_intact(
             )
 
 
-def corruption_dir(processed_dir: Path, rate: float, seed: int) -> Path:
-    return processed_dir / CORRUPTION_ROOT / f"r{rate:.4f}_s{seed}"
+def corruption_dir(processed_dir: Path, rate: float, seed: int, corrupt_type: str) -> Path:
+    assert_known_type(corrupt_type)
+    return processed_dir / CORRUPTION_ROOT / f"r{rate:.4f}_s{seed}_{corrupt_type}"
 
 
 def write_corruption(destination: Path, corrupted: CorruptedCatalog) -> Path:
@@ -249,6 +264,7 @@ def write_corruption(destination: Path, corrupted: CorruptedCatalog) -> Path:
     manifest = {
         "rate": corrupted.rate,
         "seed": corrupted.seed,
+        "corrupt_type": corrupted.corrupt_type,
         "cells_corrupted": corrupted.count,
         "rows_touched": int(corrupted.corrupted.any(axis=1).sum()),
         "per_family": corrupted.per_family,
@@ -271,7 +287,7 @@ def load_corruption(destination: Path) -> tuple[np.ndarray, np.ndarray, dict]:
         if not (destination / name).exists():
             raise CorruptionError(
                 f"{destination} is missing {name}. Generate it with "
-                "python -m src.prepare_data --corrupt-rate R --corrupt-seed S"
+                "python -m src.prepare_data --corrupt-rate R --corrupt-seed S --corrupt-type TYPE"
             )
     labels = np.load(destination / LABELS_NAME)
     mask = np.load(destination / MASK_NAME)
@@ -302,6 +318,64 @@ def assert_kind_covers_mask(mask: np.ndarray, kind: np.ndarray) -> None:
             f"the per-cell corruption kind does not cover the mask: {untyped} corrupted cells carry no "
             f"kind, {orphan} cells carry a kind but are not corrupted. The audit reports detection per "
             "corruption type, so every flagged cell must say which type it is."
+        )
+
+
+def assert_known_type(corrupt_type: str) -> None:
+    if corrupt_type not in CORRUPT_TYPES:
+        raise CorruptionError(
+            f"unknown corruption type {corrupt_type!r}, expected one of {list(CORRUPT_TYPES)}"
+        )
+
+
+def assert_type_pairs_with_confusions(
+    corrupt_type: str, confusions: dict[str, np.ndarray] | None, schema: LabelSchema
+) -> None:
+    assert_known_type(corrupt_type)
+    supplied = set(confusions or {})
+    wanted = {slice_.name for slice_ in schema.softmax_families()}
+    if corrupt_type == TYPE_CONFUSION and supplied < wanted:
+        raise CorruptionError(
+            f"corrupt_type is {TYPE_CONFUSION!r} but confusion matrices were supplied for "
+            f"{sorted(supplied)} against the {len(wanted)} exclusive families {sorted(wanted)}. A "
+            "missing matrix falls back to uniform reassignment for that family, which would plant "
+            "uniform noise under a confusion-weighted label and make the two indistinguishable."
+        )
+    if corrupt_type == TYPE_UNIFORM and supplied:
+        raise CorruptionError(
+            f"corrupt_type is {TYPE_UNIFORM!r} but confusion matrices were supplied for "
+            f"{sorted(supplied)}. Uniform corruption must not consult a confusion matrix."
+        )
+
+
+def assert_exclusive_kind_matches_type(
+    kind: np.ndarray, schema: LabelSchema, corrupt_type: str
+) -> None:
+    expected = EXCLUSIVE_KIND_FOR_TYPE[corrupt_type]
+    for slice_ in schema.softmax_families():
+        block = kind[:, slice_.start : slice_.end]
+        planted = {KIND_NAMES[code] for code in np.unique(block) if code != KIND_NONE}
+        if planted - {expected}:
+            raise CorruptionError(
+                f"{slice_.name} was corrupted as {sorted(planted)} but corrupt_type is "
+                f"{corrupt_type!r}, which plants {expected!r}."
+            )
+
+
+def assert_type_matches(manifest: dict, requested: str, source: Path) -> None:
+    assert_known_type(requested)
+    planted = manifest.get("corrupt_type")
+    if planted is None:
+        raise CorruptionError(
+            f"{source} carries no corrupt_type. It was written before the type was recorded and "
+            "cannot be shown to hold the scheme this run asks for; regenerate it with "
+            "python -m src.prepare_data --corrupt-type TYPE."
+        )
+    if planted != requested:
+        raise CorruptionError(
+            f"{source} holds {planted!r} corruption but this run asks for {requested!r}. Detection "
+            "recall is reported per corruption type, so training on one and scoring it as the other "
+            "would compare two schemes that are the same noise."
         )
 
 

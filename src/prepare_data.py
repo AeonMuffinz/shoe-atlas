@@ -109,6 +109,28 @@ def existing_memmap_is_reusable(destination: Path, rows: int) -> bool:
     return bool(array.shape == (rows, catalog.IMAGE_SIZE, catalog.IMAGE_SIZE, 3))
 
 
+def confusions_for_type(
+    corrupt_type: str, confusion_run: Path | None, schema: catalog.LabelSchema
+) -> dict[str, np.ndarray] | None:
+    corruption.assert_known_type(corrupt_type)
+    if corrupt_type != corruption.TYPE_CONFUSION:
+        return None
+    if confusion_run is None:
+        raise corruption.CorruptionError(
+            f"--corrupt-type {corruption.TYPE_CONFUSION} needs --confusion-run naming the run whose "
+            "confusion matrices weight the reassignment. Without it the exclusive families would be "
+            "reassigned uniformly under a confusion-weighted label."
+        )
+    found = corruption.load_confusions(confusion_run, schema)
+    missing = [f.name for f in schema.softmax_families() if f.name not in found]
+    if missing:
+        raise corruption.CorruptionError(
+            f"{confusion_run} has no confusion matrix for {missing}. Run evaluate.py for that run so "
+            "it writes confusion/<family>.csv for all three exclusive families."
+        )
+    return found
+
+
 def prepare(
     paths: DataPaths,
     out_dir: Path,
@@ -118,6 +140,8 @@ def prepare(
     force: bool = False,
     corrupt_rate: float = 0.0,
     corrupt_seed: int = splits.DEFAULT_SEED,
+    corrupt_type: str = corruption.TYPE_UNIFORM,
+    confusion_run: Path | None = None,
 ) -> Artifacts:
     built = catalog.build_catalog(paths.square, paths.bin_csv)
     frame = built.frame
@@ -155,10 +179,17 @@ def prepare(
 
     planted = None
     if corrupt_rate > 0.0:
+        confusions = confusions_for_type(corrupt_type, confusion_run, schema)
         planted = corruption.corrupt_catalog(
-            labels.astype(np.float64), observed, schema, corrupt_rate, corrupt_seed
+            labels.astype(np.float64),
+            observed,
+            schema,
+            corrupt_rate,
+            corrupt_seed,
+            confusions=confusions,
+            corrupt_type=corrupt_type,
         )
-        target = corruption.corruption_dir(out_dir, corrupt_rate, corrupt_seed)
+        target = corruption.corruption_dir(out_dir, corrupt_rate, corrupt_seed, corrupt_type)
         corruption.write_corruption(target, planted)
 
     manifest = {
@@ -186,8 +217,12 @@ def prepare(
             else {
                 "rate": planted.rate,
                 "seed": planted.seed,
+                "corrupt_type": planted.corrupt_type,
+                "confusion_run": None if confusion_run is None else str(confusion_run),
                 "cells": planted.count,
-                "directory": str(corruption.corruption_dir(out_dir, corrupt_rate, corrupt_seed)),
+                "directory": str(
+                    corruption.corruption_dir(out_dir, corrupt_rate, corrupt_seed, corrupt_type)
+                ),
             }
         ),
     }
@@ -200,7 +235,9 @@ def prepare(
         reused_memmap=reused,
         out_dir=out_dir,
         corruption_dir=(
-            None if planted is None else corruption.corruption_dir(out_dir, corrupt_rate, corrupt_seed)
+            None
+            if planted is None
+            else corruption.corruption_dir(out_dir, corrupt_rate, corrupt_seed, corrupt_type)
         ),
         corrupted_cells=0 if planted is None else planted.count,
     )
@@ -219,6 +256,15 @@ def main() -> None:
         help="plant label noise at this rate and write the corrupted matrix beside the clean one",
     )
     parser.add_argument("--corrupt-seed", type=int, default=splits.DEFAULT_SEED)
+    parser.add_argument(
+        "--corrupt-type", choices=list(corruption.CORRUPT_TYPES), default=corruption.TYPE_UNIFORM,
+        help="uniform reassignment, or reassignment weighted by a run's confusion matrices",
+    )
+    parser.add_argument(
+        "--confusion-run", type=Path, default=None,
+        help=f"run directory supplying confusion/<family>.csv, required for --corrupt-type "
+             f"{corruption.TYPE_CONFUSION}",
+    )
     args = parser.parse_args()
 
     result = prepare(
@@ -230,6 +276,8 @@ def main() -> None:
         args.force,
         args.corrupt_rate,
         args.corrupt_seed,
+        args.corrupt_type,
+        args.confusion_run,
     )
     action = "reused existing" if result.reused_memmap else f"decoded, {result.normalized_images} normalized"
     print(f"rows      {result.rows}")

@@ -164,9 +164,21 @@ class SelectionComplete:
         return False
 
 
+@dataclass
+class FixedEpoch:
+    fixed_epoch: int
+    patience: int = 0
+    stopped_epoch: int | None = None
+
+    def update(self, candidate: float, epoch: int) -> bool:
+        return False
+
+
 def make_stopper(
     config: dict, selector: ScalarSelector | ConstrainedSelector
-) -> EarlyStopping | SelectionComplete:
+) -> EarlyStopping | SelectionComplete | FixedEpoch:
+    if config.get("fixed_epoch") is not None:
+        return FixedEpoch(fixed_epoch=int(config["fixed_epoch"]))
     mode = str(config.get("stopping_mode", MODE_CONVERGENCE))
     if mode == MODE_SELECTION_COMPLETE:
         if not isinstance(selector, ConstrainedSelector):

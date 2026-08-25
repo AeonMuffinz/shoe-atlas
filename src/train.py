@@ -15,7 +15,7 @@ from torch import nn
 from torch.optim import Optimizer
 from torch.optim.lr_scheduler import CosineAnnealingLR, LRScheduler
 
-from src import data_setup, engine, losses, model_builder, reporting, selection, utils
+from src import corruption, data_setup, engine, losses, model_builder, reporting, selection, utils
 from src.catalog import LabelSchema
 from src.reporting import CONFIG_NAME, PROCESSED_DIR, RUNS_ROOT
 from src.selection import BestState, ConstrainedSelector, EarlyStopping, ScalarSelector, make_selector
@@ -296,6 +296,47 @@ def finetune_last_epoch(config: dict, total_epochs: int) -> int:
     return fixed
 
 
+def describe_stop(
+    config: dict,
+    stopper: object,
+    history: list[tuple[int, dict[str, float]]],
+    stopped: bool,
+) -> dict[str, object]:
+    fixed = config.get("fixed_epoch")
+    last = max((epoch for epoch, _ in history), default=-1)
+    at_ceiling = not stopped and fixed is None
+    if stopped:
+        reason = "primary_plateau"
+    elif fixed is not None:
+        reason = "fixed_epoch"
+    else:
+        reason = "max_epochs_ceiling"
+    return {
+        "stopped_early": stopped,
+        "stopped_at_ceiling": at_ceiling,
+        "stop_reason": reason,
+        "stopped_at_epoch": getattr(stopper, "stopped_epoch", None),
+        "epochs_completed": len(history),
+        "last_epoch": last,
+    }
+
+
+def assert_fixed_epoch_reached(
+    config: dict, history: list[tuple[int, dict[str, float]]], stopped: bool
+) -> None:
+    fixed = config.get("fixed_epoch")
+    if fixed is None:
+        return
+    reached = max((epoch for epoch, _ in history), default=-1)
+    if stopped or reached != int(fixed):
+        raise TrainingError(
+            f"fixed_epoch is {fixed} but training ended at epoch {reached} "
+            f"(stopped_early={stopped}). A fixed-epoch run must reach exactly that epoch, because "
+            "last.pt is the artifact the audit consumes and holding training duration constant is "
+            "the whole reason the epoch is fixed. FINDINGS 24.2."
+        )
+
+
 def run_name_for(stem: str, seed: int) -> str:
     return f"{stem}_s{seed}"
 
@@ -321,6 +362,7 @@ def train(config: dict, args: argparse.Namespace) -> dict:
         PROCESSED_DIR,
         corrupt_rate=float(config.get("corrupt_rate", 0.0)),
         corrupt_seed=int(config.get("corrupt_seed", config["seed"])),
+        corrupt_type=str(config.get("corrupt_type", corruption.TYPE_UNIFORM)),
     )
     assert_artifacts_match_schema(artifacts)
     schema = artifacts.schema
@@ -415,6 +457,7 @@ def train(config: dict, args: argparse.Namespace) -> dict:
                             schema, run_dir, FINETUNE_PHASE, range(warmup_epochs, last_epoch + 1),
                             selector, stopper, history=history, eligible=eligible)
         timings[FINETUNE_PHASE] = time.time() - phase_start
+        assert_fixed_epoch_reached(config, history, stopped)
 
         guard_audit: dict[str, object] = {}
         if isinstance(selector, ConstrainedSelector):
@@ -447,11 +490,7 @@ def train(config: dict, args: argparse.Namespace) -> dict:
             **disk,
             "eligible_epochs": eligible,
             "eligible_checkpoints_saved": len(eligible),
-            "stopped_early": stopped,
-            "stopped_at_ceiling": not stopped,
-            "stop_reason": ("primary_plateau" if stopped else "max_epochs_ceiling"),
-            "stopped_at_epoch": stopper.stopped_epoch,
-            "epochs_completed": (stopper.stopped_epoch + 1) if stopped else total_epochs,
+            **describe_stop(config, stopper, history, stopped),
             "progress_metric": f"val_{selector.progress_metric()}",
             **guard_audit,
             "patience": int(config["patience"]),

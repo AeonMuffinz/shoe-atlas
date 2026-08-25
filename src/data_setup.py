@@ -56,6 +56,7 @@ def load_artifacts(
     processed_dir: Path,
     corrupt_rate: float = 0.0,
     corrupt_seed: int = 42,
+    corrupt_type: str = corruption.TYPE_UNIFORM,
 ) -> Artifacts:
     schema = LabelSchema.load(processed_dir / SCHEMA_NAME)
     labels = np.load(processed_dir / LABELS_NAME)
@@ -63,8 +64,9 @@ def load_artifacts(
     planted: dict = {}
     mask = None
     if corrupt_rate > 0.0:
-        source = corruption.corruption_dir(processed_dir, corrupt_rate, corrupt_seed)
+        source = corruption.corruption_dir(processed_dir, corrupt_rate, corrupt_seed, corrupt_type)
         corrupted, mask, planted = corruption.load_corruption(source)
+        corruption.assert_type_matches(planted, corrupt_type, source)
         corruption.assert_shapes_match(labels, corrupted, mask)
         labels = corrupted
     payload = json.loads((processed_dir / SPLITS_NAME).read_text(encoding="utf-8"))
