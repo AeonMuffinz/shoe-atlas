@@ -7,24 +7,18 @@ in the glossary, which is empty until a person fills it in.
 from __future__ import annotations
 
 import csv
-import json
 from pathlib import Path
 
 from src.catalog import FAMILIES
-from src.glossary import GLOSSARY_PATH, TIER_DECODED, TIER_DESCRIPTIVE
+from src.glossary import (
+    GLOSSARY_PATH,
+    TIER_DECODED,
+    TIER_DESCRIPTIVE,
+    Glossary,
+    assert_covers_families,
+)
 
 OUT_PATH: Path = Path("artifacts/glossary_review.csv")
-
-FAMILY_EN: dict[str, str] = {
-    "Category": "Category",
-    "SubCategory": "Sub-category",
-    "HeelHeight": "Heel height",
-    "Insole": "Insole",
-    "Closure": "Closure",
-    "Gender": "Gender",
-    "Material": "Material",
-    "ToeStyle": "Toe style",
-}
 
 NAMED_TRAPS: dict[str, str] = {
     "Closure": "the design notes say this is NOT a literal rendering of the English",
@@ -41,7 +35,6 @@ RECORDED_CEILINGS: dict[str, str] = {
     "SubCategory.Firstwalker": "first walking shoe, stiffer sole than a prewalker",
 }
 
-FAMILY_MISSING: str = "MISSING - no glossary entry exists for the family heading"
 CARE_RANK: dict[str, int] = {"HIGH": 0, "MEDIUM": 1, "low": 2}
 FIELDS: tuple[str, ...] = (
     "kind", "family", "key", "display_en", "display_tr", "tier", "review",
@@ -61,41 +54,41 @@ def care_for(key: str, tier: str) -> str:
     return "low"
 
 
-def family_rows() -> list[dict[str, object]]:
-    return [
-        {
+def family_rows(glossary: Glossary) -> list[dict[str, object]]:
+    rows = []
+    for family in FAMILIES:
+        entry = glossary.families[family]
+        rows.append({
             "kind": "family",
             "family": family,
             "key": family,
-            "display_en": FAMILY_EN[family],
-            "display_tr": "",
+            "display_en": entry.display_en,
+            "display_tr": entry.display_tr,
             "tier": "",
-            "review": FAMILY_MISSING,
+            "review": "",
             "zero_shot_scoreable": "",
             "care": care_for(family, ""),
             "context": "shown as the group heading in the interface",
-            "notes": "",
-        }
-        for family in FAMILIES
-    ]
+            "notes": entry.notes,
+        })
+    return rows
 
 
-def label_rows(glossary: dict[str, dict]) -> list[dict[str, object]]:
+def label_rows(glossary: Glossary) -> list[dict[str, object]]:
     rows = []
-    for key, entry in sorted(glossary.items()):
-        tier = str(entry.get("tier", ""))
+    for key, entry in sorted(glossary.entries.items()):
         rows.append({
             "kind": "label",
             "family": key.split(".", 1)[0],
             "key": key,
-            "display_en": entry.get("display_en", ""),
-            "display_tr": entry.get("display_tr", ""),
-            "tier": tier,
-            "review": entry.get("review", ""),
-            "zero_shot_scoreable": entry.get("zero_shot_scoreable", ""),
-            "care": care_for(key, tier),
-            "context": entry.get("prompt", ""),
-            "notes": entry.get("notes", "") or entry.get("reason", ""),
+            "display_en": entry.display_en,
+            "display_tr": entry.display_tr,
+            "tier": entry.tier,
+            "review": entry.review,
+            "zero_shot_scoreable": entry.zero_shot_scoreable,
+            "care": care_for(key, entry.tier),
+            "context": entry.prompt,
+            "notes": entry.notes or entry.reason,
         })
     return rows
 
@@ -107,8 +100,9 @@ def sort_key(row: dict[str, object]) -> tuple[int, int, int, str]:
 
 
 def build(glossary_path: Path = GLOSSARY_PATH) -> list[dict[str, object]]:
-    glossary = json.loads(glossary_path.read_text(encoding="utf-8"))
-    rows = family_rows() + label_rows(glossary)
+    glossary = Glossary.load(glossary_path)
+    assert_covers_families(glossary, FAMILIES)
+    rows = family_rows(glossary) + label_rows(glossary)
     rows.sort(key=sort_key)
     return rows
 

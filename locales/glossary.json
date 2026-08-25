@@ -1,1072 +1,1116 @@
 {
-  "Category.Boots": {
-    "prompt": "a boot",
-    "display_en": "Boots",
-    "display_tr": "",
-    "tier": "direct",
-    "zero_shot_scoreable": true,
-    "reason": "",
-    "review": "self",
-    "notes": ""
-  },
-  "Category.Sandals": {
-    "prompt": "a sandal",
-    "display_en": "Sandals",
-    "display_tr": "",
-    "tier": "direct",
-    "zero_shot_scoreable": true,
-    "reason": "",
-    "review": "self",
-    "notes": ""
-  },
-  "Category.Shoes": {
-    "prompt": "a shoe",
-    "display_en": "Shoes",
-    "display_tr": "",
-    "tier": "direct",
-    "zero_shot_scoreable": true,
-    "reason": "",
-    "review": "self",
-    "notes": ""
-  },
-  "Category.Slippers": {
-    "prompt": "a slipper",
-    "display_en": "Slippers",
-    "display_tr": "",
-    "tier": "direct",
-    "zero_shot_scoreable": true,
-    "reason": "",
-    "review": "self",
-    "notes": ""
-  },
-  "Closure.Ankle.Strap": {
-    "prompt": "a shoe with a strap fastening around the ankle",
-    "display_en": "Ankle strap",
-    "display_tr": "",
-    "tier": "direct",
-    "zero_shot_scoreable": true,
-    "reason": "",
-    "review": "self",
-    "notes": ""
-  },
-  "Closure.Ankle.Wrap": {
-    "prompt": "a sandal with long straps wrapped around the ankle and lower leg",
-    "display_en": "Ankle wrap",
-    "display_tr": "",
-    "tier": "direct",
-    "zero_shot_scoreable": true,
-    "reason": "",
-    "review": "self",
-    "notes": ""
-  },
-  "Closure.Buckle": {
-    "prompt": "a shoe fastened with a metal buckle",
-    "display_en": "Buckle",
-    "display_tr": "",
-    "tier": "direct",
-    "zero_shot_scoreable": true,
-    "reason": "",
-    "review": "self",
-    "notes": ""
-  },
-  "Closure.Bungee": {
-    "prompt": "a shoe fastened with an elastic bungee cord and a spring toggle",
-    "display_en": "Bungee",
-    "display_tr": "",
-    "tier": "descriptive",
-    "zero_shot_scoreable": true,
-    "reason": "",
-    "review": "self",
-    "notes": ""
-  },
-  "Closure.Button.Loop": {
-    "prompt": "a shoe fastened with a button passed through a fabric loop",
-    "display_en": "Button loop",
-    "display_tr": "",
-    "tier": "descriptive",
-    "zero_shot_scoreable": true,
-    "reason": "",
-    "review": "self",
-    "notes": ""
-  },
-  "Closure.Elastic.Gore": {
-    "prompt": "a boot with elastic gusset panels at the sides of the ankle",
-    "display_en": "Elastic gore",
-    "display_tr": "",
-    "tier": "descriptive",
-    "zero_shot_scoreable": true,
-    "reason": "",
-    "review": "self",
-    "notes": ""
-  },
-  "Closure.Hook.and.Loop": {
-    "prompt": "a shoe fastened with a hook-and-loop velcro strap",
-    "display_en": "Hook and loop",
-    "display_tr": "",
-    "tier": "descriptive",
-    "zero_shot_scoreable": true,
-    "reason": "",
-    "review": "self",
-    "notes": ""
-  },
-  "Closure.Lace.up": {
-    "prompt": "a shoe fastened with laces threaded through eyelets",
-    "display_en": "Lace-up",
-    "display_tr": "",
-    "tier": "direct",
-    "zero_shot_scoreable": true,
-    "reason": "",
-    "review": "self",
-    "notes": ""
-  },
-  "Closure.Monk.Strap": {
-    "prompt": "a monk strap shoe fastened with a wide strap and buckle across the instep instead of laces",
-    "display_en": "Monk strap",
-    "display_tr": "",
-    "tier": "descriptive",
-    "zero_shot_scoreable": true,
-    "reason": "",
-    "review": "self",
-    "notes": ""
-  },
-  "Closure.Pull.on": {
-    "prompt": "a boot pulled on by hand with no fastening",
-    "display_en": "Pull-on",
-    "display_tr": "",
-    "tier": "direct",
-    "zero_shot_scoreable": true,
-    "reason": "",
-    "review": "self",
-    "notes": ""
-  },
-  "Closure.Sling.Back": {
-    "prompt": "a shoe with an open back and a strap behind the heel",
-    "display_en": "Slingback",
-    "display_tr": "",
-    "tier": "direct",
-    "zero_shot_scoreable": true,
-    "reason": "",
-    "review": "self",
-    "notes": ""
-  },
-  "Closure.Slip.On": {
-    "prompt": "a slip-on shoe with no fastening",
-    "display_en": "Slip-on",
-    "display_tr": "",
-    "tier": "direct",
-    "zero_shot_scoreable": true,
-    "reason": "",
-    "review": "self",
-    "notes": ""
-  },
-  "Closure.Toggle": {
-    "prompt": "a shoe fastened with a toggle clasp",
-    "display_en": "Toggle",
-    "display_tr": "",
-    "tier": "descriptive",
-    "zero_shot_scoreable": true,
-    "reason": "",
-    "review": "self",
-    "notes": ""
-  },
-  "Closure.Zipper": {
-    "prompt": "a shoe fastened with a zip",
-    "display_en": "Zipper",
-    "display_tr": "",
-    "tier": "direct",
-    "zero_shot_scoreable": true,
-    "reason": "",
-    "review": "self",
-    "notes": ""
-  },
-  "Gender.Boys": {
-    "prompt": "a boy's shoe",
-    "display_en": "Boys",
-    "display_tr": "",
-    "tier": "direct",
-    "zero_shot_scoreable": true,
-    "reason": "",
-    "review": "self",
-    "notes": ""
-  },
-  "Gender.Girls": {
-    "prompt": "a girl's shoe",
-    "display_en": "Girls",
-    "display_tr": "",
-    "tier": "direct",
-    "zero_shot_scoreable": true,
-    "reason": "",
-    "review": "self",
-    "notes": ""
-  },
-  "Gender.Men": {
-    "prompt": "a men's shoe",
-    "display_en": "Men",
-    "display_tr": "",
-    "tier": "direct",
-    "zero_shot_scoreable": true,
-    "reason": "",
-    "review": "self",
-    "notes": ""
-  },
-  "Gender.Women": {
-    "prompt": "a women's shoe",
-    "display_en": "Women",
-    "display_tr": "",
-    "tier": "direct",
-    "zero_shot_scoreable": true,
-    "reason": "",
-    "review": "self",
-    "notes": ""
-  },
-  "HeelHeight.1in...1.3.4in": {
-    "prompt": "a shoe with a low heel between one and one and three quarter inches high",
-    "display_en": "1-1.75 in",
-    "display_tr": "",
-    "tier": "decoded",
-    "zero_shot_scoreable": true,
-    "reason": "",
-    "review": "self",
-    "notes": ""
-  },
-  "HeelHeight.2in...2.3.4in": {
-    "prompt": "a shoe with a mid heel between two and two and three quarter inches high",
-    "display_en": "2-2.75 in",
-    "display_tr": "",
-    "tier": "decoded",
-    "zero_shot_scoreable": true,
-    "reason": "",
-    "review": "self",
-    "notes": ""
-  },
-  "HeelHeight.3in...3.3.4in": {
-    "prompt": "a shoe with a high heel between three and three and three quarter inches high",
-    "display_en": "3-3.75 in",
-    "display_tr": "",
-    "tier": "decoded",
-    "zero_shot_scoreable": true,
-    "reason": "",
-    "review": "self",
-    "notes": ""
-  },
-  "HeelHeight.4in...4.3.4in": {
-    "prompt": "a shoe with a very high heel between four and four and three quarter inches high",
-    "display_en": "4-4.75 in",
-    "display_tr": "",
-    "tier": "decoded",
-    "zero_shot_scoreable": true,
-    "reason": "",
-    "review": "self",
-    "notes": ""
-  },
-  "HeelHeight.5in...over": {
-    "prompt": "a shoe with an extremely high heel of five inches or more",
-    "display_en": "5 in and over",
-    "display_tr": "",
-    "tier": "decoded",
-    "zero_shot_scoreable": true,
-    "reason": "",
-    "review": "self",
-    "notes": ""
-  },
-  "HeelHeight.Flat": {
-    "prompt": "a flat shoe with no raised heel",
-    "display_en": "Flat",
-    "display_tr": "",
-    "tier": "decoded",
-    "zero_shot_scoreable": true,
-    "reason": "",
-    "review": "self",
-    "notes": ""
-  },
-  "HeelHeight.Under.1in": {
-    "prompt": "a shoe with a very low heel under one inch high",
-    "display_en": "Under 1 in",
-    "display_tr": "",
-    "tier": "decoded",
-    "zero_shot_scoreable": true,
-    "reason": "",
-    "review": "self",
-    "notes": ""
-  },
-  "Insole.EVA": {
-    "prompt": "a shoe with an EVA foam insole",
-    "display_en": "EVA",
-    "display_tr": "",
-    "tier": "descriptive",
-    "zero_shot_scoreable": false,
-    "reason": "not distinguishable by prompt: Poron, EVA, polyurethane, gel and memory foam look alike even when the footbed is fully in frame, which it often is on sandals and slippers. The exclusion is about mutual indistinguishability, not about the insole being hidden.",
-    "review": "self",
-    "notes": ""
-  },
-  "Insole.Gel": {
-    "prompt": "a shoe with a gel cushioned insole",
-    "display_en": "Gel",
-    "display_tr": "",
-    "tier": "descriptive",
-    "zero_shot_scoreable": false,
-    "reason": "not distinguishable by prompt: Poron, EVA, polyurethane, gel and memory foam look alike even when the footbed is fully in frame, which it often is on sandals and slippers. The exclusion is about mutual indistinguishability, not about the insole being hidden.",
-    "review": "self",
-    "notes": ""
-  },
-  "Insole.Latex.Lined": {
-    "prompt": "a shoe with a latex-lined insole",
-    "display_en": "Latex Lined",
-    "display_tr": "",
-    "tier": "descriptive",
-    "zero_shot_scoreable": false,
-    "reason": "not distinguishable by prompt: Poron, EVA, polyurethane, gel and memory foam look alike even when the footbed is fully in frame, which it often is on sandals and slippers. The exclusion is about mutual indistinguishability, not about the insole being hidden.",
-    "review": "self",
-    "notes": ""
-  },
-  "Insole.Leather": {
-    "prompt": "a shoe with a leather insole",
-    "display_en": "Leather",
-    "display_tr": "",
-    "tier": "descriptive",
-    "zero_shot_scoreable": false,
-    "reason": "not distinguishable by prompt: Poron, EVA, polyurethane, gel and memory foam look alike even when the footbed is fully in frame, which it often is on sandals and slippers. The exclusion is about mutual indistinguishability, not about the insole being hidden.",
-    "review": "self",
-    "notes": ""
-  },
-  "Insole.Memory.Foam": {
-    "prompt": "a shoe with a memory foam insole",
-    "display_en": "Memory Foam",
-    "display_tr": "",
-    "tier": "descriptive",
-    "zero_shot_scoreable": false,
-    "reason": "not distinguishable by prompt: Poron, EVA, polyurethane, gel and memory foam look alike even when the footbed is fully in frame, which it often is on sandals and slippers. The exclusion is about mutual indistinguishability, not about the insole being hidden.",
-    "review": "self",
-    "notes": ""
-  },
-  "Insole.Moisture.Wicking": {
-    "prompt": "a shoe with a moisture-wicking insole",
-    "display_en": "Moisture Wicking",
-    "display_tr": "",
-    "tier": "descriptive",
-    "zero_shot_scoreable": false,
-    "reason": "not distinguishable by prompt: Poron, EVA, polyurethane, gel and memory foam look alike even when the footbed is fully in frame, which it often is on sandals and slippers. The exclusion is about mutual indistinguishability, not about the insole being hidden.",
-    "review": "self",
-    "notes": ""
-  },
-  "Insole.Orthotic.Friendly": {
-    "prompt": "a shoe with an orthotic-friendly insole",
-    "display_en": "Orthotic Friendly",
-    "display_tr": "",
-    "tier": "descriptive",
-    "zero_shot_scoreable": false,
-    "reason": "not distinguishable by prompt: Poron, EVA, polyurethane, gel and memory foam look alike even when the footbed is fully in frame, which it often is on sandals and slippers. The exclusion is about mutual indistinguishability, not about the insole being hidden.",
-    "review": "self",
-    "notes": ""
-  },
-  "Insole.Padded": {
-    "prompt": "a shoe with a padded cushioned insole",
-    "display_en": "Padded",
-    "display_tr": "",
-    "tier": "descriptive",
-    "zero_shot_scoreable": false,
-    "reason": "not distinguishable by prompt: Poron, EVA, polyurethane, gel and memory foam look alike even when the footbed is fully in frame, which it often is on sandals and slippers. The exclusion is about mutual indistinguishability, not about the insole being hidden.",
-    "review": "self",
-    "notes": ""
-  },
-  "Insole.Polyurethane": {
-    "prompt": "a shoe with a polyurethane insole",
-    "display_en": "Polyurethane",
-    "display_tr": "",
-    "tier": "descriptive",
-    "zero_shot_scoreable": false,
-    "reason": "not distinguishable by prompt: Poron, EVA, polyurethane, gel and memory foam look alike even when the footbed is fully in frame, which it often is on sandals and slippers. The exclusion is about mutual indistinguishability, not about the insole being hidden.",
-    "review": "self",
-    "notes": ""
-  },
-  "Insole.Poron": {
-    "prompt": "a shoe with a Poron foam insole",
-    "display_en": "Poron",
-    "display_tr": "",
-    "tier": "descriptive",
-    "zero_shot_scoreable": false,
-    "reason": "not distinguishable by prompt: Poron, EVA, polyurethane, gel and memory foam look alike even when the footbed is fully in frame, which it often is on sandals and slippers. The exclusion is about mutual indistinguishability, not about the insole being hidden.",
-    "review": "self",
-    "notes": ""
-  },
-  "Insole.Removable": {
-    "prompt": "a shoe with a removable insole",
-    "display_en": "Removable",
-    "display_tr": "",
-    "tier": "descriptive",
-    "zero_shot_scoreable": false,
-    "reason": "not distinguishable by prompt: Poron, EVA, polyurethane, gel and memory foam look alike even when the footbed is fully in frame, which it often is on sandals and slippers. The exclusion is about mutual indistinguishability, not about the insole being hidden.",
-    "review": "self",
-    "notes": ""
-  },
-  "Insole.Synthetic.Leather": {
-    "prompt": "a shoe with a synthetic leather insole",
-    "display_en": "Synthetic Leather",
-    "display_tr": "",
-    "tier": "descriptive",
-    "zero_shot_scoreable": false,
-    "reason": "not distinguishable by prompt: Poron, EVA, polyurethane, gel and memory foam look alike even when the footbed is fully in frame, which it often is on sandals and slippers. The exclusion is about mutual indistinguishability, not about the insole being hidden.",
-    "review": "self",
-    "notes": ""
-  },
-  "Insole.Textile": {
-    "prompt": "a shoe with a textile-covered insole",
-    "display_en": "Textile",
-    "display_tr": "",
-    "tier": "descriptive",
-    "zero_shot_scoreable": false,
-    "reason": "not distinguishable by prompt: Poron, EVA, polyurethane, gel and memory foam look alike even when the footbed is fully in frame, which it often is on sandals and slippers. The exclusion is about mutual indistinguishability, not about the insole being hidden.",
-    "review": "self",
-    "notes": ""
-  },
-  "Material.Canvas": {
-    "prompt": "a shoe made of woven canvas fabric",
-    "display_en": "Canvas",
-    "display_tr": "",
-    "tier": "direct",
-    "zero_shot_scoreable": true,
-    "reason": "",
-    "review": "self",
-    "notes": ""
-  },
-  "Material.Cordura": {
-    "prompt": "a boot made of Cordura, a coarse durable textured nylon fabric used on hiking and work footwear",
-    "display_en": "Cordura",
-    "display_tr": "",
-    "tier": "descriptive",
-    "zero_shot_scoreable": true,
-    "reason": "",
-    "review": "self",
-    "notes": ""
-  },
-  "Material.Cork": {
-    "prompt": "a sandal with a cork sole showing a speckled tan texture",
-    "display_en": "Cork",
-    "display_tr": "",
-    "tier": "direct",
-    "zero_shot_scoreable": true,
-    "reason": "",
-    "review": "self",
-    "notes": ""
-  },
-  "Material.Cotton": {
-    "prompt": "a shoe made of cotton fabric",
-    "display_en": "Cotton",
-    "display_tr": "",
-    "tier": "direct",
-    "zero_shot_scoreable": true,
-    "reason": "",
-    "review": "self",
-    "notes": ""
-  },
-  "Material.EVA": {
-    "prompt": "a shoe made of moulded EVA foam",
-    "display_en": "EVA",
-    "display_tr": "",
-    "tier": "direct",
-    "zero_shot_scoreable": true,
-    "reason": "",
-    "review": "self",
-    "notes": ""
-  },
-  "Material.Faux.Fur": {
-    "prompt": "a shoe trimmed with imitation fur",
-    "display_en": "Faux fur",
-    "display_tr": "",
-    "tier": "direct",
-    "zero_shot_scoreable": true,
-    "reason": "",
-    "review": "self",
-    "notes": ""
-  },
-  "Material.Faux.Leather": {
-    "prompt": "a shoe made of imitation leather",
-    "display_en": "Faux leather",
-    "display_tr": "",
-    "tier": "direct",
-    "zero_shot_scoreable": true,
-    "reason": "",
-    "review": "self",
-    "notes": ""
-  },
-  "Material.Felt": {
-    "prompt": "a shoe made of felted wool",
-    "display_en": "Felt",
-    "display_tr": "",
-    "tier": "direct",
-    "zero_shot_scoreable": true,
-    "reason": "",
-    "review": "self",
-    "notes": ""
-  },
-  "Material.Fleece": {
-    "prompt": "a slipper made of soft fleece",
-    "display_en": "Fleece",
-    "display_tr": "",
-    "tier": "direct",
-    "zero_shot_scoreable": true,
-    "reason": "",
-    "review": "self",
-    "notes": ""
-  },
-  "Material.Full.grain.leather": {
-    "prompt": "a shoe made of full-grain leather showing the natural grain",
-    "display_en": "Full-grain leather",
-    "display_tr": "",
-    "tier": "direct",
-    "zero_shot_scoreable": true,
-    "reason": "",
-    "review": "self",
-    "notes": ""
-  },
-  "Material.Hair.Calf": {
-    "prompt": "a shoe made of hair-on calfskin, leather with the short animal hair left on, often spotted or striped",
-    "display_en": "Hair calf",
-    "display_tr": "",
-    "tier": "descriptive",
-    "zero_shot_scoreable": true,
-    "reason": "",
-    "review": "self",
-    "notes": ""
-  },
-  "Material.Jute": {
-    "prompt": "a sandal with a woven jute rope sole",
-    "display_en": "Jute",
-    "display_tr": "",
-    "tier": "direct",
-    "zero_shot_scoreable": true,
-    "reason": "",
-    "review": "self",
-    "notes": ""
-  },
-  "Material.Lace": {
-    "prompt": "a shoe made of lace with an openwork patterned fabric",
-    "display_en": "Lace",
-    "display_tr": "",
-    "tier": "direct",
-    "zero_shot_scoreable": true,
-    "reason": "",
-    "review": "self",
-    "notes": ""
-  },
-  "Material.Leather": {
-    "prompt": "a shoe made of smooth leather",
-    "display_en": "Leather",
-    "display_tr": "",
-    "tier": "direct",
-    "zero_shot_scoreable": true,
-    "reason": "",
-    "review": "self",
-    "notes": ""
-  },
-  "Material.Mesh": {
-    "prompt": "a shoe made of open mesh fabric with visible perforations",
-    "display_en": "Mesh",
-    "display_tr": "",
-    "tier": "direct",
-    "zero_shot_scoreable": true,
-    "reason": "",
-    "review": "self",
-    "notes": ""
-  },
-  "Material.Microfiber": {
-    "prompt": "a shoe made of microfiber, a fine synthetic fabric with an even matte surface",
-    "display_en": "Microfiber",
-    "display_tr": "",
-    "tier": "descriptive",
-    "zero_shot_scoreable": true,
-    "reason": "",
-    "review": "self",
-    "notes": ""
-  },
-  "Material.Nappa": {
-    "prompt": "a shoe made of nappa leather, a soft smooth full-grain leather with a fine even surface",
-    "display_en": "Nappa",
-    "display_tr": "",
-    "tier": "descriptive",
-    "zero_shot_scoreable": true,
-    "reason": "",
-    "review": "self",
-    "notes": ""
-  },
-  "Material.Neoprene": {
-    "prompt": "a shoe made of neoprene, a smooth stretchy wetsuit-like rubber fabric",
-    "display_en": "Neoprene",
-    "display_tr": "",
-    "tier": "direct",
-    "zero_shot_scoreable": true,
-    "reason": "",
-    "review": "self",
-    "notes": ""
-  },
-  "Material.Nubuck": {
-    "prompt": "a shoe made of nubuck, a leather sanded to a soft velvety nap, similar to suede but finer",
-    "display_en": "Nubuck",
-    "display_tr": "",
-    "tier": "descriptive",
-    "zero_shot_scoreable": true,
-    "reason": "",
-    "review": "self",
-    "notes": ""
-  },
-  "Material.Nylon": {
-    "prompt": "a shoe made of nylon fabric",
-    "display_en": "Nylon",
-    "display_tr": "",
-    "tier": "direct",
-    "zero_shot_scoreable": true,
-    "reason": "",
-    "review": "self",
-    "notes": ""
-  },
-  "Material.Patent.Leather": {
-    "prompt": "a shoe made of glossy patent leather with a mirror-like shine",
-    "display_en": "Patent leather",
-    "display_tr": "",
-    "tier": "direct",
-    "zero_shot_scoreable": true,
-    "reason": "",
-    "review": "self",
-    "notes": ""
-  },
-  "Material.Polyester": {
-    "prompt": "a shoe made of polyester fabric",
-    "display_en": "Polyester",
-    "display_tr": "",
-    "tier": "direct",
-    "zero_shot_scoreable": true,
-    "reason": "",
-    "review": "self",
-    "notes": ""
-  },
-  "Material.Ripstop": {
-    "prompt": "a shoe made of ripstop nylon, a lightweight fabric with a visible fine square grid woven into it",
-    "display_en": "Ripstop",
-    "display_tr": "",
-    "tier": "descriptive",
-    "zero_shot_scoreable": true,
-    "reason": "",
-    "review": "self",
-    "notes": ""
-  },
-  "Material.Rubber": {
-    "prompt": "a shoe made of rubber",
-    "display_en": "Rubber",
-    "display_tr": "",
-    "tier": "direct",
-    "zero_shot_scoreable": true,
-    "reason": "",
-    "review": "self",
-    "notes": ""
-  },
-  "Material.Satin": {
-    "prompt": "a shoe made of satin with a smooth lustrous sheen",
-    "display_en": "Satin",
-    "display_tr": "",
-    "tier": "direct",
-    "zero_shot_scoreable": true,
-    "reason": "",
-    "review": "self",
-    "notes": ""
-  },
-  "Material.Shearling": {
-    "prompt": "a boot lined with shearling, showing thick woolly fleece at the opening",
-    "display_en": "Shearling",
-    "display_tr": "",
-    "tier": "direct",
-    "zero_shot_scoreable": true,
-    "reason": "",
-    "review": "self",
-    "notes": ""
-  },
-  "Material.Sheepskin": {
-    "prompt": "a shoe made of sheepskin",
-    "display_en": "Sheepskin",
-    "display_tr": "",
-    "tier": "direct",
-    "zero_shot_scoreable": true,
-    "reason": "",
-    "review": "self",
-    "notes": ""
-  },
-  "Material.Suede": {
-    "prompt": "a shoe made of suede with a soft napped surface",
-    "display_en": "Suede",
-    "display_tr": "",
-    "tier": "direct",
-    "zero_shot_scoreable": true,
-    "reason": "",
-    "review": "self",
-    "notes": ""
-  },
-  "Material.Synthetic": {
-    "prompt": "a shoe made of synthetic man-made material",
-    "display_en": "Synthetic",
-    "display_tr": "",
-    "tier": "direct",
-    "zero_shot_scoreable": true,
-    "reason": "",
-    "review": "self",
-    "notes": ""
-  },
-  "Material.Terry": {
-    "prompt": "a slipper made of terry cloth with a looped towelling pile",
-    "display_en": "Terry",
-    "display_tr": "",
-    "tier": "descriptive",
-    "zero_shot_scoreable": true,
-    "reason": "",
-    "review": "self",
-    "notes": "91% of Terry positives are Slipper Flats, against slippers being 2.6% of the catalog, a 35x concentration. A correct prediction may reflect recognising a slipper rather than recognising terry cloth, so report this caveat wherever the label is scored."
-  },
-  "Material.Velvet": {
-    "prompt": "a shoe made of velvet with a dense soft pile",
-    "display_en": "Velvet",
-    "display_tr": "",
-    "tier": "direct",
-    "zero_shot_scoreable": true,
-    "reason": "",
-    "review": "self",
-    "notes": ""
-  },
-  "Material.Wool": {
-    "prompt": "a shoe made of wool",
-    "display_en": "Wool",
-    "display_tr": "",
-    "tier": "direct",
-    "zero_shot_scoreable": true,
-    "reason": "",
-    "review": "self",
-    "notes": ""
-  },
-  "SubCategory.Ankle": {
-    "prompt": "an ankle boot with a short shaft ending at the ankle",
-    "display_en": "Ankle boots",
-    "display_tr": "",
-    "tier": "direct",
-    "zero_shot_scoreable": true,
-    "reason": "",
-    "review": "self",
-    "notes": ""
-  },
-  "SubCategory.Boat.Shoes": {
-    "prompt": "a leather boat shoe with a lace threaded around the collar",
-    "display_en": "Boat shoes",
-    "display_tr": "",
-    "tier": "direct",
-    "zero_shot_scoreable": true,
-    "reason": "",
-    "review": "self",
-    "notes": ""
-  },
-  "SubCategory.Clogs.and.Mules": {
-    "prompt": "a backless clog or mule shoe",
-    "display_en": "Clogs and mules",
-    "display_tr": "",
-    "tier": "direct",
-    "zero_shot_scoreable": true,
-    "reason": "",
-    "review": "self",
-    "notes": ""
-  },
-  "SubCategory.Firstwalker": {
-    "prompt": "a small toddler shoe for a child learning to walk",
-    "display_en": "Firstwalker",
-    "display_tr": "",
-    "tier": "direct",
-    "zero_shot_scoreable": true,
-    "reason": "",
-    "review": "self",
-    "notes": "Prewalker and Firstwalker are both infant shoes and look similar in a product photo; the difference is sole stiffness, which a photograph shows poorly. Observation, not reviewed."
-  },
-  "SubCategory.Flat": {
-    "prompt": "a flat sandal with no heel",
-    "display_en": "Flat sandals",
-    "display_tr": "",
-    "tier": "direct",
-    "zero_shot_scoreable": true,
-    "reason": "",
-    "review": "self",
-    "notes": ""
-  },
-  "SubCategory.Flats": {
-    "prompt": "a flat women's shoe with no heel",
-    "display_en": "Flats",
-    "display_tr": "",
-    "tier": "direct",
-    "zero_shot_scoreable": true,
-    "reason": "",
-    "review": "self",
-    "notes": ""
-  },
-  "SubCategory.Heel": {
-    "prompt": "a heeled sandal with a raised heel",
-    "display_en": "Heeled sandals",
-    "display_tr": "",
-    "tier": "direct",
-    "zero_shot_scoreable": true,
-    "reason": "",
-    "review": "self",
-    "notes": ""
-  },
-  "SubCategory.Heels": {
-    "prompt": "a high-heeled women's shoe",
-    "display_en": "Heels",
-    "display_tr": "",
-    "tier": "direct",
-    "zero_shot_scoreable": true,
-    "reason": "",
-    "review": "self",
-    "notes": ""
-  },
-  "SubCategory.Knee.High": {
-    "prompt": "a knee-high boot with a tall shaft reaching the knee",
-    "display_en": "Knee-high boots",
-    "display_tr": "",
-    "tier": "direct",
-    "zero_shot_scoreable": true,
-    "reason": "",
-    "review": "self",
-    "notes": ""
-  },
-  "SubCategory.Loafers": {
-    "prompt": "a slip-on loafer shoe with no laces",
-    "display_en": "Loafers",
-    "display_tr": "",
-    "tier": "direct",
-    "zero_shot_scoreable": true,
-    "reason": "",
-    "review": "self",
-    "notes": ""
-  },
-  "SubCategory.Mid.Calf": {
-    "prompt": "a boot with a shaft reaching the middle of the calf",
-    "display_en": "Mid-calf boots",
-    "display_tr": "",
-    "tier": "direct",
-    "zero_shot_scoreable": true,
-    "reason": "",
-    "review": "self",
-    "notes": ""
-  },
-  "SubCategory.Oxfords": {
-    "prompt": "an oxford dress shoe with closed lacing",
-    "display_en": "Oxfords",
-    "display_tr": "",
-    "tier": "direct",
-    "zero_shot_scoreable": true,
-    "reason": "",
-    "review": "self",
-    "notes": ""
-  },
-  "SubCategory.Prewalker": {
-    "prompt": "a soft infant shoe for a baby who cannot walk yet",
-    "display_en": "Prewalker",
-    "display_tr": "",
-    "tier": "direct",
-    "zero_shot_scoreable": true,
-    "reason": "",
-    "review": "self",
-    "notes": "Prewalker and Firstwalker are both infant shoes and look similar in a product photo; the difference is sole stiffness, which a photograph shows poorly. Observation, not reviewed."
-  },
-  "SubCategory.Slipper.Flats": {
-    "prompt": "a soft flat house slipper",
-    "display_en": "Slipper flats",
-    "display_tr": "",
-    "tier": "direct",
-    "zero_shot_scoreable": true,
-    "reason": "",
-    "review": "self",
-    "notes": ""
-  },
-  "SubCategory.Sneakers.and.Athletic.Shoes": {
-    "prompt": "a sneaker or athletic trainer",
-    "display_en": "Sneakers",
-    "display_tr": "",
-    "tier": "direct",
-    "zero_shot_scoreable": true,
-    "reason": "",
-    "review": "self",
-    "notes": ""
-  },
-  "ToeStyle.Algonquin": {
-    "prompt": "a shoe with a fine U-shaped seam across the top of the toe forming a flat raised ridge rather than a puckered one",
-    "display_en": "Algonquin toe",
-    "display_tr": "",
-    "tier": "descriptive",
-    "zero_shot_scoreable": true,
-    "reason": "",
-    "review": "confirmed",
-    "notes": "Moc Toe and Algonquin are near-identical in a photograph, differing only in whether the seam is puckered or a flat raised ridge. Their ceiling is set by visual distinguishability, not prompt quality, so a low score here is not evidence the prompt is wrong."
-  },
-  "ToeStyle.Almond": {
-    "prompt": "a shoe with an almond-shaped toe, tapered but softly rounded at the tip",
-    "display_en": "Almond toe",
-    "display_tr": "",
-    "tier": "direct",
-    "zero_shot_scoreable": true,
-    "reason": "",
-    "review": "self",
-    "notes": ""
-  },
-  "ToeStyle.Bicycle Toe": {
-    "prompt": "a shoe with two parallel seams running down either side of the toe and meeting at the tip like handlebars",
-    "display_en": "Bicycle toe",
-    "display_tr": "",
-    "tier": "descriptive",
-    "zero_shot_scoreable": true,
-    "reason": "",
-    "review": "confirmed",
-    "notes": ""
-  },
-  "ToeStyle.Bump Toe": {
-    "prompt": "a shoe with a slight raised bump at the very tip of the toe, visible in profile",
-    "display_en": "Bump toe",
-    "display_tr": "",
-    "tier": "descriptive",
-    "zero_shot_scoreable": true,
-    "reason": "",
-    "review": "confirmed",
-    "notes": ""
-  },
-  "ToeStyle.Capped Toe": {
-    "prompt": "a dress shoe with a seam across the toe forming a separate toe cap",
-    "display_en": "Cap toe",
-    "display_tr": "",
-    "tier": "direct",
-    "zero_shot_scoreable": true,
-    "reason": "",
-    "review": "self",
-    "notes": ""
-  },
-  "ToeStyle.Center Seam": {
-    "prompt": "a shoe with a single vertical seam running down the centre of the toe, dividing it symmetrically",
-    "display_en": "Center seam",
-    "display_tr": "",
-    "tier": "descriptive",
-    "zero_shot_scoreable": true,
-    "reason": "",
-    "review": "confirmed",
-    "notes": ""
-  },
-  "ToeStyle.Closed Toe": {
-    "prompt": "a shoe with a closed toe covering the toes",
-    "display_en": "Closed toe",
-    "display_tr": "",
-    "tier": "direct",
-    "zero_shot_scoreable": true,
-    "reason": "",
-    "review": "self",
-    "notes": ""
-  },
-  "ToeStyle.Medallion": {
-    "prompt": "a dress shoe with a decorative pattern of small punched holes on the toe cap, usually floral or circular",
-    "display_en": "Medallion toe",
-    "display_tr": "",
-    "tier": "descriptive",
-    "zero_shot_scoreable": true,
-    "reason": "",
-    "review": "confirmed",
-    "notes": ""
-  },
-  "ToeStyle.Moc Toe": {
-    "prompt": "a shoe with a prominent U-shaped horseshoe seam across the top of the toe, as if a separate panel of leather were stitched on by hand",
-    "display_en": "Moc toe",
-    "display_tr": "",
-    "tier": "descriptive",
-    "zero_shot_scoreable": true,
-    "reason": "",
-    "review": "confirmed",
-    "notes": "Moc Toe and Algonquin are near-identical in a photograph, differing only in whether the seam is puckered or a flat raised ridge. Their ceiling is set by visual distinguishability, not prompt quality, so a low score here is not evidence the prompt is wrong."
-  },
-  "ToeStyle.Open Toe": {
-    "prompt": "a sandal with an open toe leaving the toes exposed",
-    "display_en": "Open toe",
-    "display_tr": "",
-    "tier": "direct",
-    "zero_shot_scoreable": true,
-    "reason": "",
-    "review": "self",
-    "notes": ""
-  },
-  "ToeStyle.Peep Toe": {
-    "prompt": "a shoe with a small peep-toe opening showing only the tips of the toes",
-    "display_en": "Peep toe",
-    "display_tr": "",
-    "tier": "direct",
-    "zero_shot_scoreable": true,
-    "reason": "",
-    "review": "self",
-    "notes": ""
-  },
-  "ToeStyle.Pointed Toe": {
-    "prompt": "a shoe with a sharply pointed toe",
-    "display_en": "Pointed toe",
-    "display_tr": "",
-    "tier": "direct",
-    "zero_shot_scoreable": true,
-    "reason": "",
-    "review": "self",
-    "notes": ""
-  },
-  "ToeStyle.Round Toe": {
-    "prompt": "a shoe with a rounded toe",
-    "display_en": "Round toe",
-    "display_tr": "",
-    "tier": "direct",
-    "zero_shot_scoreable": true,
-    "reason": "",
-    "review": "self",
-    "notes": ""
-  },
-  "ToeStyle.Snip Toe": {
-    "prompt": "a western boot with a toe that narrows toward the front but ends in a flat cut tip rather than a point",
-    "display_en": "Snip toe",
-    "display_tr": "",
-    "tier": "descriptive",
-    "zero_shot_scoreable": true,
-    "reason": "",
-    "review": "confirmed",
-    "notes": ""
-  },
-  "ToeStyle.Snub Toe": {
-    "prompt": "a shoe with a short blunt rounded toe, stubbier and shorter than a standard round toe",
-    "display_en": "Snub toe",
-    "display_tr": "",
-    "tier": "descriptive",
-    "zero_shot_scoreable": true,
-    "reason": "",
-    "review": "confirmed",
-    "notes": ""
-  },
-  "ToeStyle.Square Toe": {
-    "prompt": "a shoe with a flat square toe",
-    "display_en": "Square toe",
-    "display_tr": "",
-    "tier": "direct",
-    "zero_shot_scoreable": true,
-    "reason": "",
-    "review": "self",
-    "notes": ""
-  },
-  "ToeStyle.Wide Toe Box": {
-    "prompt": "a shoe with a wide roomy toe box",
-    "display_en": "Wide toe box",
-    "display_tr": "",
-    "tier": "direct",
-    "zero_shot_scoreable": true,
-    "reason": "",
-    "review": "self",
-    "notes": ""
-  },
-  "ToeStyle.Wingtip": {
-    "prompt": "a brogue shoe with a W-shaped wingtip seam sweeping back along the sides",
-    "display_en": "Wingtip",
-    "display_tr": "",
-    "tier": "direct",
-    "zero_shot_scoreable": true,
-    "reason": "",
-    "review": "self",
-    "notes": ""
+  "labels": {
+    "Category.Boots": {
+      "prompt": "a boot",
+      "display_en": "Boots",
+      "display_tr": "",
+      "tier": "direct",
+      "zero_shot_scoreable": true,
+      "reason": "",
+      "review": "self",
+      "notes": ""
+    },
+    "Category.Sandals": {
+      "prompt": "a sandal",
+      "display_en": "Sandals",
+      "display_tr": "",
+      "tier": "direct",
+      "zero_shot_scoreable": true,
+      "reason": "",
+      "review": "self",
+      "notes": ""
+    },
+    "Category.Shoes": {
+      "prompt": "a shoe",
+      "display_en": "Shoes",
+      "display_tr": "",
+      "tier": "direct",
+      "zero_shot_scoreable": true,
+      "reason": "",
+      "review": "self",
+      "notes": ""
+    },
+    "Category.Slippers": {
+      "prompt": "a slipper",
+      "display_en": "Slippers",
+      "display_tr": "",
+      "tier": "direct",
+      "zero_shot_scoreable": true,
+      "reason": "",
+      "review": "self",
+      "notes": ""
+    },
+    "Closure.Ankle.Strap": {
+      "prompt": "a shoe with a strap fastening around the ankle",
+      "display_en": "Ankle strap",
+      "display_tr": "",
+      "tier": "direct",
+      "zero_shot_scoreable": true,
+      "reason": "",
+      "review": "self",
+      "notes": ""
+    },
+    "Closure.Ankle.Wrap": {
+      "prompt": "a sandal with long straps wrapped around the ankle and lower leg",
+      "display_en": "Ankle wrap",
+      "display_tr": "",
+      "tier": "direct",
+      "zero_shot_scoreable": true,
+      "reason": "",
+      "review": "self",
+      "notes": ""
+    },
+    "Closure.Buckle": {
+      "prompt": "a shoe fastened with a metal buckle",
+      "display_en": "Buckle",
+      "display_tr": "",
+      "tier": "direct",
+      "zero_shot_scoreable": true,
+      "reason": "",
+      "review": "self",
+      "notes": ""
+    },
+    "Closure.Bungee": {
+      "prompt": "a shoe fastened with an elastic bungee cord and a spring toggle",
+      "display_en": "Bungee",
+      "display_tr": "",
+      "tier": "descriptive",
+      "zero_shot_scoreable": true,
+      "reason": "",
+      "review": "self",
+      "notes": ""
+    },
+    "Closure.Button.Loop": {
+      "prompt": "a shoe fastened with a button passed through a fabric loop",
+      "display_en": "Button loop",
+      "display_tr": "",
+      "tier": "descriptive",
+      "zero_shot_scoreable": true,
+      "reason": "",
+      "review": "self",
+      "notes": ""
+    },
+    "Closure.Elastic.Gore": {
+      "prompt": "a boot with elastic gusset panels at the sides of the ankle",
+      "display_en": "Elastic gore",
+      "display_tr": "",
+      "tier": "descriptive",
+      "zero_shot_scoreable": true,
+      "reason": "",
+      "review": "self",
+      "notes": ""
+    },
+    "Closure.Hook.and.Loop": {
+      "prompt": "a shoe fastened with a hook-and-loop velcro strap",
+      "display_en": "Hook and loop",
+      "display_tr": "",
+      "tier": "descriptive",
+      "zero_shot_scoreable": true,
+      "reason": "",
+      "review": "self",
+      "notes": ""
+    },
+    "Closure.Lace.up": {
+      "prompt": "a shoe fastened with laces threaded through eyelets",
+      "display_en": "Lace-up",
+      "display_tr": "",
+      "tier": "direct",
+      "zero_shot_scoreable": true,
+      "reason": "",
+      "review": "self",
+      "notes": ""
+    },
+    "Closure.Monk.Strap": {
+      "prompt": "a monk strap shoe fastened with a wide strap and buckle across the instep instead of laces",
+      "display_en": "Monk strap",
+      "display_tr": "",
+      "tier": "descriptive",
+      "zero_shot_scoreable": true,
+      "reason": "",
+      "review": "self",
+      "notes": ""
+    },
+    "Closure.Pull.on": {
+      "prompt": "a boot pulled on by hand with no fastening",
+      "display_en": "Pull-on",
+      "display_tr": "",
+      "tier": "direct",
+      "zero_shot_scoreable": true,
+      "reason": "",
+      "review": "self",
+      "notes": ""
+    },
+    "Closure.Sling.Back": {
+      "prompt": "a shoe with an open back and a strap behind the heel",
+      "display_en": "Slingback",
+      "display_tr": "",
+      "tier": "direct",
+      "zero_shot_scoreable": true,
+      "reason": "",
+      "review": "self",
+      "notes": ""
+    },
+    "Closure.Slip.On": {
+      "prompt": "a slip-on shoe with no fastening",
+      "display_en": "Slip-on",
+      "display_tr": "",
+      "tier": "direct",
+      "zero_shot_scoreable": true,
+      "reason": "",
+      "review": "self",
+      "notes": ""
+    },
+    "Closure.Toggle": {
+      "prompt": "a shoe fastened with a toggle clasp",
+      "display_en": "Toggle",
+      "display_tr": "",
+      "tier": "descriptive",
+      "zero_shot_scoreable": true,
+      "reason": "",
+      "review": "self",
+      "notes": ""
+    },
+    "Closure.Zipper": {
+      "prompt": "a shoe fastened with a zip",
+      "display_en": "Zipper",
+      "display_tr": "",
+      "tier": "direct",
+      "zero_shot_scoreable": true,
+      "reason": "",
+      "review": "self",
+      "notes": ""
+    },
+    "Gender.Boys": {
+      "prompt": "a boy's shoe",
+      "display_en": "Boys",
+      "display_tr": "",
+      "tier": "direct",
+      "zero_shot_scoreable": true,
+      "reason": "",
+      "review": "self",
+      "notes": ""
+    },
+    "Gender.Girls": {
+      "prompt": "a girl's shoe",
+      "display_en": "Girls",
+      "display_tr": "",
+      "tier": "direct",
+      "zero_shot_scoreable": true,
+      "reason": "",
+      "review": "self",
+      "notes": ""
+    },
+    "Gender.Men": {
+      "prompt": "a men's shoe",
+      "display_en": "Men",
+      "display_tr": "",
+      "tier": "direct",
+      "zero_shot_scoreable": true,
+      "reason": "",
+      "review": "self",
+      "notes": ""
+    },
+    "Gender.Women": {
+      "prompt": "a women's shoe",
+      "display_en": "Women",
+      "display_tr": "",
+      "tier": "direct",
+      "zero_shot_scoreable": true,
+      "reason": "",
+      "review": "self",
+      "notes": ""
+    },
+    "HeelHeight.1in...1.3.4in": {
+      "prompt": "a shoe with a low heel between one and one and three quarter inches high",
+      "display_en": "1-1.75 in",
+      "display_tr": "",
+      "tier": "decoded",
+      "zero_shot_scoreable": true,
+      "reason": "",
+      "review": "self",
+      "notes": ""
+    },
+    "HeelHeight.2in...2.3.4in": {
+      "prompt": "a shoe with a mid heel between two and two and three quarter inches high",
+      "display_en": "2-2.75 in",
+      "display_tr": "",
+      "tier": "decoded",
+      "zero_shot_scoreable": true,
+      "reason": "",
+      "review": "self",
+      "notes": ""
+    },
+    "HeelHeight.3in...3.3.4in": {
+      "prompt": "a shoe with a high heel between three and three and three quarter inches high",
+      "display_en": "3-3.75 in",
+      "display_tr": "",
+      "tier": "decoded",
+      "zero_shot_scoreable": true,
+      "reason": "",
+      "review": "self",
+      "notes": ""
+    },
+    "HeelHeight.4in...4.3.4in": {
+      "prompt": "a shoe with a very high heel between four and four and three quarter inches high",
+      "display_en": "4-4.75 in",
+      "display_tr": "",
+      "tier": "decoded",
+      "zero_shot_scoreable": true,
+      "reason": "",
+      "review": "self",
+      "notes": ""
+    },
+    "HeelHeight.5in...over": {
+      "prompt": "a shoe with an extremely high heel of five inches or more",
+      "display_en": "5 in and over",
+      "display_tr": "",
+      "tier": "decoded",
+      "zero_shot_scoreable": true,
+      "reason": "",
+      "review": "self",
+      "notes": ""
+    },
+    "HeelHeight.Flat": {
+      "prompt": "a flat shoe with no raised heel",
+      "display_en": "Flat",
+      "display_tr": "",
+      "tier": "decoded",
+      "zero_shot_scoreable": true,
+      "reason": "",
+      "review": "self",
+      "notes": ""
+    },
+    "HeelHeight.Under.1in": {
+      "prompt": "a shoe with a very low heel under one inch high",
+      "display_en": "Under 1 in",
+      "display_tr": "",
+      "tier": "decoded",
+      "zero_shot_scoreable": true,
+      "reason": "",
+      "review": "self",
+      "notes": ""
+    },
+    "Insole.EVA": {
+      "prompt": "a shoe with an EVA foam insole",
+      "display_en": "EVA",
+      "display_tr": "",
+      "tier": "descriptive",
+      "zero_shot_scoreable": false,
+      "reason": "not distinguishable by prompt: Poron, EVA, polyurethane, gel and memory foam look alike even when the footbed is fully in frame, which it often is on sandals and slippers. The exclusion is about mutual indistinguishability, not about the insole being hidden.",
+      "review": "self",
+      "notes": ""
+    },
+    "Insole.Gel": {
+      "prompt": "a shoe with a gel cushioned insole",
+      "display_en": "Gel",
+      "display_tr": "",
+      "tier": "descriptive",
+      "zero_shot_scoreable": false,
+      "reason": "not distinguishable by prompt: Poron, EVA, polyurethane, gel and memory foam look alike even when the footbed is fully in frame, which it often is on sandals and slippers. The exclusion is about mutual indistinguishability, not about the insole being hidden.",
+      "review": "self",
+      "notes": ""
+    },
+    "Insole.Latex.Lined": {
+      "prompt": "a shoe with a latex-lined insole",
+      "display_en": "Latex Lined",
+      "display_tr": "",
+      "tier": "descriptive",
+      "zero_shot_scoreable": false,
+      "reason": "not distinguishable by prompt: Poron, EVA, polyurethane, gel and memory foam look alike even when the footbed is fully in frame, which it often is on sandals and slippers. The exclusion is about mutual indistinguishability, not about the insole being hidden.",
+      "review": "self",
+      "notes": ""
+    },
+    "Insole.Leather": {
+      "prompt": "a shoe with a leather insole",
+      "display_en": "Leather",
+      "display_tr": "",
+      "tier": "descriptive",
+      "zero_shot_scoreable": false,
+      "reason": "not distinguishable by prompt: Poron, EVA, polyurethane, gel and memory foam look alike even when the footbed is fully in frame, which it often is on sandals and slippers. The exclusion is about mutual indistinguishability, not about the insole being hidden.",
+      "review": "self",
+      "notes": ""
+    },
+    "Insole.Memory.Foam": {
+      "prompt": "a shoe with a memory foam insole",
+      "display_en": "Memory Foam",
+      "display_tr": "",
+      "tier": "descriptive",
+      "zero_shot_scoreable": false,
+      "reason": "not distinguishable by prompt: Poron, EVA, polyurethane, gel and memory foam look alike even when the footbed is fully in frame, which it often is on sandals and slippers. The exclusion is about mutual indistinguishability, not about the insole being hidden.",
+      "review": "self",
+      "notes": ""
+    },
+    "Insole.Moisture.Wicking": {
+      "prompt": "a shoe with a moisture-wicking insole",
+      "display_en": "Moisture Wicking",
+      "display_tr": "",
+      "tier": "descriptive",
+      "zero_shot_scoreable": false,
+      "reason": "not distinguishable by prompt: Poron, EVA, polyurethane, gel and memory foam look alike even when the footbed is fully in frame, which it often is on sandals and slippers. The exclusion is about mutual indistinguishability, not about the insole being hidden.",
+      "review": "self",
+      "notes": ""
+    },
+    "Insole.Orthotic.Friendly": {
+      "prompt": "a shoe with an orthotic-friendly insole",
+      "display_en": "Orthotic Friendly",
+      "display_tr": "",
+      "tier": "descriptive",
+      "zero_shot_scoreable": false,
+      "reason": "not distinguishable by prompt: Poron, EVA, polyurethane, gel and memory foam look alike even when the footbed is fully in frame, which it often is on sandals and slippers. The exclusion is about mutual indistinguishability, not about the insole being hidden.",
+      "review": "self",
+      "notes": ""
+    },
+    "Insole.Padded": {
+      "prompt": "a shoe with a padded cushioned insole",
+      "display_en": "Padded",
+      "display_tr": "",
+      "tier": "descriptive",
+      "zero_shot_scoreable": false,
+      "reason": "not distinguishable by prompt: Poron, EVA, polyurethane, gel and memory foam look alike even when the footbed is fully in frame, which it often is on sandals and slippers. The exclusion is about mutual indistinguishability, not about the insole being hidden.",
+      "review": "self",
+      "notes": ""
+    },
+    "Insole.Polyurethane": {
+      "prompt": "a shoe with a polyurethane insole",
+      "display_en": "Polyurethane",
+      "display_tr": "",
+      "tier": "descriptive",
+      "zero_shot_scoreable": false,
+      "reason": "not distinguishable by prompt: Poron, EVA, polyurethane, gel and memory foam look alike even when the footbed is fully in frame, which it often is on sandals and slippers. The exclusion is about mutual indistinguishability, not about the insole being hidden.",
+      "review": "self",
+      "notes": ""
+    },
+    "Insole.Poron": {
+      "prompt": "a shoe with a Poron foam insole",
+      "display_en": "Poron",
+      "display_tr": "",
+      "tier": "descriptive",
+      "zero_shot_scoreable": false,
+      "reason": "not distinguishable by prompt: Poron, EVA, polyurethane, gel and memory foam look alike even when the footbed is fully in frame, which it often is on sandals and slippers. The exclusion is about mutual indistinguishability, not about the insole being hidden.",
+      "review": "self",
+      "notes": ""
+    },
+    "Insole.Removable": {
+      "prompt": "a shoe with a removable insole",
+      "display_en": "Removable",
+      "display_tr": "",
+      "tier": "descriptive",
+      "zero_shot_scoreable": false,
+      "reason": "not distinguishable by prompt: Poron, EVA, polyurethane, gel and memory foam look alike even when the footbed is fully in frame, which it often is on sandals and slippers. The exclusion is about mutual indistinguishability, not about the insole being hidden.",
+      "review": "self",
+      "notes": ""
+    },
+    "Insole.Synthetic.Leather": {
+      "prompt": "a shoe with a synthetic leather insole",
+      "display_en": "Synthetic Leather",
+      "display_tr": "",
+      "tier": "descriptive",
+      "zero_shot_scoreable": false,
+      "reason": "not distinguishable by prompt: Poron, EVA, polyurethane, gel and memory foam look alike even when the footbed is fully in frame, which it often is on sandals and slippers. The exclusion is about mutual indistinguishability, not about the insole being hidden.",
+      "review": "self",
+      "notes": ""
+    },
+    "Insole.Textile": {
+      "prompt": "a shoe with a textile-covered insole",
+      "display_en": "Textile",
+      "display_tr": "",
+      "tier": "descriptive",
+      "zero_shot_scoreable": false,
+      "reason": "not distinguishable by prompt: Poron, EVA, polyurethane, gel and memory foam look alike even when the footbed is fully in frame, which it often is on sandals and slippers. The exclusion is about mutual indistinguishability, not about the insole being hidden.",
+      "review": "self",
+      "notes": ""
+    },
+    "Material.Canvas": {
+      "prompt": "a shoe made of woven canvas fabric",
+      "display_en": "Canvas",
+      "display_tr": "",
+      "tier": "direct",
+      "zero_shot_scoreable": true,
+      "reason": "",
+      "review": "self",
+      "notes": ""
+    },
+    "Material.Cordura": {
+      "prompt": "a boot made of Cordura, a coarse durable textured nylon fabric used on hiking and work footwear",
+      "display_en": "Cordura",
+      "display_tr": "",
+      "tier": "descriptive",
+      "zero_shot_scoreable": true,
+      "reason": "",
+      "review": "self",
+      "notes": ""
+    },
+    "Material.Cork": {
+      "prompt": "a sandal with a cork sole showing a speckled tan texture",
+      "display_en": "Cork",
+      "display_tr": "",
+      "tier": "direct",
+      "zero_shot_scoreable": true,
+      "reason": "",
+      "review": "self",
+      "notes": ""
+    },
+    "Material.Cotton": {
+      "prompt": "a shoe made of cotton fabric",
+      "display_en": "Cotton",
+      "display_tr": "",
+      "tier": "direct",
+      "zero_shot_scoreable": true,
+      "reason": "",
+      "review": "self",
+      "notes": ""
+    },
+    "Material.EVA": {
+      "prompt": "a shoe made of moulded EVA foam",
+      "display_en": "EVA",
+      "display_tr": "",
+      "tier": "direct",
+      "zero_shot_scoreable": true,
+      "reason": "",
+      "review": "self",
+      "notes": ""
+    },
+    "Material.Faux.Fur": {
+      "prompt": "a shoe trimmed with imitation fur",
+      "display_en": "Faux fur",
+      "display_tr": "",
+      "tier": "direct",
+      "zero_shot_scoreable": true,
+      "reason": "",
+      "review": "self",
+      "notes": ""
+    },
+    "Material.Faux.Leather": {
+      "prompt": "a shoe made of imitation leather",
+      "display_en": "Faux leather",
+      "display_tr": "",
+      "tier": "direct",
+      "zero_shot_scoreable": true,
+      "reason": "",
+      "review": "self",
+      "notes": ""
+    },
+    "Material.Felt": {
+      "prompt": "a shoe made of felted wool",
+      "display_en": "Felt",
+      "display_tr": "",
+      "tier": "direct",
+      "zero_shot_scoreable": true,
+      "reason": "",
+      "review": "self",
+      "notes": ""
+    },
+    "Material.Fleece": {
+      "prompt": "a slipper made of soft fleece",
+      "display_en": "Fleece",
+      "display_tr": "",
+      "tier": "direct",
+      "zero_shot_scoreable": true,
+      "reason": "",
+      "review": "self",
+      "notes": ""
+    },
+    "Material.Full.grain.leather": {
+      "prompt": "a shoe made of full-grain leather showing the natural grain",
+      "display_en": "Full-grain leather",
+      "display_tr": "",
+      "tier": "direct",
+      "zero_shot_scoreable": true,
+      "reason": "",
+      "review": "self",
+      "notes": ""
+    },
+    "Material.Hair.Calf": {
+      "prompt": "a shoe made of hair-on calfskin, leather with the short animal hair left on, often spotted or striped",
+      "display_en": "Hair calf",
+      "display_tr": "",
+      "tier": "descriptive",
+      "zero_shot_scoreable": true,
+      "reason": "",
+      "review": "self",
+      "notes": ""
+    },
+    "Material.Jute": {
+      "prompt": "a sandal with a woven jute rope sole",
+      "display_en": "Jute",
+      "display_tr": "",
+      "tier": "direct",
+      "zero_shot_scoreable": true,
+      "reason": "",
+      "review": "self",
+      "notes": ""
+    },
+    "Material.Lace": {
+      "prompt": "a shoe made of lace with an openwork patterned fabric",
+      "display_en": "Lace",
+      "display_tr": "",
+      "tier": "direct",
+      "zero_shot_scoreable": true,
+      "reason": "",
+      "review": "self",
+      "notes": ""
+    },
+    "Material.Leather": {
+      "prompt": "a shoe made of smooth leather",
+      "display_en": "Leather",
+      "display_tr": "",
+      "tier": "direct",
+      "zero_shot_scoreable": true,
+      "reason": "",
+      "review": "self",
+      "notes": ""
+    },
+    "Material.Mesh": {
+      "prompt": "a shoe made of open mesh fabric with visible perforations",
+      "display_en": "Mesh",
+      "display_tr": "",
+      "tier": "direct",
+      "zero_shot_scoreable": true,
+      "reason": "",
+      "review": "self",
+      "notes": ""
+    },
+    "Material.Microfiber": {
+      "prompt": "a shoe made of microfiber, a fine synthetic fabric with an even matte surface",
+      "display_en": "Microfiber",
+      "display_tr": "",
+      "tier": "descriptive",
+      "zero_shot_scoreable": true,
+      "reason": "",
+      "review": "self",
+      "notes": ""
+    },
+    "Material.Nappa": {
+      "prompt": "a shoe made of nappa leather, a soft smooth full-grain leather with a fine even surface",
+      "display_en": "Nappa",
+      "display_tr": "",
+      "tier": "descriptive",
+      "zero_shot_scoreable": true,
+      "reason": "",
+      "review": "self",
+      "notes": ""
+    },
+    "Material.Neoprene": {
+      "prompt": "a shoe made of neoprene, a smooth stretchy wetsuit-like rubber fabric",
+      "display_en": "Neoprene",
+      "display_tr": "",
+      "tier": "direct",
+      "zero_shot_scoreable": true,
+      "reason": "",
+      "review": "self",
+      "notes": ""
+    },
+    "Material.Nubuck": {
+      "prompt": "a shoe made of nubuck, a leather sanded to a soft velvety nap, similar to suede but finer",
+      "display_en": "Nubuck",
+      "display_tr": "",
+      "tier": "descriptive",
+      "zero_shot_scoreable": true,
+      "reason": "",
+      "review": "self",
+      "notes": ""
+    },
+    "Material.Nylon": {
+      "prompt": "a shoe made of nylon fabric",
+      "display_en": "Nylon",
+      "display_tr": "",
+      "tier": "direct",
+      "zero_shot_scoreable": true,
+      "reason": "",
+      "review": "self",
+      "notes": ""
+    },
+    "Material.Patent.Leather": {
+      "prompt": "a shoe made of glossy patent leather with a mirror-like shine",
+      "display_en": "Patent leather",
+      "display_tr": "",
+      "tier": "direct",
+      "zero_shot_scoreable": true,
+      "reason": "",
+      "review": "self",
+      "notes": ""
+    },
+    "Material.Polyester": {
+      "prompt": "a shoe made of polyester fabric",
+      "display_en": "Polyester",
+      "display_tr": "",
+      "tier": "direct",
+      "zero_shot_scoreable": true,
+      "reason": "",
+      "review": "self",
+      "notes": ""
+    },
+    "Material.Ripstop": {
+      "prompt": "a shoe made of ripstop nylon, a lightweight fabric with a visible fine square grid woven into it",
+      "display_en": "Ripstop",
+      "display_tr": "",
+      "tier": "descriptive",
+      "zero_shot_scoreable": true,
+      "reason": "",
+      "review": "self",
+      "notes": ""
+    },
+    "Material.Rubber": {
+      "prompt": "a shoe made of rubber",
+      "display_en": "Rubber",
+      "display_tr": "",
+      "tier": "direct",
+      "zero_shot_scoreable": true,
+      "reason": "",
+      "review": "self",
+      "notes": ""
+    },
+    "Material.Satin": {
+      "prompt": "a shoe made of satin with a smooth lustrous sheen",
+      "display_en": "Satin",
+      "display_tr": "",
+      "tier": "direct",
+      "zero_shot_scoreable": true,
+      "reason": "",
+      "review": "self",
+      "notes": ""
+    },
+    "Material.Shearling": {
+      "prompt": "a boot lined with shearling, showing thick woolly fleece at the opening",
+      "display_en": "Shearling",
+      "display_tr": "",
+      "tier": "direct",
+      "zero_shot_scoreable": true,
+      "reason": "",
+      "review": "self",
+      "notes": ""
+    },
+    "Material.Sheepskin": {
+      "prompt": "a shoe made of sheepskin",
+      "display_en": "Sheepskin",
+      "display_tr": "",
+      "tier": "direct",
+      "zero_shot_scoreable": true,
+      "reason": "",
+      "review": "self",
+      "notes": ""
+    },
+    "Material.Suede": {
+      "prompt": "a shoe made of suede with a soft napped surface",
+      "display_en": "Suede",
+      "display_tr": "",
+      "tier": "direct",
+      "zero_shot_scoreable": true,
+      "reason": "",
+      "review": "self",
+      "notes": ""
+    },
+    "Material.Synthetic": {
+      "prompt": "a shoe made of synthetic man-made material",
+      "display_en": "Synthetic",
+      "display_tr": "",
+      "tier": "direct",
+      "zero_shot_scoreable": true,
+      "reason": "",
+      "review": "self",
+      "notes": ""
+    },
+    "Material.Terry": {
+      "prompt": "a slipper made of terry cloth with a looped towelling pile",
+      "display_en": "Terry",
+      "display_tr": "",
+      "tier": "descriptive",
+      "zero_shot_scoreable": true,
+      "reason": "",
+      "review": "self",
+      "notes": "91% of Terry positives are Slipper Flats, against slippers being 2.6% of the catalog, a 35x concentration. A correct prediction may reflect recognising a slipper rather than recognising terry cloth, so report this caveat wherever the label is scored."
+    },
+    "Material.Velvet": {
+      "prompt": "a shoe made of velvet with a dense soft pile",
+      "display_en": "Velvet",
+      "display_tr": "",
+      "tier": "direct",
+      "zero_shot_scoreable": true,
+      "reason": "",
+      "review": "self",
+      "notes": ""
+    },
+    "Material.Wool": {
+      "prompt": "a shoe made of wool",
+      "display_en": "Wool",
+      "display_tr": "",
+      "tier": "direct",
+      "zero_shot_scoreable": true,
+      "reason": "",
+      "review": "self",
+      "notes": ""
+    },
+    "SubCategory.Ankle": {
+      "prompt": "an ankle boot with a short shaft ending at the ankle",
+      "display_en": "Ankle boots",
+      "display_tr": "",
+      "tier": "direct",
+      "zero_shot_scoreable": true,
+      "reason": "",
+      "review": "self",
+      "notes": ""
+    },
+    "SubCategory.Boat.Shoes": {
+      "prompt": "a leather boat shoe with a lace threaded around the collar",
+      "display_en": "Boat shoes",
+      "display_tr": "",
+      "tier": "direct",
+      "zero_shot_scoreable": true,
+      "reason": "",
+      "review": "self",
+      "notes": ""
+    },
+    "SubCategory.Clogs.and.Mules": {
+      "prompt": "a backless clog or mule shoe",
+      "display_en": "Clogs and mules",
+      "display_tr": "",
+      "tier": "direct",
+      "zero_shot_scoreable": true,
+      "reason": "",
+      "review": "self",
+      "notes": ""
+    },
+    "SubCategory.Firstwalker": {
+      "prompt": "a small toddler shoe for a child learning to walk",
+      "display_en": "Firstwalker",
+      "display_tr": "",
+      "tier": "direct",
+      "zero_shot_scoreable": true,
+      "reason": "",
+      "review": "self",
+      "notes": "Prewalker and Firstwalker are both infant shoes and look similar in a product photo; the difference is sole stiffness, which a photograph shows poorly. Observation, not reviewed."
+    },
+    "SubCategory.Flat": {
+      "prompt": "a flat sandal with no heel",
+      "display_en": "Flat sandals",
+      "display_tr": "",
+      "tier": "direct",
+      "zero_shot_scoreable": true,
+      "reason": "",
+      "review": "self",
+      "notes": ""
+    },
+    "SubCategory.Flats": {
+      "prompt": "a flat women's shoe with no heel",
+      "display_en": "Flats",
+      "display_tr": "",
+      "tier": "direct",
+      "zero_shot_scoreable": true,
+      "reason": "",
+      "review": "self",
+      "notes": ""
+    },
+    "SubCategory.Heel": {
+      "prompt": "a heeled sandal with a raised heel",
+      "display_en": "Heeled sandals",
+      "display_tr": "",
+      "tier": "direct",
+      "zero_shot_scoreable": true,
+      "reason": "",
+      "review": "self",
+      "notes": ""
+    },
+    "SubCategory.Heels": {
+      "prompt": "a high-heeled women's shoe",
+      "display_en": "Heels",
+      "display_tr": "",
+      "tier": "direct",
+      "zero_shot_scoreable": true,
+      "reason": "",
+      "review": "self",
+      "notes": ""
+    },
+    "SubCategory.Knee.High": {
+      "prompt": "a knee-high boot with a tall shaft reaching the knee",
+      "display_en": "Knee-high boots",
+      "display_tr": "",
+      "tier": "direct",
+      "zero_shot_scoreable": true,
+      "reason": "",
+      "review": "self",
+      "notes": ""
+    },
+    "SubCategory.Loafers": {
+      "prompt": "a slip-on loafer shoe with no laces",
+      "display_en": "Loafers",
+      "display_tr": "",
+      "tier": "direct",
+      "zero_shot_scoreable": true,
+      "reason": "",
+      "review": "self",
+      "notes": ""
+    },
+    "SubCategory.Mid.Calf": {
+      "prompt": "a boot with a shaft reaching the middle of the calf",
+      "display_en": "Mid-calf boots",
+      "display_tr": "",
+      "tier": "direct",
+      "zero_shot_scoreable": true,
+      "reason": "",
+      "review": "self",
+      "notes": ""
+    },
+    "SubCategory.Oxfords": {
+      "prompt": "an oxford dress shoe with closed lacing",
+      "display_en": "Oxfords",
+      "display_tr": "",
+      "tier": "direct",
+      "zero_shot_scoreable": true,
+      "reason": "",
+      "review": "self",
+      "notes": ""
+    },
+    "SubCategory.Prewalker": {
+      "prompt": "a soft infant shoe for a baby who cannot walk yet",
+      "display_en": "Prewalker",
+      "display_tr": "",
+      "tier": "direct",
+      "zero_shot_scoreable": true,
+      "reason": "",
+      "review": "self",
+      "notes": "Prewalker and Firstwalker are both infant shoes and look similar in a product photo; the difference is sole stiffness, which a photograph shows poorly. Observation, not reviewed."
+    },
+    "SubCategory.Slipper.Flats": {
+      "prompt": "a soft flat house slipper",
+      "display_en": "Slipper flats",
+      "display_tr": "",
+      "tier": "direct",
+      "zero_shot_scoreable": true,
+      "reason": "",
+      "review": "self",
+      "notes": ""
+    },
+    "SubCategory.Sneakers.and.Athletic.Shoes": {
+      "prompt": "a sneaker or athletic trainer",
+      "display_en": "Sneakers",
+      "display_tr": "",
+      "tier": "direct",
+      "zero_shot_scoreable": true,
+      "reason": "",
+      "review": "self",
+      "notes": ""
+    },
+    "ToeStyle.Algonquin": {
+      "prompt": "a shoe with a fine U-shaped seam across the top of the toe forming a flat raised ridge rather than a puckered one",
+      "display_en": "Algonquin toe",
+      "display_tr": "",
+      "tier": "descriptive",
+      "zero_shot_scoreable": true,
+      "reason": "",
+      "review": "confirmed",
+      "notes": "Moc Toe and Algonquin are near-identical in a photograph, differing only in whether the seam is puckered or a flat raised ridge. Their ceiling is set by visual distinguishability, not prompt quality, so a low score here is not evidence the prompt is wrong."
+    },
+    "ToeStyle.Almond": {
+      "prompt": "a shoe with an almond-shaped toe, tapered but softly rounded at the tip",
+      "display_en": "Almond toe",
+      "display_tr": "",
+      "tier": "direct",
+      "zero_shot_scoreable": true,
+      "reason": "",
+      "review": "self",
+      "notes": ""
+    },
+    "ToeStyle.Bicycle Toe": {
+      "prompt": "a shoe with two parallel seams running down either side of the toe and meeting at the tip like handlebars",
+      "display_en": "Bicycle toe",
+      "display_tr": "",
+      "tier": "descriptive",
+      "zero_shot_scoreable": true,
+      "reason": "",
+      "review": "confirmed",
+      "notes": ""
+    },
+    "ToeStyle.Bump Toe": {
+      "prompt": "a shoe with a slight raised bump at the very tip of the toe, visible in profile",
+      "display_en": "Bump toe",
+      "display_tr": "",
+      "tier": "descriptive",
+      "zero_shot_scoreable": true,
+      "reason": "",
+      "review": "confirmed",
+      "notes": ""
+    },
+    "ToeStyle.Capped Toe": {
+      "prompt": "a dress shoe with a seam across the toe forming a separate toe cap",
+      "display_en": "Cap toe",
+      "display_tr": "",
+      "tier": "direct",
+      "zero_shot_scoreable": true,
+      "reason": "",
+      "review": "self",
+      "notes": ""
+    },
+    "ToeStyle.Center Seam": {
+      "prompt": "a shoe with a single vertical seam running down the centre of the toe, dividing it symmetrically",
+      "display_en": "Center seam",
+      "display_tr": "",
+      "tier": "descriptive",
+      "zero_shot_scoreable": true,
+      "reason": "",
+      "review": "confirmed",
+      "notes": ""
+    },
+    "ToeStyle.Closed Toe": {
+      "prompt": "a shoe with a closed toe covering the toes",
+      "display_en": "Closed toe",
+      "display_tr": "",
+      "tier": "direct",
+      "zero_shot_scoreable": true,
+      "reason": "",
+      "review": "self",
+      "notes": ""
+    },
+    "ToeStyle.Medallion": {
+      "prompt": "a dress shoe with a decorative pattern of small punched holes on the toe cap, usually floral or circular",
+      "display_en": "Medallion toe",
+      "display_tr": "",
+      "tier": "descriptive",
+      "zero_shot_scoreable": true,
+      "reason": "",
+      "review": "confirmed",
+      "notes": ""
+    },
+    "ToeStyle.Moc Toe": {
+      "prompt": "a shoe with a prominent U-shaped horseshoe seam across the top of the toe, as if a separate panel of leather were stitched on by hand",
+      "display_en": "Moc toe",
+      "display_tr": "",
+      "tier": "descriptive",
+      "zero_shot_scoreable": true,
+      "reason": "",
+      "review": "confirmed",
+      "notes": "Moc Toe and Algonquin are near-identical in a photograph, differing only in whether the seam is puckered or a flat raised ridge. Their ceiling is set by visual distinguishability, not prompt quality, so a low score here is not evidence the prompt is wrong."
+    },
+    "ToeStyle.Open Toe": {
+      "prompt": "a sandal with an open toe leaving the toes exposed",
+      "display_en": "Open toe",
+      "display_tr": "",
+      "tier": "direct",
+      "zero_shot_scoreable": true,
+      "reason": "",
+      "review": "self",
+      "notes": ""
+    },
+    "ToeStyle.Peep Toe": {
+      "prompt": "a shoe with a small peep-toe opening showing only the tips of the toes",
+      "display_en": "Peep toe",
+      "display_tr": "",
+      "tier": "direct",
+      "zero_shot_scoreable": true,
+      "reason": "",
+      "review": "self",
+      "notes": ""
+    },
+    "ToeStyle.Pointed Toe": {
+      "prompt": "a shoe with a sharply pointed toe",
+      "display_en": "Pointed toe",
+      "display_tr": "",
+      "tier": "direct",
+      "zero_shot_scoreable": true,
+      "reason": "",
+      "review": "self",
+      "notes": ""
+    },
+    "ToeStyle.Round Toe": {
+      "prompt": "a shoe with a rounded toe",
+      "display_en": "Round toe",
+      "display_tr": "",
+      "tier": "direct",
+      "zero_shot_scoreable": true,
+      "reason": "",
+      "review": "self",
+      "notes": ""
+    },
+    "ToeStyle.Snip Toe": {
+      "prompt": "a western boot with a toe that narrows toward the front but ends in a flat cut tip rather than a point",
+      "display_en": "Snip toe",
+      "display_tr": "",
+      "tier": "descriptive",
+      "zero_shot_scoreable": true,
+      "reason": "",
+      "review": "confirmed",
+      "notes": ""
+    },
+    "ToeStyle.Snub Toe": {
+      "prompt": "a shoe with a short blunt rounded toe, stubbier and shorter than a standard round toe",
+      "display_en": "Snub toe",
+      "display_tr": "",
+      "tier": "descriptive",
+      "zero_shot_scoreable": true,
+      "reason": "",
+      "review": "confirmed",
+      "notes": ""
+    },
+    "ToeStyle.Square Toe": {
+      "prompt": "a shoe with a flat square toe",
+      "display_en": "Square toe",
+      "display_tr": "",
+      "tier": "direct",
+      "zero_shot_scoreable": true,
+      "reason": "",
+      "review": "self",
+      "notes": ""
+    },
+    "ToeStyle.Wide Toe Box": {
+      "prompt": "a shoe with a wide roomy toe box",
+      "display_en": "Wide toe box",
+      "display_tr": "",
+      "tier": "direct",
+      "zero_shot_scoreable": true,
+      "reason": "",
+      "review": "self",
+      "notes": ""
+    },
+    "ToeStyle.Wingtip": {
+      "prompt": "a brogue shoe with a W-shaped wingtip seam sweeping back along the sides",
+      "display_en": "Wingtip",
+      "display_tr": "",
+      "tier": "direct",
+      "zero_shot_scoreable": true,
+      "reason": "",
+      "review": "self",
+      "notes": ""
+    }
+  },
+  "families": {
+    "Category": {
+      "display_en": "Category",
+      "display_tr": "",
+      "notes": "the four top-level shoe types, one value per product"
+    },
+    "Closure": {
+      "display_en": "Closure",
+      "display_tr": "",
+      "notes": "how the shoe fastens; a literal rendering of the English is wrong for Turkish retail"
+    },
+    "Gender": {
+      "display_en": "Gender",
+      "display_tr": "",
+      "notes": "intended wearer; a product may carry more than one"
+    },
+    "HeelHeight": {
+      "display_en": "Heel height",
+      "display_tr": "",
+      "notes": "seven hand-decoded inch ranges, shown as one value chosen by argmax"
+    },
+    "Insole": {
+      "display_en": "Insole",
+      "display_tr": "",
+      "notes": "the footbed material; excluded from zero-shot scoring, the labels are not prompt-distinguishable"
+    },
+    "Material": {
+      "display_en": "Material",
+      "display_tr": "",
+      "notes": "upper materials; a product may carry several"
+    },
+    "SubCategory": {
+      "display_en": "Sub-category",
+      "display_tr": "",
+      "notes": "the finer type within Category, one value per product"
+    },
+    "ToeStyle": {
+      "display_en": "Toe style",
+      "display_tr": "",
+      "notes": "the shape and construction of the toe; not a literal rendering of the English"
+    }
   }
 }
