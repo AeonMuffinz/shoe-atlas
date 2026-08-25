@@ -115,8 +115,8 @@ def time_brute_force(embeddings: np.ndarray, queries: np.ndarray, k: int, repeat
         "seconds_per_query": per_query,
         "projected_seconds_for_full_query_set": per_query * int(len(queries)),
         "note": (
-            "brute force over the whole catalog, measured before considering an index. CLAUDE.md says "
-            "measure before adding Faiss."
+            "brute force over the whole catalog, measured before considering an index. The standing "
+            "rule is to measure before adding Faiss."
         ),
     }
 
