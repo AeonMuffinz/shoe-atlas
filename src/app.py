@@ -35,13 +35,16 @@ CSS: str = """
 footer { display: none !important; }
 .app-head h1 { font-size: 1.5rem !important; margin: 0 0 0.15rem !important; }
 .app-head p { font-size: 0.85rem !important; margin: 0.1rem 0 !important; opacity: 0.8; }
-.panel-help h3 { font-size: 0.95rem !important; margin: 0 0 0.15rem !important; }
+.panel-help h3 { font-size: 0.95rem !important; margin: 0 0 0.55rem !important; }
 .panel-help p { font-size: 0.82rem !important; margin: 0 !important; opacity: 0.75; }
 .mode-switch label { font-size: 0.98rem !important; padding: 0.5rem 1rem !important; }
 .mode-switch .wrap { gap: 0.75rem !important; }
 .app-status { padding: 0.65rem 0.9rem; border-radius: 8px; font-size: 0.92rem;
               background: rgba(249,115,22,0.12); border: 1px solid rgba(249,115,22,0.35); }
 .pred-note { font-size: 0.78rem; opacity: 0.55; margin-top: 0.6rem; }
+.shot .image-container, .shot .upload-container, .shot .image-frame { height: 100% !important; }
+.shot .image-frame img { height: 100% !important; width: 100% !important;
+                         object-fit: contain !important; }
 .pred-head { display: flex; justify-content: space-between; align-items: baseline;
              font-size: 1.02rem; font-weight: 700; margin-bottom: 0.5rem; }
 .pred-scale { font-size: 0.78rem; font-weight: 500; opacity: 0.6; }
@@ -279,16 +282,15 @@ def render_audit(bundle: Bundle, report: dict[str, dict[str, object]], locale: L
         if status == STATUS_CONFLICT:
             interesting += 1
             detail = locale.text("audit.conflict_detail", stored=stored_text, predicted=predicted_text)
-            lines.append(f"{heading} — {locale.text('audit.conflict')}")
-            lines.append(f"- {detail}")
+            lines.append(f"- {heading} — {locale.text('audit.conflict')} · {detail}")
         elif status == STATUS_FILL:
             interesting += 1
-            lines.append(heading)
-            lines.append(f"- {locale.text('audit.fill_detail', predicted=predicted_text)}")
+            lines.append(f"- {heading} · {locale.text('audit.fill_detail', predicted=predicted_text)}")
         else:
-            lines.append(f"{heading} — {locale.text('audit.agrees')}")
-            lines.append(f"- {locale.text('audit.agrees_detail', stored=stored_text)}")
-        lines.append("")
+            lines.append(
+                f"- {heading} — {locale.text('audit.agrees')} · "
+                f"{locale.text('audit.agrees_detail', stored=stored_text)}"
+            )
     if interesting == 0:
         lines.append(f"_{locale.text('audit.none')}_")
     return "\n".join(lines)
@@ -499,15 +501,16 @@ def build_interface(bundle: Bundle, locales: dict[str, Locale]):  # noqa: ANN201
                     catalog_button = gr.Button(default.text("catalog.button"), variant="primary")
                     catalog_preview = gr.Image(
                         label=default.text("catalog.preview"), height=320, visible=False,
+                        elem_classes=["shot"],
                     )
                 with gr.Column(scale=5):
                     catalog_status = gr.HTML()
                     catalog_predictions = gr.HTML()
-                    catalog_audit = gr.Markdown()
             catalog_gallery = gr.Gallery(
                 label=default.text("neighbours.heading"), columns=5, rows=1,
                 object_fit="contain", visible=False, elem_classes=["strip"],
             )
+            catalog_audit = gr.Markdown()
 
         footer = gr.Markdown(footer_text(default))
 
