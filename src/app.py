@@ -31,19 +31,28 @@ MODE_UPLOAD: str = "upload"
 MODE_CATALOG: str = "catalog"
 
 CSS: str = """
-.mode-switch label { font-size: 1.05rem !important; padding: 0.75rem 1.25rem !important; }
+footer { display: none !important; }
+.mode-switch label { font-size: 1.05rem !important; padding: 0.7rem 1.2rem !important; }
 .mode-switch .wrap { gap: 0.75rem !important; }
-.pred-wrap { display: flex; flex-direction: column; gap: 1.1rem; }
+.app-status { padding: 0.6rem 0.9rem; border-radius: 8px; font-size: 0.92rem;
+              background: rgba(249,115,22,0.12); border: 1px solid rgba(249,115,22,0.35); }
 .pred-head { display: flex; justify-content: space-between; align-items: baseline;
-             font-size: 1.05rem; font-weight: 700; }
-.pred-scale { font-size: 0.8rem; font-weight: 500; opacity: 0.65; }
-.pred-family-name { font-size: 0.9rem; font-weight: 700; opacity: 0.8; margin-bottom: 0.35rem; }
-.pred-row { margin-bottom: 0.45rem; }
-.pred-line { display: flex; justify-content: space-between; font-size: 0.9rem; margin-bottom: 0.15rem; }
-.pred-value { font-variant-numeric: tabular-nums; opacity: 0.75; }
-.pred-track { height: 8px; border-radius: 999px; background: rgba(148,163,184,0.25); overflow: hidden; }
+             font-size: 1.05rem; font-weight: 700; margin-bottom: 0.7rem; }
+.pred-scale { font-size: 0.78rem; font-weight: 500; opacity: 0.6; }
+.pred-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.6rem 0.9rem; }
+.pred-family { border: 1px solid rgba(148,163,184,0.25); border-radius: 10px;
+               padding: 0.55rem 0.7rem 0.4rem; }
+.pred-family-name { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.04em;
+                    text-transform: uppercase; opacity: 0.55; margin-bottom: 0.4rem; }
+.pred-row { margin-bottom: 0.4rem; }
+.pred-line { display: flex; justify-content: space-between; gap: 0.5rem;
+             font-size: 0.88rem; margin-bottom: 0.18rem; }
+.pred-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pred-value { font-variant-numeric: tabular-nums; opacity: 0.7; flex: none; }
+.pred-track { height: 7px; border-radius: 999px; background: rgba(148,163,184,0.22); overflow: hidden; }
 .pred-fill { height: 100%; border-radius: 999px; }
-.pred-empty { font-size: 0.85rem; opacity: 0.6; font-style: italic; }
+.pred-empty { font-size: 0.82rem; opacity: 0.55; font-style: italic; }
+@media (max-width: 900px) { .pred-grid { grid-template-columns: minmax(0, 1fr); } }
 """
 
 STATUS_CONFLICT: str = "conflict"
@@ -203,10 +212,7 @@ def bar_row(label: str, probability: float, leading: bool) -> str:
 
 
 def render_predictions(bundle: Bundle, probabilities: np.ndarray, locale: Locale) -> str:
-    blocks = [
-        f'<div class="pred-head"><span>{escape(locale.text("predictions.heading"))}</span>'
-        f'<span class="pred-scale">{escape(locale.text("predictions.confidence"))}</span></div>'
-    ]
+    cards = []
     for family in bundle.schema.families:
         picks = top_picks(bundle, probabilities, family.name)
         rows = "".join(
@@ -215,12 +221,16 @@ def render_predictions(bundle: Bundle, probabilities: np.ndarray, locale: Locale
         )
         if not picks:
             rows = f'<div class="pred-empty">{escape(locale.text("predictions.none"))}</div>'
-        blocks.append(
+        cards.append(
             f'<div class="pred-family">'
             f'<div class="pred-family-name">{escape(family_text(bundle, family.name, locale.language))}</div>'
             f"{rows}</div>"
         )
-    return f'<div class="pred-wrap">{"".join(blocks)}</div>'
+    head = (
+        f'<div class="pred-head"><span>{escape(locale.text("predictions.heading"))}</span>'
+        f'<span class="pred-scale">{escape(locale.text("predictions.confidence"))}</span></div>'
+    )
+    return f'{head}<div class="pred-grid">{"".join(cards)}</div>'
 
 
 def render_audit(bundle: Bundle, report: dict[str, dict[str, object]], locale: Locale) -> str:
@@ -360,29 +370,46 @@ def build_interface(bundle: Bundle, locales: dict[str, Locale]):  # noqa: ANN201
             locale.text("footer.license"),
         ])
 
+    def working(language: str):  # noqa: ANN202
+        locale = locales[language]
+        return gr.update(
+            value=f'<div class="app-status">{escape(locale.text("status.working"))}</div>',
+            visible=True,
+        )
+
+    def notice(locale: Locale, key: str):  # noqa: ANN202
+        return gr.update(value=f'<div class="app-status">{escape(locale.text(key))}</div>', visible=True)
+
     def on_upload(image: np.ndarray | None, language: str):  # noqa: ANN202
         locale = locales[language]
         if image is None:
-            return f'<div class="pred-empty">{escape(locale.text("upload.no_image"))}</div>', []
+            return notice(locale, "upload.no_image"), gr.update(visible=False), gr.update(visible=False)
         probabilities = predict_row(bundle, image)
         vector = embed_image(bundle, image)
         rows = neighbours_for(bundle, vector.astype(np.float32))
-        return render_predictions(bundle, probabilities, locale), gallery_items(bundle, rows, locale)
+        return (
+            gr.update(visible=False),
+            gr.update(value=render_predictions(bundle, probabilities, locale), visible=True),
+            gr.update(value=gallery_items(bundle, rows, locale), visible=True),
+        )
 
     def on_catalog(row: int | None, language: str):  # noqa: ANN202
         locale = locales[language]
         if row is None:
-            empty = f'<div class="pred-empty">{escape(locale.text("catalog.no_selection"))}</div>'
-            return empty, "", [], None
+            return (
+                notice(locale, "catalog.no_selection"), gr.update(visible=False),
+                gr.update(visible=False), gr.update(visible=False), gr.update(visible=False),
+            )
         image = np.asarray(bundle.images[row])
         probabilities = predict_row(bundle, image)
         report = audit_row(bundle, int(row), probabilities)
         rows = neighbours_for(bundle, bundle.embeddings[row], exclude=int(row))
         return (
-            render_predictions(bundle, probabilities, locale),
-            render_audit(bundle, report, locale),
-            gallery_items(bundle, rows, locale),
-            image,
+            gr.update(visible=False),
+            gr.update(value=render_predictions(bundle, probabilities, locale), visible=True),
+            gr.update(value=render_audit(bundle, report, locale), visible=True),
+            gr.update(value=gallery_items(bundle, rows, locale), visible=True),
+            gr.update(value=image, visible=True),
         )
 
     default = locales[DEFAULT_LANGUAGE]
@@ -391,9 +418,7 @@ def build_interface(bundle: Bundle, locales: dict[str, Locale]):  # noqa: ANN201
             header = gr.Markdown(header_text(default))
             language = gr.Radio(
                 choices=[(LANGUAGE_NAMES[code], code) for code in LANGUAGES],
-                value=DEFAULT_LANGUAGE,
-                label=default.text("app.language"),
-                scale=0,
+                value=DEFAULT_LANGUAGE, label=default.text("app.language"), scale=0,
             )
         mode = gr.Radio(
             choices=mode_choices(default), value=MODE_UPLOAD,
@@ -403,34 +428,48 @@ def build_interface(bundle: Bundle, locales: dict[str, Locale]):  # noqa: ANN201
         with gr.Group(visible=True) as upload_panel:
             upload_help = gr.Markdown(upload_help_text(default))
             with gr.Row(equal_height=False):
-                with gr.Column(scale=1):
-                    upload_image = gr.Image(type="numpy", label=default.text("upload.input"), height=320)
+                with gr.Column(scale=4):
+                    upload_image = gr.Image(
+                        type="numpy", label=default.text("upload.input"), height=300,
+                        placeholder=default.text("upload.placeholder"),
+                    )
                     upload_button = gr.Button(default.text("upload.button"), variant="primary")
-                with gr.Column(scale=1):
-                    upload_predictions = gr.HTML()
-            upload_gallery = gr.Gallery(label=default.text("neighbours.heading"), columns=5, height=200)
+                with gr.Column(scale=6):
+                    upload_status = gr.HTML(visible=False)
+                    upload_predictions = gr.HTML(visible=False)
+            upload_gallery = gr.Gallery(
+                label=default.text("neighbours.heading"), columns=5, height=190, visible=False,
+            )
 
         with gr.Group(visible=False) as catalog_panel:
             catalog_help = gr.Markdown(catalog_help_text(default))
             with gr.Row(equal_height=False):
-                with gr.Column(scale=1):
-                    picker = gr.Dropdown(choices=choices, label=default.text("catalog.picker"), value=None)
+                with gr.Column(scale=4):
+                    picker = gr.Dropdown(
+                        choices=choices, label=default.text("catalog.picker"), value=None,
+                    )
                     catalog_button = gr.Button(default.text("catalog.button"), variant="primary")
-                    catalog_preview = gr.Image(label=default.text("catalog.preview"), height=260)
-                with gr.Column(scale=1):
-                    catalog_predictions = gr.HTML()
-                    catalog_audit = gr.Markdown()
-            catalog_gallery = gr.Gallery(label=default.text("neighbours.heading"), columns=5, height=200)
+                    catalog_preview = gr.Image(
+                        label=default.text("catalog.preview"), height=240, visible=False,
+                    )
+                with gr.Column(scale=6):
+                    catalog_status = gr.HTML(visible=False)
+                    catalog_predictions = gr.HTML(visible=False)
+                    catalog_audit = gr.Markdown(visible=False)
+            catalog_gallery = gr.Gallery(
+                label=default.text("neighbours.heading"), columns=5, height=190, visible=False,
+            )
 
         footer = gr.Markdown(footer_text(default))
 
-        upload_button.click(
+        upload_button.click(working, inputs=[language], outputs=[upload_status]).then(
             on_upload, inputs=[upload_image, language],
-            outputs=[upload_predictions, upload_gallery],
+            outputs=[upload_status, upload_predictions, upload_gallery],
         )
-        catalog_button.click(
+        catalog_button.click(working, inputs=[language], outputs=[catalog_status]).then(
             on_catalog, inputs=[picker, language],
-            outputs=[catalog_predictions, catalog_audit, catalog_gallery, catalog_preview],
+            outputs=[catalog_status, catalog_predictions, catalog_audit,
+                     catalog_gallery, catalog_preview],
         )
 
         def switch_mode(selected: str):  # noqa: ANN202
@@ -453,7 +492,8 @@ def build_interface(bundle: Bundle, locales: dict[str, Locale]):  # noqa: ANN201
                 gr.update(choices=mode_choices(locale), value=current_mode),
                 gr.update(value=header_text(locale)),
                 gr.update(value=upload_help_text(locale)),
-                gr.update(label=locale.text("upload.input")),
+                gr.update(label=locale.text("upload.input"),
+                          placeholder=locale.text("upload.placeholder")),
                 gr.update(value=locale.text("upload.button")),
                 gr.update(label=locale.text("neighbours.heading")),
                 gr.update(value=catalog_help_text(locale)),
@@ -478,7 +518,7 @@ def main() -> None:
 
     bundle = load_bundle(args.run, args.processed)
     demo = build_interface(bundle, i18n.load_all())
-    demo.launch(share=args.share, server_port=args.port, css=CSS)
+    demo.launch(share=args.share, server_port=args.port, css=CSS, footer_links=[])
 
 
 if __name__ == "__main__":
