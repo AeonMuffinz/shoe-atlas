@@ -1,5 +1,7 @@
 # Shoe Atlas
 
+### 👟 [Try it live on Hugging Face](https://huggingface.co/spaces/AeonMuffinz/shoe-atlas)
+
 Shoe Atlas looks at a product photo and works out eight things about the shoe: what kind it is, how high
 the heel is, how it fastens, what it is made of, the shape of the toe, and a few more. It then uses those
 predictions for two jobs. It checks a shop's own product data for mistakes, and it finds the same shoe in
