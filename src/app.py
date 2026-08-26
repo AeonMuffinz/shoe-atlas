@@ -22,7 +22,7 @@ from src.i18n import DEFAULT_LANGUAGE, LANGUAGE_NAMES, LANGUAGES, Locale
 
 WINNER_RUN: Path = reporting.RUNS_ROOT / "convnext_base_ar1_s42"
 EMBEDDINGS_NAME: str = "embeddings_finetuned.npy"
-NEIGHBOURS: int = 10
+NEIGHBOURS: int = 5
 CATALOG_CHOICES: int = 400
 EXAMPLES_DIR: Path = Path("examples")
 TOP_PICKS: int = 2
@@ -44,14 +44,14 @@ footer { display: none !important; }
 @keyframes app-bar-slide { 0% { transform: translateX(-110%); } 100% { transform: translateX(300%); } }
 .pred-note { font-size: 0.78rem; opacity: 0.55; margin-top: 0.6rem; }
 .pred-head { display: flex; justify-content: space-between; align-items: baseline;
-             font-size: 1.05rem; font-weight: 700; margin-bottom: 0.7rem; }
+             font-size: 1.02rem; font-weight: 700; margin-bottom: 0.5rem; }
 .pred-scale { font-size: 0.78rem; font-weight: 500; opacity: 0.6; }
-.pred-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.6rem 0.9rem; }
+.pred-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.45rem 0.8rem; }
 .pred-family { border: 1px solid rgba(148,163,184,0.25); border-radius: 10px;
-               padding: 0.55rem 0.7rem 0.4rem; }
-.pred-family-name { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.04em;
-                    text-transform: uppercase; opacity: 0.55; margin-bottom: 0.4rem; }
-.pred-row { margin-bottom: 0.4rem; }
+               padding: 0.4rem 0.65rem 0.3rem; }
+.pred-family-name { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.04em;
+                    text-transform: uppercase; opacity: 0.55; margin-bottom: 0.3rem; }
+.pred-row { margin-bottom: 0.3rem; }
 .pred-line { display: flex; justify-content: space-between; gap: 0.5rem;
              font-size: 0.88rem; margin-bottom: 0.18rem; }
 .pred-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -397,11 +397,13 @@ def build_interface(bundle: Bundle, locales: dict[str, Locale]):  # noqa: ANN201
     def on_upload(image: np.ndarray | None, language: str):  # noqa: ANN202
         locale = locales[language]
         if image is None:
-            return notice(locale, "upload.no_image"), "", gr.update(visible=False)
+            yield notice(locale, "upload.no_image"), "", gr.update(visible=False)
+            return
+        yield working(language), "", gr.update(visible=False)
         probabilities = predict_row(bundle, image)
         vector = embed_image(bundle, image)
         rows = neighbours_for(bundle, vector.astype(np.float32))
-        return (
+        yield (
             "",
             render_predictions(bundle, probabilities, locale),
             gr.update(value=gallery_items(bundle, rows, locale), visible=True),
@@ -410,15 +412,17 @@ def build_interface(bundle: Bundle, locales: dict[str, Locale]):  # noqa: ANN201
     def on_catalog(row: int | None, language: str):  # noqa: ANN202
         locale = locales[language]
         if row is None:
-            return (
+            yield (
                 notice(locale, "catalog.no_selection"), "", "",
                 gr.update(visible=False), gr.update(visible=False),
             )
+            return
+        yield working(language), "", "", gr.update(visible=False), gr.update(visible=False)
         image = np.asarray(bundle.images[row])
         probabilities = predict_row(bundle, image)
         report = audit_row(bundle, int(row), probabilities)
         rows = neighbours_for(bundle, bundle.embeddings[row], exclude=int(row))
-        return (
+        yield (
             "",
             render_predictions(bundle, probabilities, locale),
             render_audit(bundle, report, locale),
@@ -444,7 +448,7 @@ def build_interface(bundle: Bundle, locales: dict[str, Locale]):  # noqa: ANN201
             with gr.Row(equal_height=False):
                 with gr.Column(scale=4):
                     upload_image = gr.Image(
-                        type="numpy", label=default.text("upload.input"), height=300,
+                        type="numpy", label=default.text("upload.input"), height=240,
                         placeholder=default.text("upload.placeholder"),
                     )
                     upload_button = gr.Button(default.text("upload.button"), variant="primary")
@@ -455,7 +459,7 @@ def build_interface(bundle: Bundle, locales: dict[str, Locale]):  # noqa: ANN201
                     upload_status = gr.HTML()
                     upload_predictions = gr.HTML()
             upload_gallery = gr.Gallery(
-                label=default.text("neighbours.heading"), columns=5, rows=2, height=340,
+                label=default.text("neighbours.heading"), columns=5, rows=1, height=180,
                 object_fit="contain", visible=False,
             )
 
@@ -468,27 +472,29 @@ def build_interface(bundle: Bundle, locales: dict[str, Locale]):  # noqa: ANN201
                     )
                     catalog_button = gr.Button(default.text("catalog.button"), variant="primary")
                     catalog_preview = gr.Image(
-                        label=default.text("catalog.preview"), height=240, visible=False,
+                        label=default.text("catalog.preview"), height=200, visible=False,
                     )
                 with gr.Column(scale=6):
                     catalog_status = gr.HTML()
                     catalog_predictions = gr.HTML()
                     catalog_audit = gr.Markdown()
             catalog_gallery = gr.Gallery(
-                label=default.text("neighbours.heading"), columns=5, rows=2, height=340,
+                label=default.text("neighbours.heading"), columns=5, rows=1, height=180,
                 object_fit="contain", visible=False,
             )
 
         footer = gr.Markdown(footer_text(default))
 
-        upload_button.click(working, inputs=[language], outputs=[upload_status]).then(
+        upload_button.click(
             on_upload, inputs=[upload_image, language],
             outputs=[upload_status, upload_predictions, upload_gallery],
+            show_progress="hidden",
         )
-        catalog_button.click(working, inputs=[language], outputs=[catalog_status]).then(
+        catalog_button.click(
             on_catalog, inputs=[picker, language],
             outputs=[catalog_status, catalog_predictions, catalog_audit,
                      catalog_gallery, catalog_preview],
+            show_progress="hidden",
         )
 
         def switch_mode(selected: str):  # noqa: ANN202
