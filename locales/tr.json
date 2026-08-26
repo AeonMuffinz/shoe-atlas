@@ -4,7 +4,7 @@
   "app.model_note": "ConvNeXt tabanlı bir modelle üretildi.",
   "app.model_url": "https://arxiv.org/abs/2201.03545",
   "app.subtitle": "UT Zappos50K veri kümesinde ürün özelliği tahmini, katalog denetimi ve görselle aynı ürünü bulma.",
-  "app.title": "Akıllı Ayakkabı Kataloğu",
+  "app.title": "Shoe Atlas",
   "audit.agrees": "Uyumlu",
   "audit.agrees_detail": "Katalog da model de {stored} diyor.",
   "audit.conflict": "Çelişki",

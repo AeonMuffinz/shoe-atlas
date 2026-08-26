@@ -1,4 +1,4 @@
-# Shoe Catalog Intelligence
+# Shoe Atlas
 
 Multi-label shoe attribute extraction, catalog audit, and same-product retrieval on UT Zappos50K.
 

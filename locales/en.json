@@ -4,7 +4,7 @@
   "app.model_note": "Produced with a ConvNeXt-based model.",
   "app.model_url": "https://arxiv.org/abs/2201.03545",
   "app.subtitle": "Attribute prediction, catalog audit and same-product image search on UT Zappos50K.",
-  "app.title": "Smart Shoe Catalog",
+  "app.title": "Shoe Atlas",
   "audit.agrees": "Agrees",
   "audit.agrees_detail": "The catalog and the model both say {stored}.",
   "audit.conflict": "Conflict",

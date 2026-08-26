@@ -33,7 +33,11 @@ MODE_CATALOG: str = "catalog"
 
 CSS: str = """
 footer { display: none !important; }
-.mode-switch label { font-size: 1.05rem !important; padding: 0.7rem 1.2rem !important; }
+.app-head h1 { font-size: 1.5rem !important; margin: 0 0 0.15rem !important; }
+.app-head p { font-size: 0.85rem !important; margin: 0.1rem 0 !important; opacity: 0.8; }
+.panel-help h3 { font-size: 0.95rem !important; margin: 0 0 0.15rem !important; }
+.panel-help p { font-size: 0.82rem !important; margin: 0 !important; opacity: 0.75; }
+.mode-switch label { font-size: 0.98rem !important; padding: 0.5rem 1rem !important; }
 .mode-switch .wrap { gap: 0.75rem !important; }
 .app-status { padding: 0.65rem 0.9rem; border-radius: 8px; font-size: 0.92rem;
               background: rgba(249,115,22,0.12); border: 1px solid rgba(249,115,22,0.35); }
@@ -41,7 +45,7 @@ footer { display: none !important; }
 .pred-head { display: flex; justify-content: space-between; align-items: baseline;
              font-size: 1.02rem; font-weight: 700; margin-bottom: 0.5rem; }
 .pred-scale { font-size: 0.78rem; font-weight: 500; opacity: 0.6; }
-.pred-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(185px, 1fr));
+.pred-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(158px, 1fr));
              gap: 0.45rem 0.7rem; }
 .pred-family { border: 1px solid rgba(148,163,184,0.25); border-radius: 10px;
                padding: 0.4rem 0.65rem 0.3rem; }
@@ -449,7 +453,7 @@ def build_interface(bundle: Bundle, locales: dict[str, Locale]):  # noqa: ANN201
     default = locales[DEFAULT_LANGUAGE]
     with gr.Blocks(title=default.text("app.title")) as demo:
         with gr.Row():
-            header = gr.Markdown(header_text(default))
+            header = gr.Markdown(header_text(default), elem_classes=["app-head"])
             language = gr.Radio(
                 choices=[(LANGUAGE_NAMES[code], code) for code in LANGUAGES],
                 value=DEFAULT_LANGUAGE, label=default.text("app.language"), scale=0,
@@ -460,7 +464,7 @@ def build_interface(bundle: Bundle, locales: dict[str, Locale]):  # noqa: ANN201
         )
 
         with gr.Group(visible=True) as upload_panel:
-            upload_help = gr.Markdown(upload_help_text(default))
+            upload_help = gr.Markdown(upload_help_text(default), elem_classes=["panel-help"])
             with gr.Row(equal_height=False):
                 with gr.Column(scale=5):
                     upload_image = gr.Image(
@@ -469,14 +473,6 @@ def build_interface(bundle: Bundle, locales: dict[str, Locale]):  # noqa: ANN201
                         sources=["upload", "clipboard"],
                     )
                     upload_button = gr.Button(default.text("upload.button"), variant="primary")
-                    samples = example_images()
-                    examples = None
-                    if samples:
-                        with gr.Group(elem_classes=["samples"]):
-                            examples = gr.Examples(
-                                examples=samples, inputs=upload_image,
-                                label=default.text("examples.heading"),
-                            )
                 with gr.Column(scale=5):
                     upload_status = gr.HTML()
                     upload_predictions = gr.HTML()
@@ -484,19 +480,27 @@ def build_interface(bundle: Bundle, locales: dict[str, Locale]):  # noqa: ANN201
                 label=default.text("neighbours.heading"), columns=5, rows=1,
                 object_fit="contain", visible=False, elem_classes=["strip"],
             )
+            samples = example_images()
+            examples = None
+            if samples:
+                with gr.Group(elem_classes=["samples"]):
+                    examples = gr.Examples(
+                        examples=samples, inputs=upload_image,
+                        label=default.text("examples.heading"),
+                    )
 
         with gr.Group(visible=False) as catalog_panel:
-            catalog_help = gr.Markdown(catalog_help_text(default))
+            catalog_help = gr.Markdown(catalog_help_text(default), elem_classes=["panel-help"])
             with gr.Row(equal_height=False):
-                with gr.Column(scale=4):
+                with gr.Column(scale=5):
                     picker = gr.Dropdown(
                         choices=choices, label=default.text("catalog.picker"), value=None,
                     )
                     catalog_button = gr.Button(default.text("catalog.button"), variant="primary")
                     catalog_preview = gr.Image(
-                        label=default.text("catalog.preview"), height=200, visible=False,
+                        label=default.text("catalog.preview"), height=320, visible=False,
                     )
-                with gr.Column(scale=6):
+                with gr.Column(scale=5):
                     catalog_status = gr.HTML()
                     catalog_predictions = gr.HTML()
                     catalog_audit = gr.Markdown()

@@ -1,5 +1,5 @@
 [project]
-name = "shoe-catalog"
+name = "shoe-atlas"
 version = "0.1.0"
 description = "Multi-label shoe attribute extraction, catalog audit, and same-product retrieval on UT Zappos50K"
 readme = "README.md"
