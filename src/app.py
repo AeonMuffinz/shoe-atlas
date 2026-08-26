@@ -55,6 +55,12 @@ footer { display: none !important; }
 .pred-track { height: 7px; border-radius: 999px; background: rgba(148,163,184,0.22); overflow: hidden; }
 .pred-fill { height: 100%; border-radius: 999px; }
 .pred-empty { font-size: 0.82rem; opacity: 0.55; font-style: italic; }
+.strip .grid-wrap { overflow: visible !important; max-height: none !important;
+                    min-height: 0 !important; height: auto !important; }
+.strip .gallery-container { height: auto !important; }
+.strip .gallery-item { height: 112px !important; }
+.strip .gallery-item img { height: 100% !important; width: 100% !important;
+                           object-fit: contain !important; }
 @media (max-width: 620px) { .pred-grid { grid-template-columns: minmax(0, 1fr); } }
 """
 
@@ -383,30 +389,42 @@ def build_interface(bundle: Bundle, locales: dict[str, Locale]):  # noqa: ANN201
     def notice(locale: Locale, key: str) -> str:
         return f'<div class="app-status">{escape(locale.text(key))}</div>' 
 
-    def on_upload(image: np.ndarray | None, language: str):  # noqa: ANN202
+    def on_upload(  # noqa: ANN202
+        image: np.ndarray | None, language: str, progress=gr.Progress()  # noqa: B008, ANN001
+    ):
         locale = locales[language]
         if image is None:
             return notice(locale, "upload.no_image"), "", gr.update(visible=False)
+        progress(0.05, desc=locale.text("status.working"))
         probabilities = predict_row(bundle, image)
+        progress(0.5, desc=locale.text("status.working"))
         vector = embed_image(bundle, image)
+        progress(0.8, desc=locale.text("status.working"))
         rows = neighbours_for(bundle, vector.astype(np.float32))
+        progress(1.0, desc=locale.text("status.working"))
         return (
             "",
             render_predictions(bundle, probabilities, locale),
             gr.update(value=gallery_items(bundle, rows, locale), visible=True),
         )
 
-    def on_catalog(row: int | None, language: str):  # noqa: ANN202
+    def on_catalog(  # noqa: ANN202
+        row: int | None, language: str, progress=gr.Progress()  # noqa: B008, ANN001
+    ):
         locale = locales[language]
         if row is None:
             return (
                 notice(locale, "catalog.no_selection"), "", "",
                 gr.update(visible=False), gr.update(visible=False),
             )
+        progress(0.05, desc=locale.text("status.working"))
         image = np.asarray(bundle.images[row])
         probabilities = predict_row(bundle, image)
+        progress(0.6, desc=locale.text("status.working"))
         report = audit_row(bundle, int(row), probabilities)
+        progress(0.85, desc=locale.text("status.working"))
         rows = neighbours_for(bundle, bundle.embeddings[row], exclude=int(row))
+        progress(1.0, desc=locale.text("status.working"))
         return (
             "",
             render_predictions(bundle, probabilities, locale),
@@ -444,8 +462,8 @@ def build_interface(bundle: Bundle, locales: dict[str, Locale]):  # noqa: ANN201
                     upload_status = gr.HTML()
                     upload_predictions = gr.HTML()
             upload_gallery = gr.Gallery(
-                label=default.text("neighbours.heading"), columns=5, rows=1, height=130,
-                object_fit="contain", visible=False,
+                label=default.text("neighbours.heading"), columns=5, rows=1,
+                object_fit="contain", visible=False, elem_classes=["strip"],
             )
 
         with gr.Group(visible=False) as catalog_panel:
@@ -464,8 +482,8 @@ def build_interface(bundle: Bundle, locales: dict[str, Locale]):  # noqa: ANN201
                     catalog_predictions = gr.HTML()
                     catalog_audit = gr.Markdown()
             catalog_gallery = gr.Gallery(
-                label=default.text("neighbours.heading"), columns=5, rows=1, height=130,
-                object_fit="contain", visible=False,
+                label=default.text("neighbours.heading"), columns=5, rows=1,
+                object_fit="contain", visible=False, elem_classes=["strip"],
             )
 
         footer = gr.Markdown(footer_text(default))
@@ -473,13 +491,13 @@ def build_interface(bundle: Bundle, locales: dict[str, Locale]):  # noqa: ANN201
         upload_button.click(
             on_upload, inputs=[upload_image, language],
             outputs=[upload_status, upload_predictions, upload_gallery],
-            show_progress="full",
+            show_progress="full", show_progress_on=[upload_predictions],
         )
         catalog_button.click(
             on_catalog, inputs=[picker, language],
             outputs=[catalog_status, catalog_predictions, catalog_audit,
                      catalog_gallery, catalog_preview],
-            show_progress="full",
+            show_progress="full", show_progress_on=[catalog_predictions],
         )
 
         def switch_mode(selected: str):  # noqa: ANN202
