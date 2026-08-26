@@ -59,12 +59,12 @@ footer { display: none !important; }
 .strip .grid-wrap { overflow: visible !important; max-height: none !important;
                     min-height: 0 !important; height: auto !important; }
 .strip .gallery-container { height: auto !important; }
-.strip .gallery-item { height: 160px !important; }
+.strip .gallery-item { height: 190px !important; }
 .strip .gallery-item img { height: 100% !important; width: 100% !important;
                            object-fit: contain !important; }
 .samples { border: 1px dashed rgba(148,163,184,0.45) !important; border-radius: 12px !important;
            padding: 0.35rem 0.5rem !important; }
-.samples .gallery-item, .samples button { height: 74px !important; }
+.samples .gallery-item, .samples button { height: 100px !important; }
 .samples img { height: 100% !important; object-fit: contain !important; }
 .progress-text, .progress-level-inner { font-size: 1rem !important; font-weight: 600 !important;
                                         letter-spacing: 0.01em !important; }
@@ -279,7 +279,7 @@ def render_audit(bundle: Bundle, report: dict[str, dict[str, object]], locale: L
             lines.append(f"- {detail}")
         elif status == STATUS_FILL:
             interesting += 1
-            lines.append(f"{heading} — {locale.text('audit.fill')}")
+            lines.append(heading)
             lines.append(f"- {locale.text('audit.fill_detail', predicted=predicted_text)}")
         else:
             lines.append(f"{heading} — {locale.text('audit.agrees')}")
@@ -394,12 +394,10 @@ def build_interface(bundle: Bundle, locales: dict[str, Locale]):  # noqa: ANN201
         return f"### {locale.text('catalog.heading')}\n\n{locale.text('catalog.help')}"
 
     def footer_text(locale: Locale) -> str:
-        return "\n\n".join([
-            locale.text("neighbours.help"),
-            locale.text("footer.colour"),
-            locale.text("notes.resolution"),
-            locale.text("footer.license"),
-        ])
+        return "\n".join(
+            f"- {locale.text(key)}"
+            for key in ("neighbours.help", "footer.colour", "notes.resolution", "footer.license")
+        )
 
     def notice(locale: Locale, key: str) -> str:
         return f'<div class="app-status">{escape(locale.text(key))}</div>' 
@@ -464,9 +462,9 @@ def build_interface(bundle: Bundle, locales: dict[str, Locale]):  # noqa: ANN201
         with gr.Group(visible=True) as upload_panel:
             upload_help = gr.Markdown(upload_help_text(default))
             with gr.Row(equal_height=False):
-                with gr.Column(scale=4):
+                with gr.Column(scale=5):
                     upload_image = gr.Image(
-                        type="numpy", label=default.text("upload.input"), height=200,
+                        type="numpy", label=default.text("upload.input"), height=300,
                         placeholder=default.text("upload.placeholder"),
                         sources=["upload", "clipboard"],
                     )
@@ -479,7 +477,7 @@ def build_interface(bundle: Bundle, locales: dict[str, Locale]):  # noqa: ANN201
                                 examples=samples, inputs=upload_image,
                                 label=default.text("examples.heading"),
                             )
-                with gr.Column(scale=6):
+                with gr.Column(scale=5):
                     upload_status = gr.HTML()
                     upload_predictions = gr.HTML()
             upload_gallery = gr.Gallery(

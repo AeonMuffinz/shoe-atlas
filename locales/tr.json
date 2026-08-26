@@ -9,7 +9,6 @@
   "audit.agrees_detail": "Katalog da model de {stored} diyor.",
   "audit.conflict": "Çelişki",
   "audit.conflict_detail": "Katalogda {stored} kayıtlı, model {predicted} tahmin ediyor.",
-  "audit.fill": "Doldurma önerisi",
   "audit.fill_detail": "Katalogda bu alan boş. Model {predicted} tahmin ediyor.",
   "audit.heading": "Denetim",
   "audit.none": "Çelişki de yok, doldurulacak boş alan da yok.",
@@ -37,7 +36,7 @@
   "tab.upload": "Görsel yükle",
   "upload.button": "Tahmin et",
   "upload.heading": "Herhangi bir ayakkabı fotoğrafından özellik tahmini",
-  "upload.help": "Bir fotoğraf yükleyin; model ürünün özelliklerini tahmin eder ve katalogdaki benzer ürünleri getirir. Karşılaştırılacak kayıtlı bir değer olmadığından burada denetim yapılmaz.",
+  "upload.help": "Bir fotoğraf yükleyin; model ürünün özelliklerini tahmin eder ve katalogdaki benzer ürünleri getirir.",
   "upload.input": "Ayakkabı fotoğrafı",
   "upload.no_image": "Önce bir fotoğraf yükleyin.",
   "upload.placeholder": "Fotoğrafı buraya sürükleyin veya seçmek için tıklayın"

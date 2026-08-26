@@ -9,7 +9,6 @@
   "audit.agrees_detail": "The catalog and the model both say {stored}.",
   "audit.conflict": "Conflict",
   "audit.conflict_detail": "The catalog records {stored}, the model predicts {predicted}.",
-  "audit.fill": "Suggested fill",
   "audit.fill_detail": "The catalog leaves this blank. The model predicts {predicted}.",
   "audit.heading": "Audit",
   "audit.none": "No conflicts and no blank fields to fill.",
@@ -37,7 +36,7 @@
   "tab.upload": "Upload an image",
   "upload.button": "Predict",
   "upload.heading": "Predict attributes from any shoe photo",
-  "upload.help": "Upload a photo and the model predicts the product's attributes and finds similar catalog products. There is no stored record to compare against, so no audit is shown here.",
+  "upload.help": "Upload a photo and the model predicts the product's attributes and finds similar catalog products.",
   "upload.input": "Shoe photo",
   "upload.no_image": "Upload a photo first.",
   "upload.placeholder": "Drag a photo here, or click to choose one"
