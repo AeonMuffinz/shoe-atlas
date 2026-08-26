@@ -104,9 +104,27 @@ audit every product, was not built.
 Every run, how the model was chosen, what each measurement means and a much longer list of limitations:
 **[docs/RESULTS.md](docs/RESULTS.md)**.
 
+## About this project
+
+Shoe Atlas is a solo university project, written as coursework and kept as a portfolio piece for
+internship and job applications. It is a working prototype with an honest evaluation, not a production
+system — the point was to build the whole pipeline end to end and then be straight about what it does and
+does not do.
+
+It is not affiliated with Zappos, with the University of Texas at Austin, or with any shoe retailer. No
+part of it is a commercial product or offered as a service.
+
+If you are reading this as part of an application: the short version of what it demonstrates is a complete
+computer-vision pipeline — data preparation, training, evaluation under a pre-committed protocol, two
+downstream products built on the trained model, and a bilingual interface — with the reasoning and the
+negative results written down rather than quietly dropped. The long version is in
+[docs/RESULTS.md](docs/RESULTS.md).
+
 ## Data and licence
 
 UT Zappos50K, from the University of Texas at Austin, used under its **academic, non-commercial** licence.
 Dataset: <https://vision.cs.utexas.edu/projects/finegrained/utzap50k/>
 
-The code here is a university project and comes with no warranty.
+**No licence is granted for this code.** It is published for reading, review and assessment; default
+copyright applies and all rights are reserved. It comes with no warranty. If you want to use any of it for
+something, ask.
