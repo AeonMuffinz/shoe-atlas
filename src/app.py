@@ -24,6 +24,27 @@ WINNER_RUN: Path = reporting.RUNS_ROOT / "convnext_base_ar1_s42"
 EMBEDDINGS_NAME: str = "embeddings_finetuned.npy"
 NEIGHBOURS: int = 10
 CATALOG_CHOICES: int = 400
+TOP_PICKS: int = 2
+BAR_STRONG: str = "#f97316"
+BAR_SOFT: str = "#fdba74"
+MODE_UPLOAD: str = "upload"
+MODE_CATALOG: str = "catalog"
+
+CSS: str = """
+.mode-switch label { font-size: 1.05rem !important; padding: 0.75rem 1.25rem !important; }
+.mode-switch .wrap { gap: 0.75rem !important; }
+.pred-wrap { display: flex; flex-direction: column; gap: 1.1rem; }
+.pred-head { display: flex; justify-content: space-between; align-items: baseline;
+             font-size: 1.05rem; font-weight: 700; }
+.pred-scale { font-size: 0.8rem; font-weight: 500; opacity: 0.65; }
+.pred-family-name { font-size: 0.9rem; font-weight: 700; opacity: 0.8; margin-bottom: 0.35rem; }
+.pred-row { margin-bottom: 0.45rem; }
+.pred-line { display: flex; justify-content: space-between; font-size: 0.9rem; margin-bottom: 0.15rem; }
+.pred-value { font-variant-numeric: tabular-nums; opacity: 0.75; }
+.pred-track { height: 8px; border-radius: 999px; background: rgba(148,163,184,0.25); overflow: hidden; }
+.pred-fill { height: 100%; border-radius: 999px; }
+.pred-empty { font-size: 0.85rem; opacity: 0.6; font-style: italic; }
+"""
 
 STATUS_CONFLICT: str = "conflict"
 STATUS_FILL: str = "fill"
@@ -145,19 +166,61 @@ def family_text(bundle: Bundle, family: str, language: str) -> str:
     return bundle.glossary.family_display(family, language)
 
 
-def render_predictions(bundle: Bundle, grouped: dict[str, list[tuple[str, float]]],
-                       locale: Locale) -> str:
-    lines = [f"### {locale.text('predictions.heading')}", ""]
+def top_picks(bundle: Bundle, probabilities: np.ndarray, family_name: str,
+              limit: int = TOP_PICKS) -> list[tuple[str, float]]:
+    family = bundle.schema.family(family_name)
+    block = probabilities[family.start : family.end]
+    if family.kind == "softmax":
+        order = np.argsort(-block)[:limit]
+        return [(family.labels[int(i)], float(block[int(i)])) for i in order]
+    picks = [
+        (label, float(block[i]))
+        for i, label in enumerate(family.labels)
+        if block[i] >= bundle.thresholds[family.start + i]
+    ]
+    return sorted(picks, key=lambda item: -item[1])[:limit]
+
+
+def escape(text: str) -> str:
+    return (
+        str(text)
+        .replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace('"', "&quot;")
+    )
+
+
+def bar_row(label: str, probability: float, leading: bool) -> str:
+    width = max(1.0, min(100.0, probability * 100.0))
+    colour = BAR_STRONG if leading else BAR_SOFT
+    weight = "600" if leading else "400"
+    return (
+        f'<div class="pred-row">'
+        f'<div class="pred-line"><span class="pred-label" style="font-weight:{weight}">{escape(label)}</span>'
+        f'<span class="pred-value">{probability:.2f}</span></div>'
+        f'<div class="pred-track">'
+        f'<div class="pred-fill" style="width:{width:.1f}%;background:{colour}"></div>'
+        f"</div></div>"
+    )
+
+
+def render_predictions(bundle: Bundle, probabilities: np.ndarray, locale: Locale) -> str:
+    blocks = [
+        f'<div class="pred-head"><span>{escape(locale.text("predictions.heading"))}</span>'
+        f'<span class="pred-scale">{escape(locale.text("predictions.confidence"))}</span></div>'
+    ]
     for family in bundle.schema.families:
-        lines.append(f"**{family_text(bundle, family.name, locale.language)}**")
-        picks = grouped[family.name]
+        picks = top_picks(bundle, probabilities, family.name)
+        rows = "".join(
+            bar_row(label_text(bundle, label, locale.language), value, index == 0)
+            for index, (label, value) in enumerate(picks)
+        )
         if not picks:
-            lines.append(f"- _{locale.text('predictions.none')}_")
-        for label, probability in picks:
-            shown = label_text(bundle, label, locale.language)
-            lines.append(f"- {shown} — {probability:.2f} {locale.text('predictions.confidence')}")
-        lines.append("")
-    return "\n".join(lines)
+            rows = f'<div class="pred-empty">{escape(locale.text("predictions.none"))}</div>'
+        blocks.append(
+            f'<div class="pred-family">'
+            f'<div class="pred-family-name">{escape(family_text(bundle, family.name, locale.language))}</div>'
+            f"{rows}</div>"
+        )
+    return f'<div class="pred-wrap">{"".join(blocks)}</div>'
 
 
 def render_audit(bundle: Bundle, report: dict[str, dict[str, object]], locale: Locale) -> str:
@@ -269,32 +332,19 @@ def build_interface(bundle: Bundle, locales: dict[str, Locale]):  # noqa: ANN201
     i18n.assert_no_blank_strings(locales)
     choices = catalog_choices(bundle)
 
-    def on_upload(image: np.ndarray | None, language: str):  # noqa: ANN202
-        locale = locales[language]
-        if image is None:
-            return locale.text("upload.no_image"), []
-        probabilities = predict_row(bundle, image)
-        vector = embed_image(bundle, image)
-        rows = neighbours_for(bundle, vector.astype(np.float32))
-        return render_predictions(bundle, family_predictions(bundle, probabilities), locale), \
-            gallery_items(bundle, rows, locale)
-
-    def on_catalog(row: int | None, language: str):  # noqa: ANN202
-        locale = locales[language]
-        if row is None:
-            return locale.text("catalog.no_selection"), "", []
-        image = np.asarray(bundle.images[row])
-        probabilities = predict_row(bundle, image)
-        report = audit_row(bundle, int(row), probabilities)
-        rows = neighbours_for(bundle, bundle.embeddings[row], exclude=int(row))
-        return (
-            render_predictions(bundle, family_predictions(bundle, probabilities), locale),
-            render_audit(bundle, report, locale),
-            gallery_items(bundle, rows, locale),
-        )
+    def mode_choices(locale: Locale) -> list[tuple[str, str]]:
+        return [
+            (locale.text("tab.upload"), MODE_UPLOAD),
+            (locale.text("tab.catalog"), MODE_CATALOG),
+        ]
 
     def header_text(locale: Locale) -> str:
-        return f"# {locale.text('app.title')}\n\n{locale.text('app.subtitle')}"
+        link = f'<a href="{locale.text("app.model_url")}" target="_blank" rel="noopener">' \
+               f'{escape(locale.text("app.model_link"))}</a>'
+        return (
+            f"# {locale.text('app.title')}\n\n{locale.text('app.subtitle')}\n\n"
+            f"<sub>{escape(locale.text('app.model_note'))} {link}</sub>"
+        )
 
     def upload_help_text(locale: Locale) -> str:
         return f"### {locale.text('upload.heading')}\n\n{locale.text('upload.help')}"
@@ -310,66 +360,111 @@ def build_interface(bundle: Bundle, locales: dict[str, Locale]):  # noqa: ANN201
             locale.text("footer.license"),
         ])
 
+    def on_upload(image: np.ndarray | None, language: str):  # noqa: ANN202
+        locale = locales[language]
+        if image is None:
+            return f'<div class="pred-empty">{escape(locale.text("upload.no_image"))}</div>', []
+        probabilities = predict_row(bundle, image)
+        vector = embed_image(bundle, image)
+        rows = neighbours_for(bundle, vector.astype(np.float32))
+        return render_predictions(bundle, probabilities, locale), gallery_items(bundle, rows, locale)
+
+    def on_catalog(row: int | None, language: str):  # noqa: ANN202
+        locale = locales[language]
+        if row is None:
+            empty = f'<div class="pred-empty">{escape(locale.text("catalog.no_selection"))}</div>'
+            return empty, "", [], None
+        image = np.asarray(bundle.images[row])
+        probabilities = predict_row(bundle, image)
+        report = audit_row(bundle, int(row), probabilities)
+        rows = neighbours_for(bundle, bundle.embeddings[row], exclude=int(row))
+        return (
+            render_predictions(bundle, probabilities, locale),
+            render_audit(bundle, report, locale),
+            gallery_items(bundle, rows, locale),
+            image,
+        )
+
     default = locales[DEFAULT_LANGUAGE]
     with gr.Blocks(title=default.text("app.title")) as demo:
-        language = gr.Radio(
-            choices=[(LANGUAGE_NAMES[code], code) for code in LANGUAGES],
-            value=DEFAULT_LANGUAGE,
-            label=default.text("app.language"),
+        with gr.Row():
+            header = gr.Markdown(header_text(default))
+            language = gr.Radio(
+                choices=[(LANGUAGE_NAMES[code], code) for code in LANGUAGES],
+                value=DEFAULT_LANGUAGE,
+                label=default.text("app.language"),
+                scale=0,
+            )
+        mode = gr.Radio(
+            choices=mode_choices(default), value=MODE_UPLOAD,
+            show_label=False, elem_classes=["mode-switch"],
         )
-        header = gr.Markdown(header_text(default))
-        model_note = gr.Markdown(default.text("app.model_note", run=bundle.run_name))
 
-        with gr.Tab(default.text("tab.upload")) as upload_tab:
+        with gr.Group(visible=True) as upload_panel:
             upload_help = gr.Markdown(upload_help_text(default))
-            upload_image = gr.Image(type="numpy", label=default.text("upload.input"))
-            upload_button = gr.Button(default.text("upload.button"))
-            upload_predictions = gr.Markdown()
-            upload_gallery = gr.Gallery(label=default.text("neighbours.heading"), columns=5)
-            upload_button.click(
-                on_upload, inputs=[upload_image, language],
-                outputs=[upload_predictions, upload_gallery],
-            )
+            with gr.Row(equal_height=False):
+                with gr.Column(scale=1):
+                    upload_image = gr.Image(type="numpy", label=default.text("upload.input"), height=320)
+                    upload_button = gr.Button(default.text("upload.button"), variant="primary")
+                with gr.Column(scale=1):
+                    upload_predictions = gr.HTML()
+            upload_gallery = gr.Gallery(label=default.text("neighbours.heading"), columns=5, height=200)
 
-        with gr.Tab(default.text("tab.catalog")) as catalog_tab:
+        with gr.Group(visible=False) as catalog_panel:
             catalog_help = gr.Markdown(catalog_help_text(default))
-            picker = gr.Dropdown(choices=choices, label=default.text("catalog.picker"), value=None)
-            catalog_button = gr.Button(default.text("catalog.button"))
-            catalog_predictions = gr.Markdown()
-            catalog_audit = gr.Markdown()
-            catalog_gallery = gr.Gallery(label=default.text("neighbours.heading"), columns=5)
-            catalog_button.click(
-                on_catalog, inputs=[picker, language],
-                outputs=[catalog_predictions, catalog_audit, catalog_gallery],
-            )
+            with gr.Row(equal_height=False):
+                with gr.Column(scale=1):
+                    picker = gr.Dropdown(choices=choices, label=default.text("catalog.picker"), value=None)
+                    catalog_button = gr.Button(default.text("catalog.button"), variant="primary")
+                    catalog_preview = gr.Image(label=default.text("catalog.preview"), height=260)
+                with gr.Column(scale=1):
+                    catalog_predictions = gr.HTML()
+                    catalog_audit = gr.Markdown()
+            catalog_gallery = gr.Gallery(label=default.text("neighbours.heading"), columns=5, height=200)
 
         footer = gr.Markdown(footer_text(default))
 
+        upload_button.click(
+            on_upload, inputs=[upload_image, language],
+            outputs=[upload_predictions, upload_gallery],
+        )
+        catalog_button.click(
+            on_catalog, inputs=[picker, language],
+            outputs=[catalog_predictions, catalog_audit, catalog_gallery, catalog_preview],
+        )
+
+        def switch_mode(selected: str):  # noqa: ANN202
+            return (
+                gr.update(visible=selected == MODE_UPLOAD),
+                gr.update(visible=selected == MODE_CATALOG),
+            )
+
+        mode.change(switch_mode, inputs=[mode], outputs=[upload_panel, catalog_panel])
+
         chrome = [
-            language, header, model_note, upload_tab, upload_help, upload_image, upload_button,
-            upload_gallery, catalog_tab, catalog_help, picker, catalog_button, catalog_gallery, footer,
+            language, mode, header, upload_help, upload_image, upload_button, upload_gallery,
+            catalog_help, picker, catalog_button, catalog_preview, catalog_gallery, footer,
         ]
 
-        def relabel(selected: str):  # noqa: ANN202
+        def relabel(selected: str, current_mode: str):  # noqa: ANN202
             locale = locales[selected]
             return [
                 gr.update(label=locale.text("app.language")),
+                gr.update(choices=mode_choices(locale), value=current_mode),
                 gr.update(value=header_text(locale)),
-                gr.update(value=locale.text("app.model_note", run=bundle.run_name)),
-                gr.update(label=locale.text("tab.upload")),
                 gr.update(value=upload_help_text(locale)),
                 gr.update(label=locale.text("upload.input")),
                 gr.update(value=locale.text("upload.button")),
                 gr.update(label=locale.text("neighbours.heading")),
-                gr.update(label=locale.text("tab.catalog")),
                 gr.update(value=catalog_help_text(locale)),
                 gr.update(label=locale.text("catalog.picker")),
                 gr.update(value=locale.text("catalog.button")),
+                gr.update(label=locale.text("catalog.preview")),
                 gr.update(label=locale.text("neighbours.heading")),
                 gr.update(value=footer_text(locale)),
             ]
 
-        language.change(relabel, inputs=[language], outputs=chrome)
+        language.change(relabel, inputs=[language, mode], outputs=chrome)
     return demo
 
 
@@ -383,7 +478,7 @@ def main() -> None:
 
     bundle = load_bundle(args.run, args.processed)
     demo = build_interface(bundle, i18n.load_all())
-    demo.launch(share=args.share, server_port=args.port)
+    demo.launch(share=args.share, server_port=args.port, css=CSS)
 
 
 if __name__ == "__main__":
