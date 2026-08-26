@@ -128,7 +128,7 @@ def as_batch(bundle: Bundle, image: np.ndarray) -> torch.Tensor:
 
 def predict_row(bundle: Bundle, image: np.ndarray) -> np.ndarray:
     batch = as_batch(bundle, image)
-    with torch.no_grad(), torch.autocast("cuda", dtype=torch.bfloat16, enabled=bundle.device.type == "cuda"):
+    with torch.no_grad():
         logits = bundle.model(batch).float().cpu().numpy().astype(np.float64)
     return calibrated_probabilities(bundle, logits)[0]
 
