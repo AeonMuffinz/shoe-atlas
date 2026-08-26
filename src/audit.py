@@ -15,6 +15,8 @@ from src.corruption import Corruption, CorruptionError, observed_rows
 
 AuditError = CorruptionError
 AUDIT_NAME: str = "audit.json"
+AUDIT_SPLIT_NAME: str = "audit_{split}.json"
+AUDITABLE_SPLITS: frozenset[str] = frozenset({"val", "test"})
 IMPUTATION_NAME: str = "imputation.json"
 DEFAULT_RATES: tuple[float, ...] = (0.01, 0.02, 0.05, 0.10)
 PRECISION_K: int = 100
@@ -180,19 +182,28 @@ def summarise_groups(per_family: dict[str, dict[str, float]], schema: LabelSchem
     }
 
 
+def assert_split_auditable(split: str) -> None:
+    if split not in AUDITABLE_SPLITS:
+        raise AuditError(
+            f"refusing to audit the {split!r} split. cleanlab needs out-of-sample probabilities and "
+            f"the model trained on the training rows, so only {sorted(AUDITABLE_SPLITS)} are auditable."
+        )
+
+
 def load_run_inputs(
-    run_dir: Path, processed: Path, rate: float, seed: int, corrupt_type: str
+    run_dir: Path, processed: Path, rate: float, seed: int, corrupt_type: str, split: str = "val"
 ) -> tuple[np.ndarray, Corruption, np.ndarray, np.ndarray, LabelSchema, dict]:
+    assert_split_auditable(split)
     schema = LabelSchema.load(processed / "label_schema.json")
     observed_all = np.load(processed / "family_observed.npy")
     splits = json.loads((processed / "splits.json").read_text(encoding="utf-8"))["indices"]
-    val = np.asarray(splits["val"], dtype=np.int64)
+    rows = np.asarray(splits[split], dtype=np.int64)
 
-    probs_path = run_dir / reporting.PROBS_OOF_NAME.format(split="val")
+    probs_path = run_dir / reporting.PROBS_OOF_NAME.format(split=split)
     if not probs_path.exists():
         raise AuditError(
             f"{probs_path.name} is missing. cleanlab needs out-of-sample probabilities and the "
-            "in-sample val_probs.npy will not do; re-run evaluate.py for this run to write it."
+            f"in-sample {split}_probs.npy will not do; re-run evaluate.py for this run to write it."
         )
     probs = np.load(probs_path).astype(np.float64)
 
@@ -201,23 +212,23 @@ def load_run_inputs(
     corruption_module.assert_type_matches(manifest, corrupt_type, source)
     kind = manifest.pop("kind")
     planted = Corruption(
-        labels=dirty[val].astype(np.float64), corrupted=mask[val], kind="mixed", rate=rate
+        labels=dirty[rows].astype(np.float64), corrupted=mask[rows], kind="mixed", rate=rate
     )
-    return probs, planted, observed_all[val], kind[val], schema, manifest
+    return probs, planted, observed_all[rows], kind[rows], schema, manifest
 
 
 def run_audit(
-    run_dir: Path, processed: Path, rate: float, seed: int, corrupt_type: str
+    run_dir: Path, processed: Path, rate: float, seed: int, corrupt_type: str, split: str = "val"
 ) -> dict[str, object]:
     probs, planted, observed, kind, schema, manifest = load_run_inputs(
-        run_dir, processed, rate, seed, corrupt_type
+        run_dir, processed, rate, seed, corrupt_type, split
     )
     per_family = score_backends(probs, planted, observed, schema, kind)
     report: dict[str, object] = {
         "run": run_dir.name,
-        "split": "val",
+        "split": split,
         "corruption": {k: v for k, v in manifest.items() if k != "kind"},
-        "probabilities": reporting.PROBS_OOF_NAME.format(split="val"),
+        "probabilities": reporting.PROBS_OOF_NAME.format(split=split),
         "per_family": per_family,
         **summarise_groups(per_family, schema),
     }
@@ -236,13 +247,18 @@ def main() -> None:
         "--corrupt-type", choices=list(corruption_module.CORRUPT_TYPES), required=True,
         help="the scheme the run trained under; detection is reported per corruption type",
     )
+    parser.add_argument(
+        "--split", choices=sorted(AUDITABLE_SPLITS), default="val",
+        help="the split to audit; test requires the run to have been unlocked and evaluated on it",
+    )
     parser.add_argument("--out", type=Path, default=None)
     args = parser.parse_args()
 
     report = run_audit(
-        args.run, args.processed, args.corrupt_rate, args.corrupt_seed, args.corrupt_type
+        args.run, args.processed, args.corrupt_rate, args.corrupt_seed, args.corrupt_type, args.split
     )
-    destination = args.out or (args.run / AUDIT_NAME)
+    default_name = AUDIT_NAME if args.split == "val" else AUDIT_SPLIT_NAME.format(split=args.split)
+    destination = args.out or (args.run / default_name)
     destination.write_text(json.dumps(report, indent=2, default=float), encoding="utf-8")
     print(f"audit written to {destination}")
     for group in ("exclusive_families", "bce_families"):

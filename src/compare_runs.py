@@ -72,8 +72,9 @@ class Run:
         return str(block.get("reference_run", NOT_MEASURED)) if isinstance(block, dict) else NOT_MEASURED
 
     def test_cell(self, winner: str | None) -> str:
-        if isinstance(self.evaluation.get("test"), dict):
-            return "evaluated"
+        scores = self.evaluation.get("test")
+        if isinstance(scores, dict):
+            return cell(scores.get("map"))
         if winner is not None and self.name == winner:
             return "winner, test not yet scored"
         return reporting.TEST_WITHHELD
