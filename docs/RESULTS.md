@@ -9,10 +9,10 @@ two downstream products: an audit that flags catalog entries whose stored attrib
 image, and a retrieval index over the catalog. A bilingual Gradio interface sits on top, Turkish by
 default.
 
-This is a solo university project. The goal was a working prototype with an honest evaluation, and the
-honesty is the part worth reading: several results below are negatives, two headline numbers turned out
-smaller than they first looked, and the limitations section is long on purpose. For a short overview,
-read the main [README](../README.md) instead.
+This is a solo project, built to do during an internship. The goal was a working prototype with an honest
+evaluation, and the honesty is the part worth reading: several results below are negatives, and two
+headline numbers turned out smaller than they first looked once they were measured properly. For a short
+overview, read the main [README](../README.md) instead.
 
 ## Quickstart
 

@@ -12,8 +12,8 @@ The interface is bilingual, Turkish by default.
 
 <!-- GIF 2: catalog mode, pick a product and see the audit flag a wrong attribute -->
 
-<sub>Bu, staj ve iş başvuruları için hazırlanmış kişisel bir üniversite projesidir. Ticari bir ürün
-değildir ve kullanılan veri seti yalnızca akademik amaçlıdır.</sub>
+<sub>A personal project built to do during my internship. It was never handed over to the company and
+stayed a project. Not a commercial product, and the dataset is for academic use only.</sub>
 
 ## What it does
 
