@@ -1,0 +1,45 @@
+{
+  "app.title": "Ayakkabı Kataloğu Zekâsı",
+  "app.subtitle": "UT Zappos50K üzerinde öznitelik tahmini, katalog denetimi ve aynı ürünü bulma.",
+  "app.language": "Dil",
+  "app.model_note": "Tahminler {run} modelinden geliyor. Güven değerleri kalibre edilmiş olasılıklardır, ham model çıktısı değildir.",
+
+  "tab.upload": "Görsel yükle",
+  "tab.catalog": "Katalogda gez",
+
+  "upload.heading": "Herhangi bir ayakkabı fotoğrafı için öznitelik tahmini",
+  "upload.help": "Bir fotoğraf yükleyin; model özniteliklerini tahmin eder ve katalogdaki benzer ürünleri bulur. Karşılaştırılacak kayıtlı bir değer olmadığı için burada denetim gösterilmez.",
+  "upload.input": "Ayakkabı fotoğrafı",
+  "upload.button": "Tahmin et",
+  "upload.no_image": "Önce bir fotoğraf yükleyin.",
+
+  "catalog.heading": "Katalog ürününü denetle",
+  "catalog.help": "Kayıtlı öznitelikleri modelin tahminleriyle karşılaştırmak için bir katalog ürünü seçin.",
+  "catalog.picker": "Katalog ürünü",
+  "catalog.button": "Denetimi çalıştır",
+  "catalog.no_selection": "Önce bir ürün seçin.",
+  "catalog.stored": "Kayıtlı",
+  "catalog.predicted": "Tahmin",
+
+  "predictions.heading": "Tahmin edilen öznitelikler",
+  "predictions.none": "Bu ailede eşiği geçen bir değer yok.",
+  "predictions.confidence": "güven",
+
+  "audit.heading": "Denetim",
+  "audit.conflict": "Çelişki",
+  "audit.conflict_detail": "Katalog {stored} diyor, model {predicted} tahmin ediyor.",
+  "audit.fill": "Doldurma önerisi",
+  "audit.fill_detail": "Katalogda bu alan boş. Model {predicted} tahmin ediyor.",
+  "audit.agrees": "Uyumlu",
+  "audit.agrees_detail": "Katalog ve model ikisi de {stored} diyor.",
+  "audit.none": "Çelişki yok, doldurulacak alan da yok.",
+  "audit.unobserved": "kayıtlı değil",
+
+  "neighbours.heading": "Benzer ürünler",
+  "neighbours.help": "Tüm katalog üzerinde kosinüs benzerliğine göre en yakın komşular; eğitim görselleri de dahildir. Bu sonuçlar ayrı tutulmuş bir kümeden gelmiyor.",
+  "neighbours.caption": "{brand} - {product}",
+
+  "footer.license": "UT Zappos50K akademik ve ticari olmayan kullanım için lisanslıdır.",
+  "footer.retrieval": "Erişim doğruluğu aynı ürünü eşleştirmeyi ölçer, genel görsel benzerliği değil. Renk, sekiz öznitelik ailesinden biri değildir.",
+  "footer.seed": "Çalışmalar sabit tohumlu ancak bit düzeyinde yinelenebilir değil; tohum değişkenliği hiç ölçülmedi."
+}

@@ -1,0 +1,45 @@
+{
+  "app.title": "Shoe Catalog Intelligence",
+  "app.subtitle": "Attribute prediction, catalog audit and same-product retrieval on UT Zappos50K.",
+  "app.language": "Language",
+  "app.model_note": "Predictions come from {run}. Confidences are calibrated probabilities, not raw model outputs.",
+
+  "tab.upload": "Upload an image",
+  "tab.catalog": "Browse the catalog",
+
+  "upload.heading": "Predict attributes for any shoe photo",
+  "upload.help": "Upload a photo and the model predicts its attributes and finds visually similar catalog products. There is no stored record to compare against, so no audit is shown here.",
+  "upload.input": "Shoe photo",
+  "upload.button": "Predict",
+  "upload.no_image": "Upload a photo first.",
+
+  "catalog.heading": "Audit a catalog product",
+  "catalog.help": "Pick a catalog product to compare the stored attributes against the model's predictions.",
+  "catalog.picker": "Catalog product",
+  "catalog.button": "Run the audit",
+  "catalog.no_selection": "Choose a product first.",
+  "catalog.stored": "Stored",
+  "catalog.predicted": "Predicted",
+
+  "predictions.heading": "Predicted attributes",
+  "predictions.none": "Nothing in this family passed its threshold.",
+  "predictions.confidence": "confidence",
+
+  "audit.heading": "Audit",
+  "audit.conflict": "Conflict",
+  "audit.conflict_detail": "The catalog says {stored}, the model predicts {predicted}.",
+  "audit.fill": "Suggested fill",
+  "audit.fill_detail": "The catalog leaves this blank. The model predicts {predicted}.",
+  "audit.agrees": "Agrees",
+  "audit.agrees_detail": "The catalog and the model both say {stored}.",
+  "audit.none": "No conflicts and nothing to fill.",
+  "audit.unobserved": "not recorded",
+
+  "neighbours.heading": "Similar products",
+  "neighbours.help": "Nearest neighbours by cosine similarity over the whole catalog, training images included. These are not a held-out result.",
+  "neighbours.caption": "{brand} - {product}",
+
+  "footer.license": "UT Zappos50K is licensed for academic, non-commercial use.",
+  "footer.retrieval": "Retrieval ground truth is same-product matching, not general visual similarity. Colour is not one of the eight attribute families.",
+  "footer.seed": "Runs are seed-controlled but not bitwise deterministic, and seed variance was never measured."
+}
