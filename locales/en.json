@@ -22,6 +22,7 @@
   "catalog.predicted": "Predicted",
   "catalog.preview": "Selected product",
   "catalog.stored": "Stored",
+  "examples.heading": "Examples",
   "footer.colour": "Colour is not one of the eight attribute groups the model predicts, so similar products are not ranked by colour.",
   "footer.license": "UT Zappos50K is licensed for academic, non-commercial use.",
   "neighbours.caption": "{brand} - {product}",

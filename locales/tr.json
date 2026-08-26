@@ -22,6 +22,7 @@
   "catalog.predicted": "Tahmin",
   "catalog.preview": "Seçilen ürün",
   "catalog.stored": "Kayıtlı",
+  "examples.heading": "Örnekler",
   "footer.colour": "Renk, modelin tahmin ettiği sekiz özellik grubundan biri değildir; bu yüzden benzer ürünler renge göre sıralanmaz.",
   "footer.license": "UT Zappos50K, akademik ve ticari olmayan kullanım için lisanslıdır.",
   "neighbours.caption": "{brand} - {product}",

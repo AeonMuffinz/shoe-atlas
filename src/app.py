@@ -55,12 +55,27 @@ footer { display: none !important; }
 .pred-track { height: 7px; border-radius: 999px; background: rgba(148,163,184,0.22); overflow: hidden; }
 .pred-fill { height: 100%; border-radius: 999px; }
 .pred-empty { font-size: 0.82rem; opacity: 0.55; font-style: italic; }
+.strip { border: 1px solid rgba(249,115,22,0.35) !important; border-radius: 12px !important; }
 .strip .grid-wrap { overflow: visible !important; max-height: none !important;
                     min-height: 0 !important; height: auto !important; }
 .strip .gallery-container { height: auto !important; }
-.strip .gallery-item { height: 112px !important; }
+.strip .gallery-item { height: 160px !important; }
 .strip .gallery-item img { height: 100% !important; width: 100% !important;
                            object-fit: contain !important; }
+.samples { border: 1px dashed rgba(148,163,184,0.45) !important; border-radius: 12px !important;
+           padding: 0.35rem 0.5rem !important; }
+.samples .gallery-item, .samples button { height: 74px !important; }
+.samples img { height: 100% !important; object-fit: contain !important; }
+.progress-text, .progress-level-inner { font-size: 1rem !important; font-weight: 600 !important;
+                                        letter-spacing: 0.01em !important; }
+.progress-bar-wrap { height: 12px !important; border-radius: 999px !important;
+                     background: rgba(148,163,184,0.25) !important; overflow: hidden !important; }
+.progress-bar { height: 100% !important; border-radius: 999px !important;
+                background: linear-gradient(90deg, #fb923c, #f97316, #ea580c, #f97316) !important;
+                background-size: 300% 100% !important;
+                animation: bar-shimmer 1.6s linear infinite !important;
+                box-shadow: 0 0 10px rgba(249,115,22,0.55) !important; }
+@keyframes bar-shimmer { 0% { background-position: 0% 50%; } 100% { background-position: 300% 50%; } }
 @media (max-width: 620px) { .pred-grid { grid-template-columns: minmax(0, 1fr); } }
 """
 
@@ -453,11 +468,17 @@ def build_interface(bundle: Bundle, locales: dict[str, Locale]):  # noqa: ANN201
                     upload_image = gr.Image(
                         type="numpy", label=default.text("upload.input"), height=200,
                         placeholder=default.text("upload.placeholder"),
+                        sources=["upload", "clipboard"],
                     )
                     upload_button = gr.Button(default.text("upload.button"), variant="primary")
                     samples = example_images()
+                    examples = None
                     if samples:
-                        gr.Examples(examples=samples, inputs=upload_image, label="")
+                        with gr.Group(elem_classes=["samples"]):
+                            examples = gr.Examples(
+                                examples=samples, inputs=upload_image,
+                                label=default.text("examples.heading"),
+                            )
                 with gr.Column(scale=6):
                     upload_status = gr.HTML()
                     upload_predictions = gr.HTML()
@@ -489,11 +510,20 @@ def build_interface(bundle: Bundle, locales: dict[str, Locale]):  # noqa: ANN201
         footer = gr.Markdown(footer_text(default))
 
         upload_button.click(
+            lambda: ("", "", gr.update(visible=False)),
+            outputs=[upload_status, upload_predictions, upload_gallery],
+            show_progress="hidden",
+        ).then(
             on_upload, inputs=[upload_image, language],
             outputs=[upload_status, upload_predictions, upload_gallery],
             show_progress="full", show_progress_on=[upload_predictions],
         )
         catalog_button.click(
+            lambda: ("", "", "", gr.update(visible=False), gr.update(visible=False)),
+            outputs=[catalog_status, catalog_predictions, catalog_audit,
+                     catalog_gallery, catalog_preview],
+            show_progress="hidden",
+        ).then(
             on_catalog, inputs=[picker, language],
             outputs=[catalog_status, catalog_predictions, catalog_audit,
                      catalog_gallery, catalog_preview],
@@ -512,6 +542,8 @@ def build_interface(bundle: Bundle, locales: dict[str, Locale]):  # noqa: ANN201
             language, mode, header, upload_help, upload_image, upload_button, upload_gallery,
             catalog_help, picker, catalog_button, catalog_preview, catalog_gallery, footer,
         ]
+        if examples is not None:
+            chrome.append(examples.dataset)
 
         def relabel(selected: str, current_mode: str):  # noqa: ANN202
             locale = locales[selected]
@@ -530,6 +562,7 @@ def build_interface(bundle: Bundle, locales: dict[str, Locale]):  # noqa: ANN201
                 gr.update(label=locale.text("catalog.preview")),
                 gr.update(label=locale.text("neighbours.heading")),
                 gr.update(value=footer_text(locale)),
+                *([gr.update(label=locale.text("examples.heading"))] if examples is not None else []),
             ]
 
         language.change(relabel, inputs=[language, mode], outputs=chrome)
