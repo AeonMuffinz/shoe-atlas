@@ -29,11 +29,18 @@ untrained, and it beats CLIP.
 
 ## Check a catalog product
 
-<!-- GIF 2: catalog mode -->
+![Picking a catalog product, reading its attributes, then seeing which stored values agree and which conflict](demo/catalog-mode.gif)
 
-**🚩 It flags mistakes in the shop's own data.** Every online shop has products tagged wrong: the leather
-boot filed as canvas, the three inch heel listed as flat. The model compares what it sees against what the
-catalog claims, and marks each attribute as agreeing, disagreeing, or missing and worth filling in.
+Pick a product that is already in the catalog and you get the same two things, plus the one this project
+was really built for.
+
+**🏷️ The same attributes and 🔍 the same similar products**, read from the stored photo instead of an
+upload.
+
+**🚩 It checks the shop's own data.** Every online shop has products tagged wrong: the leather boot filed
+as canvas, the three inch heel listed as flat. Here the model has something to compare against, so every
+attribute is marked as **agreeing** with the catalog, **conflicting** with it, or **missing** and worth
+filling in. That last one matters more than it sounds, because blank fields are as common as wrong ones.
 
 Those flags are tested rather than trusted. Clean data is deliberately corrupted by a known amount, the
 model is retrained on it, and the audit is scored on how much of the planted damage it finds.
