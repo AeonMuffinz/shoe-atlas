@@ -4,8 +4,8 @@
 
 Shoe Atlas looks at a product photo and works out eight things about the shoe: what kind it is, how high
 the heel is, how it fastens, what it is made of, the shape of the toe, and a few more. It then uses those
-predictions for two jobs. It checks a shop's own product data for mistakes, and it finds the same shoe in
-other colours.
+predictions for two jobs. It checks a shop's own product data for mistakes, and it finds similar products
+in the catalog.
 
 Built on [UT Zappos50K](https://vision.cs.utexas.edu/projects/finegrained/utzap50k/), 50,025 shoe photos.
 The interface is bilingual, Turkish by default.
@@ -15,7 +15,7 @@ stayed a project. Not a commercial product, and the dataset is for academic use 
 
 ## Upload a photo
 
-![Uploading a shoe photo, reading its attributes, then finding similar shoes](demo/upload-mode.gif)
+![Uploading a shoe photo, reading its attributes, then finding similar products](demo/upload-mode.gif)
 
 Two things happen when you drop an image in.
 
@@ -23,8 +23,8 @@ Two things happen when you drop an image in.
 like heel height, where a shoe has exactly one answer. Others can have several at once, like materials.
 The model handles both, and the confidences shown are calibrated rather than raw model output.
 
-**🔍 It finds the same shoe in other colours.** The photo is turned into a vector and matched against all
-50,025 catalog images. Fine tuning on shoe attributes made this 2.6x better than the same network
+**🔍 It finds similar products.** The photo is turned into a vector and matched against all 50,025
+catalog images. Fine tuning on shoe attributes made this 2.6x better than the same network
 untrained, and it beats CLIP.
 
 ## Check a catalog product
