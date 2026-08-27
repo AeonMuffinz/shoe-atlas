@@ -10,28 +10,33 @@ other colours.
 Built on [UT Zappos50K](https://vision.cs.utexas.edu/projects/finegrained/utzap50k/), 50,025 shoe photos.
 The interface is bilingual, Turkish by default.
 
-<!-- GIF 1: upload mode, drop a photo and see the attributes and similar shoes -->
-
-<!-- GIF 2: catalog mode, pick a product and see the audit flag a wrong attribute -->
-
 <sub>A personal project built to do during my internship. It was never handed over to the company and
 stayed a project. Not a commercial product, and the dataset is for academic use only.</sub>
 
-## What it does
+## Upload a photo
 
-**Reads attributes from a photo.** Eight groups of them. Some are one of a kind, like heel height, where a
-shoe has exactly one answer. Others can have several at once, like materials. The model handles both, and
-it says how confident it is about each.
+![Uploading a shoe photo, reading its attributes, then finding similar shoes](demo/upload-mode.gif)
 
-**Finds mistakes in a shop's product data.** Every online shop has products tagged wrong: the leather boot
-filed as canvas, the three inch heel listed as flat. The model compares what it sees against what the
-catalog claims, and flags the disagreements.
+Two things happen when you drop an image in.
+
+**🏷️ It reads the attributes.** Eight groups of them, each with a confidence. Some are one of a kind,
+like heel height, where a shoe has exactly one answer. Others can have several at once, like materials.
+The model handles both, and the confidences shown are calibrated rather than raw model output.
+
+**🔍 It finds the same shoe in other colours.** The photo is turned into a vector and matched against all
+50,025 catalog images. Fine tuning on shoe attributes made this 2.6x better than the same network
+untrained, and it beats CLIP.
+
+## Check a catalog product
+
+<!-- GIF 2: catalog mode -->
+
+**🚩 It flags mistakes in the shop's own data.** Every online shop has products tagged wrong: the leather
+boot filed as canvas, the three inch heel listed as flat. The model compares what it sees against what the
+catalog claims, and marks each attribute as agreeing, disagreeing, or missing and worth filling in.
 
 Those flags are tested rather than trusted. Clean data is deliberately corrupted by a known amount, the
 model is retrained on it, and the audit is scored on how much of the planted damage it finds.
-
-**Finds the same shoe in other colours.** Search the catalog by image. Fine tuning on shoe attributes made
-this 2.6x better than the same network untrained, and it beats CLIP.
 
 ## Try it
 
