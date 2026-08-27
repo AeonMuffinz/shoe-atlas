@@ -45,9 +45,19 @@ filling in. That last one matters more than it sounds, because blank fields are 
 Those flags are tested rather than trusted. Clean data is deliberately corrupted by a known amount, the
 model is retrained on it, and the audit is scored on how much of the planted damage it finds.
 
-## Try it
+## Run it yourself
 
-You need [uv](https://docs.astral.sh/uv/) and the dataset.
+You need [uv](https://docs.astral.sh/uv/) and two archives from the
+[UT Zappos50K page](https://vision.cs.utexas.edu/projects/finegrained/utzap50k/): `ut-zap50k-data.zip`
+and `ut-zap50k-images-square.zip`. Extract both into `data/extracted/` so it looks like this:
+
+```
+data/extracted/
+├── ut-zap50k-data/
+│   ├── meta-data-bin.csv
+│   └── meta-data.csv
+└── ut-zap50k-images-square/
+```
 
 ```bash
 uv sync
