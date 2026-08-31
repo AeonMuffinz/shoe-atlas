@@ -10,6 +10,10 @@ in the catalog.
 Built on [UT Zappos50K](https://vision.cs.utexas.edu/projects/finegrained/utzap50k/), 50,025 shoe photos.
 The interface is bilingual, Turkish by default.
 
+**0.5745 mAP** on a held-out test set opened once &middot; **95.9%** top-1 on category and **0.0065**
+calibration error on validation &middot; **107** attributes across 8 families &middot; **50,025** photos
+indexed.
+
 <sub>A personal project built to do during my internship. It was never handed over to the company and
 stayed a project. Not a commercial product, and the dataset is for academic use only.</sub>
 
@@ -43,7 +47,8 @@ attribute is marked as **agreeing** with the catalog, **conflicting** with it, o
 filling in. That last one matters more than it sounds, because blank fields are as common as wrong ones.
 
 Those flags are tested rather than trusted. Clean data is deliberately corrupted by a known amount, the
-model is retrained on it, and the audit is scored on how much of the planted damage it finds.
+model is retrained on it, and the audit is scored on how much of the planted damage it finds. It
+finds planted errors across all eight attribute families at every corruption rate tested.
 
 ## Run it yourself
 
